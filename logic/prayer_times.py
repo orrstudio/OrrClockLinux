@@ -81,13 +81,7 @@ class PrayerTimesManager:
                                     
                                     # Если время Midnight больше времени Fajr следующего дня,
                                     # вычисляем его как середину между Isha и следующим Fajr
-                                    current_midnight = datetime.strptime(times['Midnight'], '%H:%M')
-                                    current_isha = datetime.strptime(times['Isha'], '%H:%M')
-                                    
-                                    if current_midnight > next_fajr:
-                                        # Вычисляем середину между Isha и следующим Fajr
-                                        midnight = (current_isha + next_fajr) / 2
-                                        current_times['Midnight'] = midnight.strftime('%H:%M')
+
                         
                         prayer_times_data[date.strftime('%Y-%m-%d')] = current_times
             except Exception as e:
