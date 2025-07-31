@@ -143,8 +143,8 @@ class PrayerTimesManager:
             
             return prayer_times
         
-        # Если данных нет в базе, возвращаем None
-        return None
+        # Если данных нет в базе, возвращаем значения по умолчанию ('00:00') для всех молитв
+        return {prayer: '00:00' for prayer in self.prayer_times}
 
     def _get_days_with_data(self, days_ahead=7):
         """
