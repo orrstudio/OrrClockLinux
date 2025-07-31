@@ -39,60 +39,35 @@ class PrayerTimesManager:
         ''')
         self.db.connection.commit()
 
-    def _get_prayer_times_for_month(self):
-        """Получает времена молитв на месяц"""
+    def _get_prayer_times_for_two_days(self):
+        """Получает времена молитв только на сегодня и завтра"""
         today = datetime.now()
         prayer_times_data = {}
         
-        # Получаем времена молитв для каждого дня месяца
-        for day in range(1, 32):
-            date = today.replace(day=day)
+        for offset in range(2):  # 0 = сегодня, 1 = завтра
+            date = today + timedelta(days=offset)
             params = {
                 'city': self.city,
                 'country': self.country,
                 'method': self.method,
                 'date': date.strftime('%d-%m-%Y')
             }
-            
             try:
                 response = requests.get(self.api_url, params=params)
                 if response.status_code == 200:
                     data = response.json()
                     if data['code'] == 200:
                         times = data['data']['timings']
-                        # Получаем время для текущего и следующего дня
                         current_times = {prayer: times[prayer] for prayer in self.prayer_times}
-                        
-                        # Если это последний день месяца, не пытаемся получить следующий день
-                        if day < 31:
-                            next_date = today.replace(day=day+1)
-                            next_params = {
-                                'city': self.city,
-                                'country': self.country,
-                                'method': self.method,
-                                'date': next_date.strftime('%d-%m-%Y')
-                            }
-                            next_response = requests.get(self.api_url, params=next_params)
-                            if next_response.status_code == 200:
-                                next_data = next_response.json()
-                                if next_data['code'] == 200:
-                                    next_times = next_data['data']['timings']
-                                    next_fajr = datetime.strptime(next_times['Fajr'], '%H:%M')
-                                    
-                                    # Если время Midnight больше времени Fajr следующего дня,
-                                    # вычисляем его как середину между Isha и следующим Fajr
-
-                        
                         prayer_times_data[date.strftime('%Y-%m-%d')] = current_times
             except Exception as e:
                 print(f"Error fetching prayer times for {date}: {str(e)}")
                 continue
-        
         return prayer_times_data
 
     def update_prayer_times(self):
-        """Обновляет времена молитв в базе данных"""
-        prayer_times_data = self._get_prayer_times_for_month()
+        """Обновляет времена молитв в базе данных только на сегодня и завтра"""
+        prayer_times_data = self._get_prayer_times_for_two_days()
         
         for date_str, times in prayer_times_data.items():
             # Проверяем, есть ли запись в базе
@@ -113,7 +88,10 @@ class PrayerTimesManager:
 
     def get_prayer_times(self, date=None):
         """
-        Получает времена молитв для указанной даты или текущей
+        Получает времена молитв для указанной даты или текущей.
+        1. Сначала ищет в базе
+        2. Если нет — пробует загрузить из API и сохранить
+        3. Если и API не дал — возвращает нули
         Args:
             date: datetime object или None для текущей даты
         Returns:
@@ -121,30 +99,56 @@ class PrayerTimesManager:
         """
         if date is None:
             date = datetime.now()
-        
         date_str = date.strftime('%Y-%m-%d')
-        
-        # Проверяем, есть ли времена молитв в базе
+
+        # 1. Проверяем, есть ли времена молитв в базе
         self.db.cursor.execute('SELECT * FROM prayer_times WHERE date = ?', (date_str,))
         result = self.db.cursor.fetchone()
-        
         if result and self._is_valid_cache(result):
-            # Формируем словарь с временами молитв
             prayer_times = {
                 prayer: result[i+1]  # +1 потому что первый элемент - дата
                 for i, prayer in enumerate(self.prayer_times)
             }
-            
-            # Проверяем, достаточно ли данных в базе
-            days_with_data = self._get_days_with_data(days_ahead=7)
-            if days_with_data < 7:  # Если данных меньше чем на неделю
-                # Загружаем данные на месяц в фоновом режиме
-                self._load_month_in_background()
-            
+            # Если все значения prayer_times равны '00:00', пробуем обновить из API
+            if all(v == '00:00' for v in prayer_times.values()):
+                api_times = self._try_fetch_and_store_api_times(date, date_str)
+                if api_times:
+                    return api_times
             return prayer_times
-        
-        # Если данных нет в базе, возвращаем значения по умолчанию ('00:00') для всех молитв
+
+        # 2. Если нет — пробуем получить из API
+        api_times = self._try_fetch_and_store_api_times(date, date_str)
+        if api_times:
+            return api_times
+        # 3. Если и API не дал — возвращаем нули
         return {prayer: '00:00' for prayer in self.prayer_times}
+
+    def _try_fetch_and_store_api_times(self, date, date_str):
+        """Пробует получить времена молитв из API, сохранить в базу и вернуть их. Если не получилось — вернуть None."""
+        params = {
+            'city': self.city,
+            'country': self.country,
+            'method': self.method,
+            'date': date.strftime('%d-%m-%Y')
+        }
+        try:
+            response = requests.get(self.api_url, params=params)
+            if response.status_code == 200:
+                data = response.json()
+                if data['code'] == 200:
+                    times = data['data']['timings']
+                    prayer_times = {prayer: times[prayer] for prayer in self.prayer_times}
+                    # Сохраняем в базу
+                    columns = ['date'] + self.prayer_times
+                    placeholders = ['?'] * (len(columns))
+                    values = [date_str] + [prayer_times.get(prayer, '') for prayer in self.prayer_times]
+                    sql = f"INSERT OR REPLACE INTO prayer_times ({', '.join(columns)}) VALUES ({', '.join(placeholders)})"
+                    self.db.cursor.execute(sql, values)
+                    self.db.connection.commit()
+                    return prayer_times
+        except Exception as e:
+            print(f"Error fetching prayer times from API for {date_str}: {str(e)}")
+        return None
 
     def _get_days_with_data(self, days_ahead=7):
         """
