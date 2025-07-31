@@ -2,6 +2,7 @@ from datetime import datetime
 from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
 from kivy.core.window import Window
+from logic.hijri_date import hijri_date_manager
 
 # Словари для конвертации в римские цифры
 WEEKDAY_TO_ROMAN = {
@@ -56,6 +57,9 @@ def get_formatted_dates():
     weekday = current_date.weekday()
     month = current_date.month
     
+    # Получаем дату хиджры
+    hijri_parts = hijri_date_manager.get_hijri_date()
+    
     # Части даты с указанием шрифтов и размеров
     date_parts = {
         'weekday': {
@@ -82,17 +86,17 @@ def get_formatted_dates():
         
         # Части для даты хиджры с размерами
         'hijri_day': {
-            'text': '15',
+            'text': hijri_parts['day'],
             'font': 'FontDSEG7-Light',
             'font_size': 40
         },
         'hijri_month': {
-            'text': f"/{HIJRI_MONTH_TO_ROMAN[12]}/",
+            'text': f"/{HIJRI_MONTH_TO_ROMAN[int(hijri_parts['month'])]}/",
             'font': 'GothicRegular',
             'font_size': 40
         },
         'hijri_year': {
-            'text': '1445',
+            'text': hijri_parts['year'],
             'font': 'FontDSEG7-Light',
             'font_size': 40
         }

@@ -1,7 +1,23 @@
 from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
+from logic.prayer_times import prayer_times_manager
 
 def create_prayer_times_layout(self, base_font_size):
+    """Создает layout для отображения времён молитв"""
+    
+    # Получаем актуальные времена молитв
+    prayer_times_data = prayer_times_manager.get_prayer_times()
+    
+    # Маппинг между азербайджанскими названиями и временами из API
+    prayer_mapping = {
+        'Təhəccüd ---': 'Midnight',
+        'İmsak ------': 'Fajr',
+        'Günəş ------': 'Sunrise',
+        'Günorta ----': 'Dhuhr',
+        'İkindi -----': 'Asr',
+        'Axşam ------': 'Maghrib',
+        'Gecə -------': 'Isha'
+    }
 
     prayer_times_layout = GridLayout(
         cols=2,  # Два столбца: название и время
@@ -11,17 +27,8 @@ def create_prayer_times_layout(self, base_font_size):
         padding=(base_font_size * 0.15, 0)   # Отступы по краям layout
     )
 
-    prayer_times = [
-        ('Təhəccüd ---', '00:30'),   # Полуночная молитва
-        ('İmsak ------', '05:30'),   # Утренняя молитва до восхода
-        ('Günəş ------', '05:30'),   # Восход
-        ('Günorta ----', '13:00'),   # Полуденная молитва
-        ('İkindi -----', '15:00'),   # Послеполуденная молитва
-        ('Axşam ------', '16:30'),   # Вечерняя молитва
-        ('Gecə -------', '20:30')    # Ночная молитва
-    ]
-
-    for prayer_name, prayer_time in prayer_times:
+    # Создаем Labels для каждого времени молитвы
+    for prayer_name, api_key in prayer_mapping.items():
         # Label для названия молитвы
         prayer_name_label = Label(
             text=prayer_name,
@@ -35,6 +42,7 @@ def create_prayer_times_layout(self, base_font_size):
         prayer_name_label.bind(size=prayer_name_label.setter('text_size'))
 
         # Label для времени молитвы
+        prayer_time = prayer_times_data.get(api_key, '00:00')
         prayer_time_label = Label(
             text=prayer_time,
             font_name='FontDSEG7-Bold',
