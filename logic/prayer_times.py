@@ -2,6 +2,7 @@ import requests
 import json
 from datetime import datetime, timedelta
 from data.database import SettingsDatabase
+from kivy.clock import Clock
 
 class PrayerTimesManager:
     def __init__(self):
@@ -59,9 +60,36 @@ class PrayerTimesManager:
                     data = response.json()
                     if data['code'] == 200:
                         times = data['data']['timings']
-                        prayer_times_data[date.strftime('%Y-%m-%d')] = {
-                            prayer: times[prayer] for prayer in self.prayer_times
-                        }
+                        # Получаем время для текущего и следующего дня
+                        current_times = {prayer: times[prayer] for prayer in self.prayer_times}
+                        
+                        # Если это последний день месяца, не пытаемся получить следующий день
+                        if day < 31:
+                            next_date = today.replace(day=day+1)
+                            next_params = {
+                                'city': self.city,
+                                'country': self.country,
+                                'method': self.method,
+                                'date': next_date.strftime('%d-%m-%Y')
+                            }
+                            next_response = requests.get(self.api_url, params=next_params)
+                            if next_response.status_code == 200:
+                                next_data = next_response.json()
+                                if next_data['code'] == 200:
+                                    next_times = next_data['data']['timings']
+                                    next_fajr = datetime.strptime(next_times['Fajr'], '%H:%M')
+                                    
+                                    # Если время Midnight больше времени Fajr следующего дня,
+                                    # вычисляем его как середину между Isha и следующим Fajr
+                                    current_midnight = datetime.strptime(times['Midnight'], '%H:%M')
+                                    current_isha = datetime.strptime(times['Isha'], '%H:%M')
+                                    
+                                    if current_midnight > next_fajr:
+                                        # Вычисляем середину между Isha и следующим Fajr
+                                        midnight = (current_isha + next_fajr) / 2
+                                        current_times['Midnight'] = midnight.strftime('%H:%M')
+                        
+                        prayer_times_data[date.strftime('%Y-%m-%d')] = current_times
             except Exception as e:
                 print(f"Error fetching prayer times for {date}: {str(e)}")
                 continue
@@ -112,11 +140,47 @@ class PrayerTimesManager:
                 prayer: result[i+1]  # +1 потому что первый элемент - дата
                 for i, prayer in enumerate(self.prayer_times)
             }
+            
+            # Проверяем, достаточно ли данных в базе
+            days_with_data = self._get_days_with_data(days_ahead=7)
+            if days_with_data < 7:  # Если данных меньше чем на неделю
+                # Загружаем данные на месяц в фоновом режиме
+                self._load_month_in_background()
+            
             return prayer_times
         
-        # Если нет в базе или кэш устарел, обновляем данные
-        self.update_prayer_times()
-        return self.get_prayer_times(date)
+        # Если данных нет в базе, возвращаем None
+        return None
+
+    def _get_days_with_data(self, days_ahead=7):
+        """
+        Возвращает количество дней с данными в базе вперед от текущей даты
+        Args:
+            days_ahead (int): количество дней вперед, которые нужно проверить
+        Returns:
+            int: количество дней с данными
+        """
+        today = datetime.now()
+        self.db.cursor.execute('''
+            SELECT COUNT(*) FROM prayer_times 
+            WHERE date BETWEEN ? AND ?
+        ''', (
+            today.strftime('%Y-%m-%d'),
+            (today + timedelta(days=days_ahead)).strftime('%Y-%m-%d')
+        ))
+        result = self.db.cursor.fetchone()
+        return result[0] if result else 0
+
+    def _load_month_in_background(self):
+        """Загружает данные на месяц в фоновом режиме"""
+        def _load_month(dt):
+            try:
+                self.update_prayer_times()
+            except Exception as e:
+                print(f"Error loading month data: {str(e)}")
+
+        # Вызываем обновление через Clock.schedule_once
+        Clock.schedule_once(_load_month, 0)
 
     def _is_valid_cache(self, db_result):
         """Проверяет актуальность кэша в базе"""

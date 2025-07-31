@@ -25,6 +25,7 @@ from ui.main_landscape import create_landscape_prayer_times_table
 from ui.main_square import create_square_prayer_times_table
 from logic.display_utils import is_mobile_device
 from logic.fonts_registration import register_fonts
+from logic.prayer_time_calculator import prayer_time_calculator
 
 class MainWindowApp(App):
     def __init__(self, **kwargs):
@@ -32,6 +33,18 @@ class MainWindowApp(App):
         self.current_window = 'main'
         # Инициализируем базу данных настроек
         self.settings_db = SettingsDatabase()
+        
+    def get_time_until_next_prayer(self, prayer_times_data):
+        """
+        Вычисляет и возвращает время до следующей молитвы
+        Args:
+            prayer_times_data: словарь с временами молитв
+        Returns:
+            str: время до следующей молитвы в формате HH:MM
+        """
+        current_time = datetime.now().time()
+        next_prayer_time = self.prayer_time_calculator.get_next_prayer_time(current_time, prayer_times_data)
+        return self.prayer_time_calculator.get_time_until_next_prayer(current_time, next_prayer_time)
         
     def build(self):
         # Пытаемся применить сохраненные настройки окна
@@ -43,6 +56,9 @@ class MainWindowApp(App):
         
         # Регистрация шрифтов
         register_fonts()
+        
+        # Создаем глобальный экземпляр для вычисления времени молитв
+        self.prayer_time_calculator = prayer_time_calculator
         
         # Черный фон
         Window.clearcolor = (0, 0, 0, 1)

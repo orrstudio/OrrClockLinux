@@ -1,6 +1,8 @@
 from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
 from logic.prayer_times import prayer_times_manager
+from logic.prayer_time_calculator import prayer_time_calculator
+from datetime import datetime
 
 def create_prayer_times_layout(self, base_font_size):
     """Создает layout для отображения времён молитв"""
@@ -27,6 +29,9 @@ def create_prayer_times_layout(self, base_font_size):
         padding=(base_font_size * 0.15, 0)   # Отступы по краям layout
     )
 
+    # Получаем текущее время
+    current_time = datetime.now().time()
+    
     # Создаем Labels для каждого времени молитвы
     for prayer_name, api_key in prayer_mapping.items():
         # Label для названия молитвы
@@ -41,8 +46,9 @@ def create_prayer_times_layout(self, base_font_size):
         )
         prayer_name_label.bind(size=prayer_name_label.setter('text_size'))
 
-        # Label для времени молитвы
+        # Получаем время молитвы
         prayer_time = prayer_times_data.get(api_key, '00:00')
+        
         prayer_time_label = Label(
             text=prayer_time,
             font_name='FontDSEG7-Bold',
@@ -88,9 +94,12 @@ def create_next_time_layout(self, base_font_size):
         halign='right',  # Выравнивание вправо
     )
 
+    # Получаем актуальные времена молитв
+    prayer_times_data = prayer_times_manager.get_prayer_times()
+    
     # Создаем Label для NextTimeNumbers
     next_time_numbers_label = Label(
-        text='00:00',
+        text=self.get_time_until_next_prayer(prayer_times_data),
         font_name='FontDSEG7-Bold',  # Шрифт как у часиков
         font_size=base_font_size * 0.55,  # Большой размер шрифта
         color=(1, 1, 1, 1),  # Белый цвет
