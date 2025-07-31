@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using these metadata."
+title: "OrrClockLinux"
+abstract: "Адаптивные цифровые часы с современным минималистичным дизайном, разработанные с использованием Kivy Framework"
+type: software
+authors:
+  - family-names: Qafar
+    given-names: Oruc
+    email: orr888@gmail.com
+version: 1.0.0
+date-released: "2024-01-15"
+repository-code: "https://github.com/orrstudio/OrrClockLinux"
+keywords:
+  - python
+  - kivy
+  - desktop-application
+  - gui
+license: MIT
+references:
+  - type: software
+    title: "Kivy"
+    version: "2.2.1"
+    repository: "https://github.com/kivy/kivy"
