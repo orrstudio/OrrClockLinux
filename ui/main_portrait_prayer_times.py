@@ -1,8 +1,9 @@
 from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
+from kivy.clock import Clock
 from logic.prayer_times import prayer_times_manager
 from logic.prayer_time_calculator import prayer_time_calculator
-from datetime import datetime
+from datetime import datetime, time
 
 class PrayerTimesBox(GridLayout):
     """
@@ -22,48 +23,121 @@ class PrayerTimesBox(GridLayout):
             'Axşam ------': 'Maghrib',
             'Gecə -------': 'Isha'
         }
-        self.prayer_labels = {}  # {api_key: Label}
+        # Словари для хранения виджетов меток
+        self.prayer_name_labels = {}  # {api_key: Label}
+        self.prayer_time_labels = {}  # {api_key: Label}
+        self.current_prayer = None  # Текущая активная молитва
+        
         self._build_layout()
         prayer_times_manager.add_update_listener(self.refresh_prayer_times)
         self.refresh_prayer_times()
+        # Schedule current prayer update every minute
+        self._clock_event = Clock.schedule_interval(self.update_current_prayer, 60)
 
     def _build_layout(self):
         prayer_times_data = prayer_times_manager.get_prayer_times()
         for prayer_name, api_key in self.prayer_mapping.items():
+            # Create prayer name label
             prayer_name_label = Label(
                 text=prayer_name,
                 font_name='FontSourceCodePro-Regular',
                 font_size=self.base_font_size * 0.4,
-                color=(0.8, 0.7, 0.1, 1),  # Тускло-желтый цвет
+                color=(0.8, 0.7, 0.1, 1),  # Dull yellow by default
                 halign='left',
                 text_size=(self.width * 0.6, None),
                 size_hint_x=0.75
             )
             prayer_name_label.bind(size=prayer_name_label.setter('text_size'))
+            
+            # Create prayer time label
             prayer_time = prayer_times_data.get(api_key, '00:00')
             prayer_time_label = Label(
                 text=prayer_time,
                 font_name='FontDSEG7-Bold',
                 font_size=self.base_font_size * 0.45,
-                color=(0.0, 0.75, 0.75, 1.0),  # Аквамариновый цвет
+                color=(0.0, 0.75, 0.75, 1.0),  # Aqua by default
                 halign='right',
                 text_size=(self.width * 0.4, None),
                 size_hint_x=0.4
             )
             prayer_time_label.bind(size=prayer_time_label.setter('text_size'))
+            
+            # Add widgets to layout
             self.add_widget(prayer_name_label)
             self.add_widget(prayer_time_label)
-            self.prayer_labels[api_key] = prayer_time_label
+            
+            # Store references to the labels
+            self.prayer_name_labels[api_key] = prayer_name_label
+            self.prayer_time_labels[api_key] = prayer_time_label
+            
+        # Schedule the first update of current prayer highlighting
+        Clock.schedule_once(self.update_current_prayer, 0.1)
 
     def refresh_prayer_times(self):
         prayer_times_data = prayer_times_manager.get_prayer_times()
-        for api_key, label in self.prayer_labels.items():
+        for api_key, label in self.prayer_time_labels.items():
             label.text = prayer_times_data.get(api_key, '00:00')
+        # Update current prayer highlighting
+        self.update_current_prayer()
 
+    def get_current_prayer(self, current_time):
+        """Determine the current active prayer based on time"""
+        prayer_times = prayer_times_manager.get_prayer_times()
+        current_prayer = None
+        
+        # Convert prayer times to time objects
+        prayer_times_list = []
+        for prayer_name, time_str in prayer_times.items():
+            try:
+                t = datetime.strptime(time_str, '%H:%M').time()
+                prayer_times_list.append((prayer_name, t))
+            except (ValueError, AttributeError):
+                continue
+        
+        # Sort by time
+        prayer_times_list.sort(key=lambda x: x[1])
+        
+        # Find current prayer (last one that has started)
+        for prayer_name, prayer_time in prayer_times_list:
+            if prayer_time > current_time:
+                break
+            current_prayer = prayer_name
+        
+        # If current time is after the last prayer, use the last prayer
+        if current_prayer is None and prayer_times_list:
+            current_prayer = prayer_times_list[-1][0]
+            
+        return current_prayer
+    
+    def update_current_prayer(self, *args):
+        """Update the current prayer highlighting"""
+        current_time = datetime.now().time()
+        new_current_prayer = self.get_current_prayer(current_time)
+        
+        # If current prayer hasn't changed, do nothing
+        if new_current_prayer == self.current_prayer:
+            return
+            
+        # Remove highlight from previous current prayer
+        if self.current_prayer in self.prayer_name_labels:
+            self.prayer_name_labels[self.current_prayer].color = (0.8, 0.7, 0.1, 1)  # Dull yellow
+            self.prayer_time_labels[self.current_prayer].color = (0.0, 0.75, 0.75, 1.0)  # Aqua
+        
+        # Set new current prayer
+        self.current_prayer = new_current_prayer
+        
+        # Highlight new current prayer
+        if self.current_prayer in self.prayer_name_labels:
+            self.prayer_name_labels[self.current_prayer].color = (1.0, 1.0, 0.0, 1.0)  # Bright yellow
+            self.prayer_time_labels[self.current_prayer].color = (0.0, 1.0, 1.0, 1.0)  # Bright aqua
+    
     def on_parent(self, widget, parent):
-        # Автоматическая отписка при удалении с экрана
+        # Automatically unsubscribe when removed from screen
         if parent is None:
             prayer_times_manager.remove_update_listener(self.refresh_prayer_times)
+            # Also cancel the clock event
+            if hasattr(self, '_clock_event'):
+                self._clock_event.cancel()
 
 def create_prayer_times_layout(self, base_font_size):
     """Создает layout для отображения времён молитв"""

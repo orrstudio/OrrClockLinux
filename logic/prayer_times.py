@@ -44,93 +44,185 @@ class PrayerTimesManager:
 
 
     def _setup_database(self):
-        """Создает таблицу для хранения времён молитв"""
-        self.db.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS prayer_times (
-                date TEXT PRIMARY KEY,
-                Midnight TEXT,
-                Fajr TEXT,
-                Sunrise TEXT,
-                Dhuhr TEXT,
-                Asr TEXT,
-                Maghrib TEXT,
-                Isha TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        self.db.connection.commit()
-        print("[DEBUG] prayer_times: таблица создана или уже существует")
-        # Сразу инициируем обновление времён после создания базы
-        self.update_prayer_times()
-        # Если после первого обновления в базе только нули — запустить автообновление
-        today_times = self.get_prayer_times()
-        if all(v == '00:00' for v in today_times.values()):
-            self.start_auto_update()
+        """Инициализирует базу данных и запускает фоновое обновление"""
+        try:
+            # Создаем таблицу, если её нет
+            self.db.cursor.execute('''
+                CREATE TABLE IF NOT EXISTS prayer_times (
+                    date TEXT PRIMARY KEY,
+                    Midnight TEXT,
+                    Fajr TEXT,
+                    Sunrise TEXT,
+                    Dhuhr TEXT,
+                    Asr TEXT,
+                    Maghrib TEXT,
+                    Isha TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            self.db.connection.commit()
+            print("[DEBUG] prayer_times: таблица создана или уже существует")
+            
+            # Пробуем загрузить данные из кэша
+            today_times = self.get_prayer_times()
+            has_valid_data = any(v != '00:00' for v in today_times.values())
+            
+            if has_valid_data:
+                print("[DEBUG] prayer_times: используем кэшированные данные")
+                # Уведомляем подписчиков о загрузке кэшированных данных
+                Clock.schedule_once(lambda dt: self._notify_update(), 0.1)
+            else:
+                print("[DEBUG] prayer_times: кэш пуст, будут использованы значения по умолчанию")
+                # Все равно уведомляем подписчиков, чтобы UI загрузился с дефолтными значениями
+                Clock.schedule_once(lambda dt: self._notify_update(), 0.1)
+            
+            # Запускаем фоновое обновление с небольшой задержкой
+            Clock.schedule_once(lambda dt: self._background_update_check(), 0.5)
+            
+        except Exception as e:
+            print(f"[ERROR] Ошибка при инициализации базы данных: {e}")
+            # В любом случае уведомляем подписчиков, чтобы UI загрузился
+            Clock.schedule_once(lambda dt: self._notify_update(), 0.1)
+    
+    def _background_update_check(self):
+        """Проверяет и обновляет данные в фоновом режиме"""
+        try:
+            today_times = self.get_prayer_times()
+            has_valid_data = any(v != '00:00' for v in today_times.values())
+            
+            if not has_valid_data:
+                print("[DEBUG] prayer_times: кэш пуст, запускаем обновление")
+                self.start_auto_update()
+            else:
+                # Проверяем актуальность данных
+                self.db.cursor.execute('''
+                    SELECT date FROM prayer_times 
+                    WHERE date = ? AND created_at >= datetime('now', '-24 hours')
+                ''', (datetime.now().strftime('%Y-%m-%d'),))
+                
+                if not self.db.cursor.fetchone():
+                    print("[DEBUG] prayer_times: данные устарели, обновляем")
+                    self.update_prayer_times()
+                else:
+                    print("[DEBUG] prayer_times: данные актуальны, обновление не требуется")
+                    
+        except Exception as e:
+            print(f"[ERROR] Ошибка при проверке обновлений: {e}")
 
     def _get_prayer_times_for_two_days(self):
-        """Получает времена молитв только на сегодня и завтра"""
+        """Получает времена молитв только на сегодня и завтра с таймаутом"""
+        import requests
+        from requests.exceptions import RequestException, Timeout, ConnectionError
+        
         today = datetime.now()
         prayer_times_data = {}
         
         for offset in range(2):  # 0 = сегодня, 1 = завтра
             date = today + timedelta(days=offset)
+            date_str = date.strftime('%Y-%m-%d')
             params = {
                 'city': self.city,
                 'country': self.country,
                 'method': self.method,
             }
-            date_str = date.strftime('%d-%m-%Y')
-            url = f"{self.api_url}/{date_str}"
-            print(f"[DEBUG] prayer_times: API url={url} params={params}")
+            
             try:
-                response = requests.get(url, params=params)
-                print(f"[DEBUG] prayer_times: API {date.strftime('%Y-%m-%d')} params={params} status_code={response.status_code}")
-                print(f"[DEBUG] prayer_times: API raw response: {response.text}")
+                # Устанавливаем таймаут в 5 секунд на запрос
+                response = requests.get(
+                    f"{self.api_url}/{date.strftime('%d-%m-%Y')}",
+                    params=params,
+                    timeout=5  # 5 секунд на соединение + ответ
+                )
+                
                 if response.status_code == 200:
                     data = response.json()
-                    print(f"[DEBUG] prayer_times: API parsed response: {data}")
-                    if data['code'] == 200:
-                        times = data['data']['timings']
-                        current_times = {prayer: times[prayer] for prayer in self.prayer_times}
-                        print(f"[DEBUG] prayer_times: API {date.strftime('%Y-%m-%d')} current_times={current_times}")
-                        prayer_times_data[date.strftime('%Y-%m-%d')] = current_times
+                    if data.get('code') == 200:
+                        times = data.get('data', {}).get('timings', {})
+                        current_times = {prayer: times.get(prayer, '00:00') for prayer in self.prayer_times}
+                        prayer_times_data[date_str] = current_times
+                        print(f"[DEBUG] prayer_times: Успешно получены данные для {date_str}")
+                        continue  # Переходим к следующей дате
+                
+                print(f"[WARNING] Не удалось получить данные для {date_str}: {response.status_code}")
+                
+            except Timeout:
+                print(f"[WARNING] Таймаут при запросе данных для {date_str}")
+            except ConnectionError:
+                print(f"[WARNING] Ошибка соединения при запросе данных для {date_str}")
+            except RequestException as e:
+                print(f"[WARNING] Ошибка при запросе данных для {date_str}: {str(e)}")
             except Exception as e:
-                print(f"Error fetching prayer times for {date}: {str(e)}")
-                continue
+                print(f"[ERROR] Непредвиденная ошибка при запросе данных для {date_str}: {str(e)}")
+        
         return prayer_times_data
 
     def update_prayer_times(self):
-        print("[DEBUG] prayer_times: вызван update_prayer_times")
-        """Обновляет времена молитв в базе данных только на сегодня и завтра"""
-        prayer_times_data = self._get_prayer_times_for_two_days()
-        updated = False
-        for date_str, times in prayer_times_data.items():
-            self.db.cursor.execute('SELECT * FROM prayer_times WHERE date = ?', (date_str,))
-            result = self.db.cursor.fetchone()
-            if result:
-                # Обновляем только если что-то изменилось
-                need_update = any(result[i+1] != times[k] for i, k in enumerate(self.prayer_times))
-                if need_update:
-                    self.db.cursor.execute(
-                        'UPDATE prayer_times SET ' + ', '.join([f'{k} = ?' for k in self.prayer_times]) + ' WHERE date = ?',
-                        [times[k] for k in self.prayer_times] + [date_str]
-                    )
-                    updated = True
-            else:
-                # Нет записи — вставляем
-                self.db.cursor.execute(
-                    'INSERT INTO prayer_times (date, ' + ', '.join(self.prayer_times) + ') VALUES (?, ' + ', '.join(['?']*len(self.prayer_times)) + ')',
-                    [date_str] + [times[k] for k in self.prayer_times]
-                )
-                updated = True
-        self.db.connection.commit()
-        if updated:
-            print("[DEBUG] prayer_times: вызван _notify_update из update_prayer_times")
-            self._notify_update()
-        # Проверяем, появились ли валидные данные — если да, останавливаем автообновление
-        today_times = self.get_prayer_times()
-        if any(v != '00:00' for v in today_times.values()):
-            self.stop_auto_update()
+        """Асинхронно обновляет времена молитв в базе данных"""
+        print("[DEBUG] prayer_times: запуск асинхронного обновления времён молитв")
+        
+        def _update_in_thread():
+            try:
+                # Получаем данные с таймаутом
+                prayer_times_data = self._get_prayer_times_for_two_days()
+                if not prayer_times_data:
+                    print("[DEBUG] Нет данных для обновления")
+                    return
+                
+                updated = False
+                for date_str, times in prayer_times_data.items():
+                    try:
+                        self.db.cursor.execute('SELECT * FROM prayer_times WHERE date = ?', (date_str,))
+                        result = self.db.cursor.fetchone()
+                        
+                        if result:
+                            # Обновляем только если что-то изменилось
+                            need_update = any(result[i+1] != times.get(prayer, '00:00') 
+                                          for i, prayer in enumerate(self.prayer_times))
+                            if need_update:
+                                self.db.cursor.execute(
+                                    'UPDATE prayer_times SET ' + 
+                                    ', '.join([f'{k} = ?' for k in self.prayer_times]) + 
+                                    ' WHERE date = ?',
+                                    [times.get(k, '00:00') for k in self.prayer_times] + [date_str]
+                                )
+                                updated = True
+                        else:
+                            # Нет записи — вставляем
+                            self.db.cursor.execute(
+                                'INSERT INTO prayer_times (date, ' + 
+                                ', '.join(self.prayer_times) + 
+                                ') VALUES (?, ' + ', '.join(['?']*len(self.prayer_times)) + ')',
+                                [date_str] + [times.get(k, '00:00') for k in self.prayer_times]
+                            )
+                            updated = True
+                            
+                    except Exception as e:
+                        print(f"[ERROR] Ошибка при обновлении данных для {date_str}: {e}")
+                        continue
+                
+                if updated:
+                    try:
+                        self.db.connection.commit()
+                        print("[DEBUG] prayer_times: данные успешно обновлены")
+                        # Уведомляем в основном потоке
+                        Clock.schedule_once(lambda dt: self._notify_update(), 0)
+                    except Exception as e:
+                        print(f"[ERROR] Ошибка при сохранении в базу: {e}")
+                
+                # Проверяем, появились ли валидные данные
+                today_times = self.get_prayer_times()
+                if any(v != '00:00' for v in today_times.values()):
+                    self.stop_auto_update()
+                    
+            except Exception as e:
+                print(f"[ERROR] Критическая ошибка при обновлении времён молитв: {e}")
+                # В случае ошибки останавливаем автообновление, чтобы не нагружать систему
+                self.stop_auto_update()
+        
+        # Запускаем обновление в отдельном потоке
+        import threading
+        thread = threading.Thread(target=_update_in_thread, daemon=True)
+        thread.start()
 
     def get_prayer_times(self, date=None):
         print("[DEBUG] prayer_times: вызван get_prayer_times")
