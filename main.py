@@ -26,8 +26,38 @@ from ui.main_square import create_square_prayer_times_table
 from logic.display_utils import is_mobile_device
 from logic.fonts_registration import register_fonts
 from logic.prayer_time_calculator import prayer_time_calculator
+from logic.hijri_date import hijri_date_manager
+from logic.midnight_update_manager import MidnightUpdateManager
+from logic.prayer_times import prayer_times_manager
 
 class MainWindowApp(App):
+    def on_new_day(self):
+        """
+        Метод вызывается в полночь для пересчёта и обновления всех данных, зависящих от даты.
+        - Проверяет и обновляет данные в базе (молитвы, хиджра и т.д.)
+        - Обновляет все связанные с датой элементы UI
+        - Запускает все необходимые проверки для нового дня
+        """
+        # Принудительно обновляем дату хиджры (пересчёт и кэширование)
+        hijri_date_manager.get_hijri_date()
+
+        # Принудительно обновляем времена молитв (запрос к API и обновление базы)
+        print("[DEBUG] on_new_day: вызываю update_prayer_times() ДО пересоздания layout")
+        prayer_times_manager.update_prayer_times()
+
+        # Пересоздаём/обновляем UI для нового дня
+        if hasattr(self, 'layout'):
+            self.on_window_resize(Window, Window.width, Window.height)
+            print(f"[DEBUG] on_new_day: self.prayer_times_box = {getattr(self, 'prayer_times_box', None)}, type = {type(getattr(self, 'prayer_times_box', None))}")
+            if hasattr(self, 'prayer_times_box') and self.prayer_times_box:
+                print("[DEBUG] on_new_day: вызываю refresh_prayer_times() у self.prayer_times_box (после update_prayer_times и пересоздания layout)")
+                self.prayer_times_box.refresh_prayer_times()
+        
+        # Обновляем заголовок (время)
+        if hasattr(self, 'title_label'):
+            self.title_label.text = self.get_current_time(self.is_colon_visible)
+
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.current_window = 'main'
@@ -47,6 +77,10 @@ class MainWindowApp(App):
         return self.prayer_time_calculator.get_time_until_next_prayer(current_time, next_prayer_time)
         
     def build(self):
+        # --- MidnightUpdateManager ---
+        self.midnight_update_manager = MidnightUpdateManager()
+        self.midnight_update_manager.register_callback(self.on_new_day)
+        # --- END MidnightUpdateManager ---
         # Пытаемся применить сохраненные настройки окна
         if not is_mobile_device():
             self.settings_db.apply_window_settings(Window)

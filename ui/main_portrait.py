@@ -50,7 +50,8 @@ def create_portrait_widgets(self, portrait_layout):
     portrait_layout.add_widget(create_line_label(base_font_size))  # line_label2
     
     # Добавляем реактивный layout с временами молитв
-    prayer_times_box = PrayerTimesBox(base_font_size=base_font_size)
-    portrait_layout.add_widget(prayer_times_box)
+    self.prayer_times_box = PrayerTimesBox(base_font_size=base_font_size)
+    print(f"[DEBUG] create_portrait_widgets: создан self.prayer_times_box = {self.prayer_times_box}, id = {id(self.prayer_times_box)}, type = {type(self.prayer_times_box)}")
+    portrait_layout.add_widget(self.prayer_times_box)
     
     return portrait_layout

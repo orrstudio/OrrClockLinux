@@ -78,15 +78,21 @@ class PrayerTimesManager:
                 'city': self.city,
                 'country': self.country,
                 'method': self.method,
-                'date': date.strftime('%d-%m-%Y')
             }
+            date_str = date.strftime('%d-%m-%Y')
+            url = f"{self.api_url}/{date_str}"
+            print(f"[DEBUG] prayer_times: API url={url} params={params}")
             try:
-                response = requests.get(self.api_url, params=params)
+                response = requests.get(url, params=params)
+                print(f"[DEBUG] prayer_times: API {date.strftime('%Y-%m-%d')} params={params} status_code={response.status_code}")
+                print(f"[DEBUG] prayer_times: API raw response: {response.text}")
                 if response.status_code == 200:
                     data = response.json()
+                    print(f"[DEBUG] prayer_times: API parsed response: {data}")
                     if data['code'] == 200:
                         times = data['data']['timings']
                         current_times = {prayer: times[prayer] for prayer in self.prayer_times}
+                        print(f"[DEBUG] prayer_times: API {date.strftime('%Y-%m-%d')} current_times={current_times}")
                         prayer_times_data[date.strftime('%Y-%m-%d')] = current_times
             except Exception as e:
                 print(f"Error fetching prayer times for {date}: {str(e)}")
