@@ -60,9 +60,12 @@ class NextPrayerTimeBox(GridLayout):
         # Запускаем обновление каждую минуту
         self._update_event = None
         
+        # Немедленное обновление времени при создании виджета
+        self.update_time()
+        
     def on_kv_post(self, *args):
         # Запускаем таймер после инициализации виджета в дереве
-        self._update_event = Clock.schedule_interval(lambda dt: self.update_time(), 1)  # Обновляем каждую секунду
+        self._update_event = Clock.schedule_interval(lambda dt: self.update_time(), 60)  # Обновляем каждую минуту
         
     def update_time(self):
         """Обновляет отображаемое время до следующей молитвы"""
