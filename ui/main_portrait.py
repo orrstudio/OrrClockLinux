@@ -2,7 +2,7 @@ from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
 from kivy.core.window import Window
 import locale
-from ui.main_portrait_prayer_times import create_prayer_times_layout, create_next_time_layout
+from ui.main_portrait_prayer_times import create_prayer_times_layout, create_next_time_layout, PrayerTimesBox
 from logic.date_formatted import create_gregorian_date_label, create_hijri_date_label, get_formatted_dates
 
 def create_line_label(base_font_size):
@@ -49,8 +49,8 @@ def create_portrait_widgets(self, portrait_layout):
     portrait_layout.add_widget(nex_time_layout)
     portrait_layout.add_widget(create_line_label(base_font_size))  # line_label2
     
-    # Добавляем layout с временами молитв
-    prayer_times_layout = create_prayer_times_layout(self, base_font_size)
-    portrait_layout.add_widget(prayer_times_layout)
+    # Добавляем реактивный layout с временами молитв
+    prayer_times_box = PrayerTimesBox(base_font_size=base_font_size)
+    portrait_layout.add_widget(prayer_times_box)
     
     return portrait_layout
