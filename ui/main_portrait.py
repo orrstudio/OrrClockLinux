@@ -44,11 +44,12 @@ def create_portrait_widgets(self, portrait_layout):
     next_time_widget = NextPrayerTimeBox(base_font_size=base_font_size)
 
     # Добавляем виджеты в layout в нужном порядке
-    portrait_layout.add_widget(create_space_label(base_font_size))
-    portrait_layout.add_widget(date_hijri_label)
-    portrait_layout.add_widget(create_line_label(base_font_size))  # line_label2
-    portrait_layout.add_widget(next_time_widget)
-    portrait_layout.add_widget(create_line_label(base_font_size))  # line_label2
+    portrait_layout.add_widget(create_space_label(base_font_size))  # Пустое пространство
+    portrait_layout.add_widget(create_line_label(base_font_size))   # Линия-разделитель
+    portrait_layout.add_widget(date_hijri_label)                    # Метка с датой Хиджры
+    portrait_layout.add_widget(create_line_label(base_font_size))   # Линия-разделитель
+    portrait_layout.add_widget(next_time_widget)                    # Виджет с временем до следующей молитвы
+    portrait_layout.add_widget(create_line_label(base_font_size))   # Линия-разделитель
     
     # Добавляем реактивный layout с временами молитв
     self.prayer_times_box = PrayerTimesBox(base_font_size=base_font_size)
