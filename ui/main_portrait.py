@@ -2,7 +2,8 @@ from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
 from kivy.core.window import Window
 import locale
-from ui.main_portrait_prayer_times import create_prayer_times_layout, create_next_time_layout, PrayerTimesBox
+from ui.main_portrait_prayer_times import create_prayer_times_layout, PrayerTimesBox
+from ui.next_prayer_time_box import NextPrayerTimeBox
 from logic.date_formatted import create_gregorian_date_label, create_hijri_date_label, get_formatted_dates
 
 def create_line_label(base_font_size):
@@ -39,14 +40,14 @@ def create_portrait_widgets(self, portrait_layout):
     # Создаем Label для даты Хиджры (включает обе даты)
     date_hijri_label = create_hijri_date_label(base_font_size)
     
-    # Создаем GridLayout для NextTimeName и NextTimeNumbers
-    nex_time_layout = create_next_time_layout(self, base_font_size)
+    # Создаем виджет с временем до следующей молитвы (автообновляется каждую минуту)
+    next_time_widget = NextPrayerTimeBox(base_font_size=base_font_size)
 
     # Добавляем виджеты в layout в нужном порядке
     portrait_layout.add_widget(create_space_label(base_font_size))
     portrait_layout.add_widget(date_hijri_label)
     portrait_layout.add_widget(create_line_label(base_font_size))  # line_label2
-    portrait_layout.add_widget(nex_time_layout)
+    portrait_layout.add_widget(next_time_widget)
     portrait_layout.add_widget(create_line_label(base_font_size))  # line_label2
     
     # Добавляем реактивный layout с временами молитв
