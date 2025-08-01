@@ -12,14 +12,14 @@ def create_line_label(base_font_size):
         font_name='FontSourceCodePro-Regular',
         height=base_font_size * 0.1,  # Фиксированная высота
         size_hint_y=None,  # Нужно для фиксированной высоты
-        color=(0.8, 0.7, 0.1, 1)  # Тускло-желтый цвет
+        color=(0.6, 0.5, 0.0, 1)  # Тёмно-жёлтый цвет для линий
     )
 
 def create_hijri_date_label(base_font_size):
     from logic.date_formatted import create_hijri_date_label as original_create_hijri_date_label
     label = original_create_hijri_date_label(base_font_size)
-    # Устанавливаем тускло-желтый цвет для даты
-    label.color = (0.8, 0.7, 0.1, 1)
+    # Устанавливаем жёлтый цвет для даты (как в настройках часов)
+    label.color = (1, 1, 0, 1)
     return label
 
 def create_space_label(base_font_size):

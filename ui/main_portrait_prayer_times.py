@@ -80,12 +80,18 @@ class PrayerTimesBox(GridLayout):
         # Update current prayer highlighting
         self.update_current_prayer()
 
-    def get_current_prayer(self, current_time):
-        """Determine the current active prayer based on time"""
+    def get_prayer_info(self, current_time):
+        """
+        Возвращает кортеж (current_prayer, next_prayer) на основе текущего времени.
+        current_prayer - текущая активная молитва
+        next_prayer - следующая молитва после текущей
+        """
         prayer_times = prayer_times_manager.get_prayer_times()
         current_prayer = None
+        next_prayer = None
+        found_current = False
         
-        # Convert prayer times to time objects
+        # Конвертируем времена молитв в объекты времени
         prayer_times_list = []
         for prayer_name, time_str in prayer_times.items():
             try:
@@ -94,38 +100,53 @@ class PrayerTimesBox(GridLayout):
             except (ValueError, AttributeError):
                 continue
         
-        # Sort by time
+        # Сортируем по времени
         prayer_times_list.sort(key=lambda x: x[1])
         
-        # Find current prayer (last one that has started)
-        for prayer_name, prayer_time in prayer_times_list:
+        # Находим текущую молитву и следующую за ней
+        for i, (prayer_name, prayer_time) in enumerate(prayer_times_list):
             if prayer_time > current_time:
+                if not found_current:
+                    # Если это первое время больше текущего, то предыдущая молитва - текущая
+                    current_prayer = prayer_times_list[i-1][0] if i > 0 else prayer_times_list[-1][0]
+                    next_prayer = prayer_name
                 break
             current_prayer = prayer_name
+            next_prayer = prayer_times_list[0][0] if i == len(prayer_times_list) - 1 else None
         
-        # If current time is after the last prayer, use the last prayer
+        # Если текущее время после последней молитвы, то текущая - последняя, следующая - первая
         if current_prayer is None and prayer_times_list:
             current_prayer = prayer_times_list[-1][0]
-            
-        return current_prayer
+            next_prayer = prayer_times_list[0][0]
+        
+        return current_prayer, next_prayer
     
     def update_current_prayer(self, *args):
         current_time = datetime.now().time()
-        new_current_prayer = self.get_current_prayer(current_time)
+        current_prayer, next_prayer = self.get_prayer_info(current_time)
         
-        # Update colors for all prayers
+        # Цвета из настроек часов
+        COLOR_BRIGHT_AQUA = (0.0, 1.0, 1.0, 1.0)    # Аквамарин (aqua)
+        COLOR_YELLOW = (1.0, 1.0, 0.0, 1.0)         # Жёлтый (yellow) - используется для следующей молитвы
+        COLOR_DARK_YELLOW = (0.6, 0.5, 0.0, 1)      # Тёмно-жёлтый (неактивные элементы)
+        
+        # Обновляем цвета для всех молитв
         for api_key in self.prayer_name_labels:
-            if api_key == new_current_prayer:
-                # Highlight current prayer - both name and time in bright aqua
-                self.prayer_name_labels[api_key].color = (0.0, 1.0, 1.0, 1.0)  # Bright aqua
-                self.prayer_time_labels[api_key].color = (0.0, 1.0, 1.0, 1.0)  # Bright aqua
+            if api_key == current_prayer:
+                # Текущая молитва - яркий аквамарин
+                self.prayer_name_labels[api_key].color = COLOR_BRIGHT_AQUA
+                self.prayer_time_labels[api_key].color = COLOR_BRIGHT_AQUA
+            elif api_key == next_prayer:
+                # Следующая молитва - жёлтый (как в настройках часов)
+                self.prayer_name_labels[api_key].color = COLOR_YELLOW
+                self.prayer_time_labels[api_key].color = COLOR_YELLOW
             else:
-                # Set inactive prayers to dark yellow
-                self.prayer_name_labels[api_key].color = (0.6, 0.5, 0.0, 1)  # Dark yellow
-                self.prayer_time_labels[api_key].color = (0.6, 0.5, 0.0, 1)  # Dark yellow
+                # Остальные молитвы - тёмно-жёлтый
+                self.prayer_name_labels[api_key].color = COLOR_DARK_YELLOW
+                self.prayer_time_labels[api_key].color = COLOR_DARK_YELLOW
         
-        # Update current prayer reference
-        self.current_prayer = new_current_prayer
+        # Обновляем ссылку на текущую молитву
+        self.current_prayer = current_prayer
     
     def on_parent(self, widget, parent):
         # Automatically unsubscribe when removed from screen
