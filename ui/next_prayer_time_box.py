@@ -30,27 +30,33 @@ class NextPrayerTimeBox(GridLayout):
         self.padding = [0, base_font_size * 0, 0, base_font_size * 0]  # Добавили отступы сверху и снизу
         
         # Создаем иконки молитвенного времени (используем иконку prayer_times из Material Symbols)
+        # Тускло-желтый цвет для иконок (RGBA)
+        dull_yellow = (0.8, 0.7, 0.1, 1)  # Настроен на тускло-желтый
+        
+        # Левая иконка
         self.prayer_icon_left = Label(
             text='\ueab2',  # Код иконки prayer_times из Material Symbols
             font_name=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'fonts', 'MaterialSymbolsOutlined[FILL,GRAD,opsz,wght].ttf'),
             font_size=base_font_size * 0.5,
-            color=(1, 1, 1, 1)
+            color=dull_yellow  # Тускло-желтый цвет
         )
         
+        # Текст времени (красный)
         self.time_label = Label(
             text='00:00',
             font_name='FontDSEG7-Bold',
             font_size=base_font_size * 0.55,
-            color=(1, 1, 1, 1),
+            color=(1, 0, 0, 1),  # Красный цвет
             halign='center',
             size_hint_x=1
         )
         
+        # Правая иконка
         self.prayer_icon_right = Label(
             text='\uf353',  # Код иконки prayer_times из Material Symbols
             font_name=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'fonts', 'MaterialSymbolsOutlined[FILL,GRAD,opsz,wght].ttf'),
             font_size=base_font_size * 0.5,
-            color=(1, 1, 1, 1)
+            color=dull_yellow  # Тускло-желтый цвет
         )
         
         # Добавляем виджеты в layout

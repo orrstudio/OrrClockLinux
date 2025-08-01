@@ -34,7 +34,7 @@ class PrayerTimesBox(GridLayout):
                 text=prayer_name,
                 font_name='FontSourceCodePro-Regular',
                 font_size=self.base_font_size * 0.4,
-                color=(1, 1, 1, 1),
+                color=(0.8, 0.7, 0.1, 1),  # Тускло-желтый цвет
                 halign='left',
                 text_size=(self.width * 0.6, None),
                 size_hint_x=0.75
@@ -45,7 +45,7 @@ class PrayerTimesBox(GridLayout):
                 text=prayer_time,
                 font_name='FontDSEG7-Bold',
                 font_size=self.base_font_size * 0.45,
-                color=(1, 1, 1, 1),
+                color=(0.0, 0.75, 0.75, 1.0),  # Аквамариновый цвет
                 halign='right',
                 text_size=(self.width * 0.4, None),
                 size_hint_x=0.4
@@ -100,7 +100,7 @@ def create_prayer_times_layout(self, base_font_size):
             text=prayer_name,
             font_name='FontSourceCodePro-Regular',
             font_size=base_font_size * 0.4,  # Маленький размер
-            color=(1, 1, 1, 1),  # Белый цвет
+            color=(0.8, 0.7, 0.1, 1),  # Тускло-желтый цвет
             halign='left',
             text_size=(prayer_times_layout.width * 0.6, None),
             size_hint_x=0.75  # Занимает большую часть ширины
@@ -114,7 +114,7 @@ def create_prayer_times_layout(self, base_font_size):
             text=prayer_time,
             font_name='FontDSEG7-Bold',
             font_size=base_font_size * 0.45,  # Большой размер шрифта
-            color=(1, 1, 1, 1),  # Белый цвет
+            color=(0.0, 0.75, 0.75, 1.0),  # Аквамариновый цвет
             halign='right',
             text_size=(prayer_times_layout.width * 0.4, None),
             size_hint_x=0.4  # Занимает меньшую часть ширины

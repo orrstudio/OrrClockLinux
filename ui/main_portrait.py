@@ -10,9 +10,17 @@ def create_line_label(base_font_size):
     return Label(
         text='―' * 150,  # Много тире для линии
         font_name='FontSourceCodePro-Regular',
-        height=base_font_size * 0.1, # Фиксированная высота
+        height=base_font_size * 0.1,  # Фиксированная высота
         size_hint_y=None,  # Нужно для фиксированной высоты
+        color=(0.8, 0.7, 0.1, 1)  # Тускло-желтый цвет
     )
+
+def create_hijri_date_label(base_font_size):
+    from logic.date_formatted import create_hijri_date_label as original_create_hijri_date_label
+    label = original_create_hijri_date_label(base_font_size)
+    # Устанавливаем тускло-желтый цвет для даты
+    label.color = (0.8, 0.7, 0.1, 1)
+    return label
 
 def create_space_label(base_font_size):
     return Label(
