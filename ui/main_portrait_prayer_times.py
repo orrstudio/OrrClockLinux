@@ -42,7 +42,7 @@ class PrayerTimesBox(GridLayout):
                 text=prayer_name,
                 font_name='FontSourceCodePro-Regular',
                 font_size=self.base_font_size * 0.4,
-                color=(0.8, 0.7, 0.1, 1),  # Dull yellow by default
+                color=(0.6, 0.5, 0.0, 1),  # Dark yellow for inactive prayer names
                 halign='left',
                 text_size=(self.width * 0.6, None),
                 size_hint_x=0.75
@@ -55,7 +55,7 @@ class PrayerTimesBox(GridLayout):
                 text=prayer_time,
                 font_name='FontDSEG7-Bold',
                 font_size=self.base_font_size * 0.45,
-                color=(0.0, 0.75, 0.75, 1.0),  # Aqua by default
+                color=(0.6, 0.5, 0.0, 1),  # Dark yellow for inactive prayer times
                 halign='right',
                 text_size=(self.width * 0.4, None),
                 size_hint_x=0.4
@@ -110,26 +110,22 @@ class PrayerTimesBox(GridLayout):
         return current_prayer
     
     def update_current_prayer(self, *args):
-        """Update the current prayer highlighting"""
         current_time = datetime.now().time()
         new_current_prayer = self.get_current_prayer(current_time)
         
-        # If current prayer hasn't changed, do nothing
-        if new_current_prayer == self.current_prayer:
-            return
-            
-        # Remove highlight from previous current prayer
-        if self.current_prayer in self.prayer_name_labels:
-            self.prayer_name_labels[self.current_prayer].color = (0.8, 0.7, 0.1, 1)  # Dull yellow
-            self.prayer_time_labels[self.current_prayer].color = (0.0, 0.75, 0.75, 1.0)  # Aqua
+        # Update colors for all prayers
+        for api_key in self.prayer_name_labels:
+            if api_key == new_current_prayer:
+                # Highlight current prayer - both name and time in bright aqua
+                self.prayer_name_labels[api_key].color = (0.0, 1.0, 1.0, 1.0)  # Bright aqua
+                self.prayer_time_labels[api_key].color = (0.0, 1.0, 1.0, 1.0)  # Bright aqua
+            else:
+                # Set inactive prayers to dark yellow
+                self.prayer_name_labels[api_key].color = (0.6, 0.5, 0.0, 1)  # Dark yellow
+                self.prayer_time_labels[api_key].color = (0.6, 0.5, 0.0, 1)  # Dark yellow
         
-        # Set new current prayer
+        # Update current prayer reference
         self.current_prayer = new_current_prayer
-        
-        # Highlight new current prayer
-        if self.current_prayer in self.prayer_name_labels:
-            self.prayer_name_labels[self.current_prayer].color = (1.0, 1.0, 0.0, 1.0)  # Bright yellow
-            self.prayer_time_labels[self.current_prayer].color = (0.0, 1.0, 1.0, 1.0)  # Bright aqua
     
     def on_parent(self, widget, parent):
         # Automatically unsubscribe when removed from screen
