@@ -1,8 +1,11 @@
 from kivy.clock import Clock
+import os
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
+from kivy.uix.image import Image
 from kivy.properties import StringProperty, NumericProperty
 from datetime import datetime
+from kivy.core.text import LabelBase
 from logic.prayer_times import prayer_times_manager
 from logic.prayer_time_calculator import prayer_time_calculator
 
@@ -17,21 +20,21 @@ class NextPrayerTimeBox(GridLayout):
     base_font_size = NumericProperty(20)
     
     def __init__(self, base_font_size, **kwargs):
+        # Используем SVG иконки
         super().__init__(**kwargs)
         self.base_font_size = base_font_size
         self.cols = 3
         self.size_hint_x = 1
         self.size_hint_y = None
-        self.height = base_font_size * 0.7
+        self.height = base_font_size * 0.7  # Увеличили высоту контейнера
+        self.padding = [0, base_font_size * 0, 0, base_font_size * 0]  # Добавили отступы сверху и снизу
         
-        # Создаем виджеты
-        self.next_time_name_1_label = Label(
-            text='növbəti\nnamaza',
-            font_name='FontSourceCodePro-Regular',
-            font_size=base_font_size * 0.2,
-            color=(1, 1, 1, 1),
-            halign='right',
-            size_hint_x=1
+        # Создаем иконки молитвенного времени (используем иконку prayer_times из Material Symbols)
+        self.prayer_icon_left = Label(
+            text='\ueab2',  # Код иконки prayer_times из Material Symbols
+            font_name=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'fonts', 'MaterialSymbolsOutlined[FILL,GRAD,opsz,wght].ttf'),
+            font_size=base_font_size * 0.5,
+            color=(1, 1, 1, 1)
         )
         
         self.time_label = Label(
@@ -43,19 +46,17 @@ class NextPrayerTimeBox(GridLayout):
             size_hint_x=1
         )
         
-        self.next_time_name_2_label = Label(
-            text='dəqiqə\nqalır',
-            font_name='FontSourceCodePro-Regular',
-            font_size=base_font_size * 0.2,
-            color=(1, 1, 1, 1),
-            halign='left',
-            size_hint_x=1
+        self.prayer_icon_right = Label(
+            text='\uf353',  # Код иконки prayer_times из Material Symbols
+            font_name=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'fonts', 'MaterialSymbolsOutlined[FILL,GRAD,opsz,wght].ttf'),
+            font_size=base_font_size * 0.5,
+            color=(1, 1, 1, 1)
         )
         
         # Добавляем виджеты в layout
-        self.add_widget(self.next_time_name_1_label)
+        self.add_widget(self.prayer_icon_left)
         self.add_widget(self.time_label)
-        self.add_widget(self.next_time_name_2_label)
+        self.add_widget(self.prayer_icon_right)
         
         # Запускаем обновление каждую минуту
         self._update_event = None
