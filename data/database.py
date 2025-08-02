@@ -86,6 +86,7 @@ class SettingsDatabase:
     def apply_window_settings(self, window):
         """
         Применяет настройки окна
+        Если настройки не найдены в базе данных, устанавливает размеры по умолчанию 715x1000
         """
         settings = self.get_window_settings()
         if settings:
@@ -93,3 +94,9 @@ class SettingsDatabase:
             window.size = (width, height)
             window.left = x
             window.top = y
+        else:
+            # Устанавливаем размеры по умолчанию, если настройки не найдены
+            window.size = (715, 1000)
+            # Центрируем окно на экране
+            window.left = (window.system_size[0] - 715) // 2
+            window.top = (window.system_size[1] - 1000) // 2
