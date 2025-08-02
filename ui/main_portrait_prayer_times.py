@@ -12,6 +12,7 @@ class PrayerTimesBox(GridLayout):
     def __init__(self, base_font_size, **kwargs):
         super().__init__(cols=2, size_hint_x=1, size_hint_y=None, height=base_font_size * 4.0, padding=(base_font_size * 0.15, 0), **kwargs)
         self.base_font_size = base_font_size
+        self._update_event = None  # Для хранения ссылки на событие обновления
         # Маппинг между азербайджанскими названиями и ключами API
         self.prayer_mapping = {
             'Təhəccüd ---': 'Midnight',
@@ -22,10 +23,14 @@ class PrayerTimesBox(GridLayout):
             'Axşam ------': 'Maghrib',
             'Gecə -------': 'Isha'
         }
-        self.prayer_labels = {}  # {api_key: Label}
+        self.prayer_labels = {}  # {api_key: {'time_label': Label, 'name_label': Label}}
         self._build_layout()
         prayer_times_manager.add_update_listener(self.refresh_prayer_times)
         self.refresh_prayer_times()
+        
+        # Запускаем таймер для обновления активной молитвы каждую минуту
+        from kivy.clock import Clock
+        self._update_event = Clock.schedule_interval(lambda dt: self.refresh_prayer_times(), 60)
 
     def _build_layout(self):
         prayer_times_data = prayer_times_manager.get_prayer_times()
@@ -53,17 +58,78 @@ class PrayerTimesBox(GridLayout):
             prayer_time_label.bind(size=prayer_time_label.setter('text_size'))
             self.add_widget(prayer_name_label)
             self.add_widget(prayer_time_label)
-            self.prayer_labels[api_key] = prayer_time_label
+            self.prayer_labels[api_key] = {
+                'time_label': prayer_time_label,
+                'name_label': prayer_name_label
+            }
 
     def refresh_prayer_times(self):
         prayer_times_data = prayer_times_manager.get_prayer_times()
-        for api_key, label in self.prayer_labels.items():
-            label.text = prayer_times_data.get(api_key, '00:00')
+        current_time = datetime.now().time()
+        
+        # Получаем текущую активную молитву
+        current_prayer = None
+        prayer_times_list = []
+        
+        # Собираем все времена молитв и сортируем их
+        for api_key, time_str in prayer_times_data.items():
+            if api_key in self.prayer_mapping.values():
+                try:
+                    prayer_time = datetime.strptime(time_str, '%H:%M').time()
+                    prayer_times_list.append((api_key, prayer_time))
+                except (ValueError, TypeError):
+                    continue
+        
+        # Сортируем времена молитв
+        prayer_times_list.sort(key=lambda x: x[1])
+        
+        # Находим текущую активную молитву (последняя молитва, время которой прошло)
+        # и следующую молитву
+        current_prayer = None
+        next_prayer = None
+        
+        for i, (api_key, prayer_time) in enumerate(prayer_times_list):
+            if prayer_time > current_time:
+                next_prayer = api_key
+                break
+            current_prayer = api_key
+        
+        # Если текущее время позже последней молитвы, то активной считается последняя молитва дня,
+        # а следующей - первая молитва следующего дня
+        if current_prayer is None and prayer_times_list:
+            current_prayer = prayer_times_list[-1][0]
+        if next_prayer is None and prayer_times_list:
+            next_prayer = prayer_times_list[0][0]
+        
+        # Обновляем текст и цвет для всех меток
+        for api_key, labels in self.prayer_labels.items():
+            # Обновляем текст времени молитвы
+            labels['time_label'].text = prayer_times_data.get(api_key, '00:00')
+            
+            # Устанавливаем цвета
+            is_active = api_key == current_prayer
+            is_next = api_key == next_prayer
+            
+            if is_active:
+                # Аквамариновый для активной молитвы
+                color = (0, 1, 1, 1)
+            elif is_next:
+                # Жёлтый для следующей молитвы
+                color = (1, 1, 0, 1)
+            else:
+                # Темно-желтый для неактивных молитв
+                color = (0.6, 0.5, 0.0, 1)
+            
+            # Применяем цвет к времени и названию молитвы
+            labels['time_label'].color = color
+            labels['name_label'].color = color
 
     def on_parent(self, widget, parent):
         # Автоматическая отписка при удалении с экрана
         if parent is None:
             prayer_times_manager.remove_update_listener(self.refresh_prayer_times)
+            if hasattr(self, '_update_event') and self._update_event:
+                self._update_event.cancel()
 
 def create_prayer_times_layout(self, base_font_size):
     """Создает layout для отображения времён молитв"""
