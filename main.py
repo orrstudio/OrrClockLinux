@@ -111,7 +111,7 @@ class MainWindowApp(App):
         self.title_label = Label(
             text=self.get_current_time(), 
             font_name="fonts/DSEG-Classic/DSEG7Classic-Bold.ttf",
-            color=(0, 1, 0, 1),  # зеленый цвет как у часов
+            color=(0, 1, 0, 1),  # Зеленый цвет для часов
             size_hint_x=1,  # занимает всю ширину
             size_hint_y=None,  # отключаем автоматическую высоту
             height=str(Window.width * 0.3) + 'dp',  # высота зависит от ширины

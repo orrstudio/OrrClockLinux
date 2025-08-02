@@ -134,7 +134,7 @@ def create_gregorian_date_label(base_font_size):
     date_label = Label(
         text=marked_text,
         markup=True,  # Включаем поддержку разметки
-        color=(1, 1, 1, 1),
+        color=(1, 1, 0, 1),  # Желтый цвет для дат
         size_hint_x=1,
         size_hint_y=None,
         height=base_font_size * 0.3,  # Увеличиваем высоту для разных размеров
@@ -186,7 +186,7 @@ def create_hijri_date_label(base_font_size):
     date_label = Label(
         text=marked_text,
         markup=True,
-        color=(1, 1, 1, 1),
+        color=(1, 1, 0, 1),  # Желтый цвет для дат
         size_hint_x=1,
         size_hint_y=None,
         height=window_width * 0.06,  # Высота тоже адаптивная

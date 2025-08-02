@@ -10,6 +10,7 @@ def create_line_label(base_font_size):
     return Label(
         text='―' * 150,  # Много тире для линии
         font_name='FontSourceCodePro-Regular',
+        color=(0.6, 0.5, 0.0, 1),  # Темно-желтый цвет для линий
         height=base_font_size * 0.1, # Фиксированная высота
         size_hint_y=None,  # Нужно для фиксированной высоты
     )

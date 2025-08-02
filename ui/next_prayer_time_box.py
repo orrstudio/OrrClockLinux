@@ -34,14 +34,14 @@ class NextPrayerTimeBox(GridLayout):
             text='\ueab2',  # Код иконки prayer_times из Material Symbols
             font_name=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'fonts', 'MaterialSymbolsOutlined[FILL,GRAD,opsz,wght].ttf'),
             font_size=base_font_size * 0.5,
-            color=(1, 1, 1, 1)
+            color=(0.6, 0.5, 0.0, 1)  # Темно-желтый для иконок
         )
         
         self.time_label = Label(
             text='00:00',
             font_name='FontDSEG7-Bold',
             font_size=base_font_size * 0.55,
-            color=(1, 1, 1, 1),
+            color=(1, 0, 0, 1),  # Красный для времени следующей молитвы
             halign='center',
             size_hint_x=1
         )
@@ -50,7 +50,7 @@ class NextPrayerTimeBox(GridLayout):
             text='\uf353',  # Код иконки prayer_times из Material Symbols
             font_name=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'fonts', 'MaterialSymbolsOutlined[FILL,GRAD,opsz,wght].ttf'),
             font_size=base_font_size * 0.5,
-            color=(1, 1, 1, 1)
+            color=(0.6, 0.5, 0.0, 1)  # Темно-желтый для иконок
         )
         
         # Добавляем виджеты в layout
