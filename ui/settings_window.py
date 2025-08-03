@@ -176,9 +176,6 @@ class SettingsWindow(ModalView):
         'blue': (0, 0, 1, 1),
         'red': (1, 0, 0, 1),
         'yellow': (1, 1, 0, 1),
-        'magenta': (1, 0, 1, 1),
-        'pink': (1, 0.75, 0.8, 1),
-        'grey': (0.7, 0.7, 0.7, 1),
         'white': (1, 1, 1, 1)
     }
 
@@ -442,9 +439,6 @@ class SettingsWindow(ModalView):
             'blue': (0, 0, 1, 1),
             'red': (1, 0, 0, 1),
             'yellow': (1, 1, 0, 1),
-            'magenta': (1, 0, 1, 1),
-            'pink': (1, 0.75, 0.8, 1),
-            'grey': (0.7, 0.7, 0.7, 1),
             'white': (1, 1, 1, 1)
         }
         return colors.get(color_name, (0, 1, 0, 1))  
@@ -458,9 +452,6 @@ class SettingsWindow(ModalView):
             (0, 0, 1, 1): 'blue',
             (1, 0, 0, 1): 'red',
             (1, 1, 0, 1): 'yellow',
-            (1, 0, 1, 1): 'magenta',
-            (1, 0.75, 0.8, 1): 'pink',
-            (0.7, 0.7, 0.7, 1): 'grey',
             (1, 1, 1, 1): 'white'
         }
         return colors.get(color_tuple, 'lime')  
