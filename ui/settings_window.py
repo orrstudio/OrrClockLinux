@@ -245,14 +245,15 @@ class SettingsWindow(ModalView):
             size_hint=(1, 1)
         )
         
-        # Сетка цветов
+        # Сетка цветов (в один ряд)
         colors_grid = GridLayout(
-            cols=3,
-            spacing=dp(10),
+            cols=6,  # 6 цветов в один ряд
+            spacing=dp(5),  # Уменьшаем отступы между кнопками
             size_hint_y=None,
-            padding=[dp(20), dp(10)]
+            padding=[dp(10), dp(15)],  # Уменьшаем отступы по краям
+            row_default_height=dp(40),  # Высота строки
+            row_force_default=True  # Принудительно применяем высоту строки
         )
-        colors_grid.bind(minimum_height=colors_grid.setter('height'))
         
         # Создаем кнопки цветов
         for color_name, color_tuple in self.colors.items():
@@ -260,8 +261,8 @@ class SettingsWindow(ModalView):
                 color_name=color_name,
                 color_tuple=color_tuple,
                 text='',
-                size_hint=(1, None),
-                height=dp(50),
+                size_hint=(1, 1),  # Занимаем всю доступную высоту
+                height=dp(40),  # Уменьшаем высоту кнопок
                 background_normal=''
             )
             color_button.bind(on_release=self._on_color_button_press)
@@ -348,7 +349,7 @@ class SettingsWindow(ModalView):
         button.canvas.after.clear()
         with button.canvas.after:
             Color(1, 1, 1, 1)
-            self.border_line = Line(rectangle=(button.x, button.y, button.width, button.height), width=2)
+            self.border_line = Line(rectangle=(button.x, button.y, button.width, button.height), width=1.5)
         
         # Привязываем обновление рамки к изменению размера и позиции кнопки
         button.bind(pos=self._update_border, size=self._update_border)
