@@ -10,4 +10,8 @@ class ColorButton(Button):
         self.background_color = color_tuple
         self.background_normal = ''
         self.size_hint = (1, None)
-        self.height = self.width  # Квадратная кнопка
+        self.bind(width=self._update_height)
+        
+    def _update_height(self, instance, width):
+        # Устанавливаем высоту равной половине ширины
+        self.height = width / 2

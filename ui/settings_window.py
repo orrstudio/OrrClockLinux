@@ -6,56 +6,23 @@ Settings Window Module.
 - Компактный заголовок
 - Сетка из 9 цветов с выделением активного белой рамкой
 - Кнопки Save/Cancel для применения/отмены изменений
-
-Текущая структура:
-
-ModalView (SettingsWindow)
-  └─ main_layout (GridLayout)
-      ├─ title_layout (GridLayout)
-      │    └─ title_label (Label)
-      ├─ content_layout (ScrollView)
-      │    └─ colors_grid (GridLayout)
-      │         └─ color_buttons (ColorButton) x9
-      └─ bottom_panel (GridLayout)
-           ├─ cancel_button (Button)
-           └─ accept_button (Button)
-
-Все компоненты:
-
-1. main_layout:    GridLayout с cols=1, 
-                   spacing=dp(0), size_hint=(1, 1)
-2. title_layout:   GridLayout с cols=1, 
-                   size_hint_y=None, 
-                   height=dp(30), 
-                   padding=[dp(20), 0]
-3. content_layout: ScrollView с do_scroll_x=False, 
-                   do_scroll_y=True, 
-                   size_hint=(1, 1)
-4. colors_grid:    GridLayout с cols=3, 
-                   spacing=dp(10), 
-                   size_hint_y=None, 
-                   padding=[dp(20), dp(10)]
-5. bottom_panel:   GridLayout с cols=2, 
-                   size_hint_y=None, 
-                   height=dp(60), 
-                   spacing=dp(10), 
-                   padding=[dp(20), dp(5)]
-
 """
 
-from kivy.uix.modalview import ModalView
-from ui.settings_color import ColorButton
+import logging
+
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.scrollview import ScrollView
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
-from kivy.uix.scrollview import ScrollView
+from kivy.uix.modalview import ModalView
+from kivy.uix.button import Button
 from kivy.graphics import Color, Line, Rectangle
 from kivy.metrics import dp, sp
 from kivy.core.window import Window
 from kivy.clock import Clock
-from kivy.uix.button import Button
+from ui.settings_color import ColorButton
 from data.database import SettingsDatabase
-import logging
+
 logger = logging.getLogger(__name__)
 
 class SettingsCard(GridLayout):
@@ -245,14 +212,39 @@ class SettingsWindow(ModalView):
             size_hint=(1, 1)
         )
         
+        # Основной вертикальный контейнер для блока выбора цвета
+        color_section = GridLayout(
+            cols=1,  # Одна колонка для вертикального расположения
+            size_hint_y=None,
+            height=dp(30),  # Общая высота блока
+            padding=[dp(20), dp(5)],
+            spacing=dp(5),
+            row_force_default=True,
+            row_default_height=dp(30)  # Высота строки по умолчанию
+        )
+        
+        # Заголовок блока выбора цвета
+        color_title = Label(
+            text='Saatın rəngi',
+            color=(1, 1, 1, 1),
+            font_size=sp(22),
+            size_hint_y=None,
+            height=dp(25),  # Уменьшаем высоту лейбла
+            halign='left',
+            valign='middle',
+            text_size=(Window.width - dp(40), None),  # Ширина с учетом отступов
+            shorten=True,  # Разрешаем укорачивание текста
+            shorten_from='right'  # Укорачиваем с конца
+        )
+        # Привязываем обновление размера текста при изменении размера окна
+        Window.bind(width=lambda *args: setattr(color_title, 'text_size', (Window.width - dp(40), None)))
+        
         # Сетка цветов (в один ряд)
         colors_grid = GridLayout(
-            cols=6,  # 6 цветов в один ряд
-            spacing=dp(5),  # Уменьшаем отступы между кнопками
+            cols=6,
+            spacing=dp(5),
             size_hint_y=None,
-            padding=[dp(10), dp(15)],  # Уменьшаем отступы по краям
-            row_default_height=dp(40),  # Высота строки
-            row_force_default=True  # Принудительно применяем высоту строки
+            height=dp(25)  # Фиксированная высота для строки с цветами
         )
         
         # Создаем кнопки цветов
@@ -261,8 +253,7 @@ class SettingsWindow(ModalView):
                 color_name=color_name,
                 color_tuple=color_tuple,
                 text='',
-                size_hint=(1, 1),  # Занимаем всю доступную высоту
-                height=dp(40),  # Уменьшаем высоту кнопок
+                size_hint=(1, 1),
                 background_normal=''
             )
             color_button.bind(on_release=self._on_color_button_press)
@@ -273,8 +264,12 @@ class SettingsWindow(ModalView):
             
             colors_grid.add_widget(color_button)
         
-        # Добавляем сетку цветов в ScrollView
-        content_layout.add_widget(colors_grid)
+        # Собираем блок выбора цвета
+        color_section.add_widget(color_title)  # Добавляем заголовок
+        color_section.add_widget(colors_grid)  # Добавляем сетку цветов
+        
+        # Добавляем блок выбора цвета в ScrollView
+        content_layout.add_widget(color_section)
         
         # Нижняя панель с кнопками
         bottom_panel = GridLayout(
