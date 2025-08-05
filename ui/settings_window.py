@@ -16,6 +16,11 @@ from kivy.uix.label import Label
 from kivy.uix.widget import Widget
 from kivy.uix.modalview import ModalView
 from kivy.uix.button import Button
+from kivy.uix.spinner import Spinner
+from kivy.uix.dropdown import DropDown
+from kivy.uix.popup import Popup
+from kivy.uix.scrollview import ScrollView
+from kivy.uix.boxlayout import BoxLayout
 from kivy.graphics import Color, Line, Rectangle
 from kivy.metrics import dp, sp
 from kivy.core.window import Window
@@ -162,8 +167,26 @@ class SettingsWindow(ModalView):
         self.db = db
         self.main_window = main_window
         self.apply_callback = apply_callback
+        
+        # Получаем текущие настройки
         self.initial_color = self.db.get_setting('color')
+        
+        # Инициализируем переменные для хранения выбранных значений
         self.selected_color = self.initial_color
+        
+        # Загружаем настройки для каждого блока азана отдельно
+        self.selected_azan_spinner = self.db.get_setting('azan_spinner') or 'Azan 1'
+        self.selected_azan_dropdown = self.db.get_setting('azan_dropdown') or 'Azan 1'
+        self.selected_azan_popup = self.db.get_setting('azan_popup') or 'Azan 1'
+        
+        # Проверяем корректность значений
+        valid_azans = ['Azan 1', 'Azan 2', 'Azan 3']
+        if self.selected_azan_spinner not in valid_azans:
+            self.selected_azan_spinner = 'Azan 1'
+        if self.selected_azan_dropdown not in valid_azans:
+            self.selected_azan_dropdown = 'Azan 1'
+        if self.selected_azan_popup not in valid_azans:
+            self.selected_azan_popup = 'Azan 1'
         self.active_button = None  # Инициализируем как None
         
         # Настройка размеров окна
@@ -205,6 +228,15 @@ class SettingsWindow(ModalView):
         )
         title_layout.add_widget(title_label)
         
+        # Основной контейнер для всех секций
+        content_container = GridLayout(
+            cols=1,
+            size_hint_y=None,
+            spacing=0,
+            padding=0
+        )
+        content_container.bind(minimum_height=content_container.setter('height'))
+        
         # Контент (ScrollView)
         content_layout = ScrollView(
             do_scroll_x=False,
@@ -214,30 +246,37 @@ class SettingsWindow(ModalView):
         
         # Основной вертикальный контейнер для блока выбора цвета
         color_section = GridLayout(
-            cols=1,  # Одна колонка для вертикального расположения
+            cols=1,
             size_hint_y=None,
-            height=dp(30),  # Общая высота блока
-            padding=[dp(20), dp(5)],
-            spacing=dp(5),
+            height=dp(110),  # Увеличиваем высоту для учета отступов
+            padding=[dp(20), dp(15), dp(20), dp(20)],  # Отступы: слева, сверху, справа, снизу
+            spacing=dp(10),
             row_force_default=True,
-            row_default_height=dp(30)  # Высота строки по умолчанию
+            row_default_height=dp(30),  # Высота строки по умолчанию
+            size_hint=(1, None)
         )
         
-        # Заголовок блока выбора цвета
+        # Адаптивный заголовок блока выбора цвета
         color_title = Label(
             text='Saatın rəngi',
             color=(1, 1, 1, 1),
             font_size=sp(22),
-            size_hint_y=None,
-            height=dp(25),  # Уменьшаем высоту лейбла
+            size_hint=(1, None),
+            height=dp(30),
             halign='left',
             valign='middle',
-            text_size=(Window.width - dp(40), None),  # Ширина с учетом отступов
-            shorten=True,  # Разрешаем укорачивание текста
-            shorten_from='right'  # Укорачиваем с конца
+            text_size=(Window.width - dp(40), None),
+            shorten=True,
+            shorten_from='right',
+            padding=(0, dp(5))
         )
-        # Привязываем обновление размера текста при изменении размера окна
-        Window.bind(width=lambda *args: setattr(color_title, 'text_size', (Window.width - dp(40), None)))
+        
+        def update_color_title_size(*args):
+            color_title.text_size = (Window.width - dp(40), None)
+            color_title.texture_update()
+        
+        Window.bind(width=update_color_title_size)
+        Clock.schedule_once(update_color_title_size)
         
         # Сетка цветов (в один ряд)
         colors_grid = GridLayout(
@@ -268,8 +307,191 @@ class SettingsWindow(ModalView):
         color_section.add_widget(color_title)  # Добавляем заголовок
         color_section.add_widget(colors_grid)  # Добавляем сетку цветов
         
-        # Добавляем блок выбора цвета в ScrollView
-        content_layout.add_widget(color_section)
+        # Блок выбора азана
+        azan_section = GridLayout(
+            cols=1,
+            size_hint_y=None,
+            height=dp(110),  # Такая же высота, как у блока цветов
+            padding=[dp(20), dp(15), dp(20), dp(20)],
+            spacing=dp(10),
+            size_hint=(1, None)
+        )
+        
+        # Адаптивный заголовок блока выбора азана
+        azan_title = Label(
+            text='Azan səsi',
+            color=(1, 1, 1, 1),
+            font_size=sp(22),
+            size_hint=(1, None),
+            height=dp(30),
+            halign='left',
+            valign='middle',
+            text_size=(Window.width - dp(40), None),
+            padding=(0, dp(5)),
+            shorten=True,
+            shorten_from='right'
+        )
+        
+        def update_azan_title_size(*args):
+            azan_title.text_size = (Window.width - dp(40), None)
+            azan_title.texture_update()
+        
+        Window.bind(width=update_azan_title_size)
+        Clock.schedule_once(update_azan_title_size)
+        
+        # Выпадающий список для выбора азана
+        self.azan_spinner = Spinner(
+            text='Azan 1',
+            values=('Azan 1', 'Azan 2', 'Azan 3'),
+            size_hint_y=None,
+            height=dp(40),
+            background_color=(0.3, 0.3, 0.3, 1),
+            color=(1, 1, 1, 1),
+            font_size=sp(18)
+        )
+        
+        # Обработчик выбора значения
+        self.azan_spinner.bind(text=self.on_azan_selected)
+        
+        # Добавляем виджеты в секцию
+        azan_section.add_widget(azan_title)
+        azan_section.add_widget(self.azan_spinner)
+        
+        # Блок с DropDown
+        dropdown_section = GridLayout(
+            cols=1,
+            size_hint_y=None,
+            height=dp(110),  # Такая же высота, как у остальных блоков
+            padding=[dp(20), dp(15), dp(20), dp(20)],
+            spacing=dp(10),
+            size_hint=(1, None)
+        )
+        
+        # Адаптивный заголовок блока с DropDown
+        dropdown_title = Label(
+            text='Azan (DropDown)',
+            color=(1, 1, 1, 1),
+            font_size=sp(22),
+            size_hint=(1, None),
+            height=dp(30),
+            halign='left',
+            valign='middle',
+            text_size=(Window.width - dp(40), None),
+            padding=(0, dp(5)),
+            shorten=True,
+            shorten_from='right'
+        )
+        
+        def update_dropdown_title_size(*args):
+            dropdown_title.text_size = (Window.width - dp(40), None)
+            dropdown_title.texture_update()
+        
+        Window.bind(width=update_dropdown_title_size)
+        Clock.schedule_once(update_dropdown_title_size)
+        
+        # Кнопка для вызова DropDown
+        self.dropdown_btn = Button(
+            text='Azan 1',
+            size_hint_y=None,
+            height=dp(40),
+            background_color=(0.3, 0.3, 0.3, 1),
+            color=(1, 1, 1, 1),
+            font_size=sp(18)
+        )
+        
+        # Создаем выпадающее меню
+        self.dropdown = DropDown()
+        for item in ['Azan 1', 'Azan 2', 'Azan 3']:
+            btn = Button(
+                text=item, 
+                size_hint_y=None, 
+                height=dp(40),
+                background_color=(0.25, 0.25, 0.25, 1),
+                color=(1, 1, 1, 1)
+            )
+            btn.bind(on_release=lambda btn: self.select_dropdown_item(btn.text))
+            self.dropdown.add_widget(btn)
+        
+        # Привязываем кнопку к выпадающему меню
+        self.dropdown_btn.bind(on_release=self.dropdown.open)
+        
+        # Добавляем элементы в секцию
+        dropdown_section.add_widget(dropdown_title)
+        dropdown_section.add_widget(self.dropdown_btn)
+        
+        # Блок с Popup и ListView
+        popup_section = GridLayout(
+            cols=1,
+            size_hint_y=None,
+            height=dp(110),  # Такая же высота, как у остальных блоков
+            padding=[dp(20), dp(15), dp(20), dp(20)],
+            spacing=dp(10),
+            size_hint=(1, None)
+        )
+        
+        # Адаптивный заголовок блока с Popup
+        popup_title = Label(
+            text='Azan (Popup + ListView)',
+            color=(1, 1, 1, 1),
+            font_size=sp(22),
+            size_hint=(1, None),
+            height=dp(30),
+            halign='left',
+            valign='middle',
+            text_size=(Window.width - dp(40), None),
+            padding=(0, dp(5)),
+            shorten=True,
+            shorten_from='right'
+        )
+        
+        def update_popup_title_size(*args):
+            popup_title.text_size = (Window.width - dp(40), None)
+            popup_title.texture_update()
+        
+        Window.bind(width=update_popup_title_size)
+        Clock.schedule_once(update_popup_title_size)
+        
+        # Кнопка для вызова Popup
+        self.popup_btn = Button(
+            text='Azan 1',
+            size_hint_y=None,
+            height=dp(40),
+            background_color=(0.3, 0.3, 0.3, 1),
+            color=(1, 1, 1, 1),
+            font_size=sp(18)
+        )
+        self.popup_btn.bind(on_release=self.show_azan_popup)
+        
+        # Добавляем элементы в секцию
+        popup_section.add_widget(popup_title)
+        popup_section.add_widget(self.popup_btn)
+        
+        # Добавляем отладочную информацию о размерах
+        def print_sizes(*args):
+            print("\n=== Размеры блоков ===")
+            print(f"Цвета: size={color_section.size}, pos={color_section.pos}")
+            print(f"Азан: size={azan_section.size}, pos={azan_section.pos}")
+            print(f"DropDown: size={dropdown_section.size}, pos={dropdown_section.pos}")
+            print(f"Popup: size={popup_section.size}, pos={popup_section.pos}")
+            print("===================\n")
+        
+        # Добавляем все виджеты в основной контейнер
+        content_container.clear_widgets()  # Очищаем контейнер
+        
+        # Добавляем блоки с отступами
+        content_container.add_widget(color_section)
+        content_container.add_widget(Widget(size_hint_y=None, height=dp(10)))  # Разделитель
+        content_container.add_widget(azan_section)
+        content_container.add_widget(Widget(size_hint_y=None, height=dp(10)))  # Разделитель
+        content_container.add_widget(dropdown_section)
+        content_container.add_widget(Widget(size_hint_y=None, height=dp(10)))  # Разделитель
+        content_container.add_widget(popup_section)
+        
+        # Обновляем размеры после добавления всех виджетов
+        Clock.schedule_once(print_sizes, 0.5)
+        
+        # Добавляем контейнер в ScrollView
+        content_layout.add_widget(content_container)
         
         # Нижняя панель с кнопками
         bottom_panel = GridLayout(
@@ -327,9 +549,20 @@ class SettingsWindow(ModalView):
         Clock.schedule_once(self._add_initial_border, 0)
 
     def _add_initial_border(self, dt):
-        """Добавляет рамку к изначально активной кнопке."""
+        """Добавляет рамку к изначально активной кнопке и инициализирует выбранные азаны."""
         if hasattr(self, 'active_button') and self.active_button is not None:
             self._add_border_to_button(self.active_button)
+            
+        # Устанавливаем выбранные азаны в соответствующих виджетах
+        if hasattr(self, 'azan_spinner') and hasattr(self, 'selected_azan_spinner'):
+            if self.selected_azan_spinner in self.azan_spinner.values:
+                self.azan_spinner.text = self.selected_azan_spinner
+                
+        if hasattr(self, 'dropdown_btn') and hasattr(self, 'selected_azan_dropdown'):
+            self.dropdown_btn.text = self.selected_azan_dropdown
+            
+        if hasattr(self, 'popup_btn') and hasattr(self, 'selected_azan_popup'):
+            self.popup_btn.text = self.selected_azan_popup
     
     def _add_border_to_button(self, button):
         """
@@ -369,18 +602,108 @@ class SettingsWindow(ModalView):
             # Добавляем рамку на новую кнопку
             self._add_border_to_button(button)
             
-            # Обновляем активную кнопку
+            # Сохраняем ссылку на активную кнопку
             self.active_button = button
             
-            # Сохраняем выбранный цвет
+            # Устанавливаем выбранный цвет из нажатой кнопки
             self.selected_color = button.color_name.lower()
+            
+            # Инициализируем выбранные азаны, если они еще не были инициализированы
+            if not hasattr(self, 'selected_azan_spinner'):
+                self.selected_azan_spinner = self.db.get_setting('azan_spinner') or 'Azan 1'
+            if not hasattr(self, 'selected_azan_dropdown'):
+                self.selected_azan_dropdown = self.db.get_setting('azan_dropdown') or 'Azan 1'
+            if not hasattr(self, 'selected_azan_popup'):
+                self.selected_azan_popup = self.db.get_setting('azan_popup') or 'Azan 1'
         except Exception as e:
             logger.error(f"Error in _on_color_button_press: {e}")
 
+    def on_azan_selected(self, spinner, text):
+        """Обработчик выбора азана в Spinner"""
+        self.selected_azan_spinner = text
+        
+    def select_dropdown_item(self, text):
+        """Обработчик выбора азана в DropDown"""
+        self.dropdown_btn.text = text
+        self.selected_azan_dropdown = text
+        self.dropdown.dismiss()
+        
+    def show_azan_popup(self, instance):
+        """Показывает всплывающее окно со списком азанов"""
+        try:
+            # Создаем контейнер содержимого
+            content = BoxLayout(orientation='vertical', spacing=10, padding=10)
+            
+            # Создаем кнопки для выбора азана
+            btn_layout = GridLayout(cols=1, spacing=5, size_hint_y=None)
+            btn_layout.bind(minimum_height=btn_layout.setter('height'))
+            
+            # Добавляем кнопки выбора азана
+            for i in range(1, 4):
+                btn = Button(
+                    text=f'Azan {i}',
+                    size_hint_y=None,
+                    height=dp(44),
+                    background_color=(0.3, 0.3, 0.3, 1),
+                    color=(1, 1, 1, 1)
+                )
+                btn.bind(on_release=lambda btn_instance, num=i: self._on_azan_selected(btn_instance.text))
+                btn_layout.add_widget(btn)
+            
+            # Создаем ScrollView для кнопок
+            scroll = ScrollView(size_hint=(1, 0.8))
+            scroll.add_widget(btn_layout)
+            
+            # Кнопка отмены
+            btn_cancel = Button(
+                text='Отмена',
+                size_hint_y=None,
+                height=dp(44),
+                background_color=(0.7, 0.1, 0.1, 1)
+            )
+            
+            # Добавляем виджеты в контейнер
+            content.add_widget(scroll)
+            content.add_widget(btn_cancel)
+            
+            # Создаем и показываем Popup
+            self.popup = Popup(
+                title='Выберите азан',
+                content=content,
+                size_hint=(0.8, 0.6),
+                background_color=(0.1, 0.1, 0.1, 1),
+                title_color=(1, 1, 1, 1),
+                auto_dismiss=False
+            )
+            
+            # Привязываем кнопку отмены
+            btn_cancel.bind(on_release=lambda x: self.popup.dismiss())
+            
+            # Показываем попап
+            self.popup.open()
+            
+        except Exception as e:
+            logger.error(f'Ошибка при показе попапа выбора азана: {str(e)}')
+            
+    def _on_azan_selected(self, azan_text):
+        """Обработчик выбора азана в Popup"""
+        try:
+            self.popup_btn.text = azan_text
+            self.selected_azan_popup = azan_text
+            
+            # Закрываем попап, если он открыт
+            if hasattr(self, 'popup') and self.popup:
+                self.popup.dismiss()
+                self.popup = None
+                
+        except Exception as e:
+            logger.error(f'Ошибка при выборе азана: {str(e)}')
+    
     def on_accept(self, *args):
         """Сохраняет настройки при нажатии кнопки Save."""
         try:
-            if self.selected_color:
+            # Сохраняем цвет, если выбран
+            if hasattr(self, 'selected_color') and self.selected_color:
                 # Преобразуем название цвета в нижний регистр
                 color_key = self.selected_color.lower()
                 
@@ -393,6 +716,17 @@ class SettingsWindow(ModalView):
                         self.apply_callback(self.colors[color_key])
                 else:
                     logger.warning(f"Unknown color: {self.selected_color}")
+            
+            # Сохраняем выбранные азаны для каждого блока
+            if hasattr(self, 'selected_azan_spinner'):
+                self.db.save_setting('azan_spinner', self.selected_azan_spinner)
+                
+            if hasattr(self, 'selected_azan_dropdown'):
+                self.db.save_setting('azan_dropdown', self.selected_azan_dropdown)
+                
+            if hasattr(self, 'selected_azan_popup'):
+                self.db.save_setting('azan_popup', self.selected_azan_popup)
+                
             self.dismiss()
         except Exception as e:
             logger.error(f"Error in on_accept: {e}")
