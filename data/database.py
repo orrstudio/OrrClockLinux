@@ -28,9 +28,20 @@ class SettingsDatabase:
             VALUES ('color', 'lime')
         """)
         
-        # Создаем таблицу для хранения параметров окна, если она не существует
+        # Создаем таблицу для хранения параметров главного окна, если она не существует
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS window_settings (
+                id INTEGER PRIMARY KEY,
+                width INTEGER,
+                height INTEGER,
+                x INTEGER,
+                y INTEGER
+            )
+        ''')
+        
+        # Создаем таблицу для хранения параметров окна настроек, если она не существует
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS settings_window_settings (
                 id INTEGER PRIMARY KEY,
                 width INTEGER,
                 height INTEGER,
@@ -57,7 +68,7 @@ class SettingsDatabase:
 
     def save_window_settings(self, width, height, x, y):
         """
-        Сохраняет настройки окна в БД
+        Сохраняет настройки главного окна в БД
         """
         try:
             # Сохраняем абсолютные координаты
@@ -67,12 +78,27 @@ class SettingsDatabase:
                 VALUES (1, ?, ?, ?, ?)
             ''', (width, height, x, y))
             self.connection.commit()
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Ошибка при сохранении настроек главного окна: {e}")
+            
+    def save_settings_window_settings(self, width, height, x, y):
+        """
+        Сохраняет настройки окна настроек в БД
+        """
+        try:
+            # Сохраняем абсолютные координаты
+            self.cursor.execute('''
+                INSERT OR REPLACE INTO settings_window_settings 
+                (id, width, height, x, y) 
+                VALUES (1, ?, ?, ?, ?)
+            ''', (width, height, x, y))
+            self.connection.commit()
+        except Exception as e:
+            print(f"Ошибка при сохранении настроек окна настроек: {e}")
 
     def get_window_settings(self):
         """
-        Загружает настройки окна из БД
+        Загружает настройки главного окна из БД
         """
         try:
             self.cursor.execute('SELECT width, height, x, y FROM window_settings WHERE id = 1')
@@ -82,10 +108,23 @@ class SettingsDatabase:
         except Exception:
             pass
         return None
+        
+    def get_settings_window_settings(self):
+        """
+        Загружает настройки окна настроек из БД
+        """
+        try:
+            self.cursor.execute('SELECT width, height, x, y FROM settings_window_settings WHERE id = 1')
+            settings = self.cursor.fetchone()
+            if settings:
+                return settings
+        except Exception as e:
+            print(f"Ошибка при загрузке настроек окна настроек: {e}")
+        return None
 
     def apply_window_settings(self, window):
         """
-        Применяет настройки окна
+        Применяет настройки главного окна
         Если настройки не найдены в базе данных, устанавливает размеры по умолчанию 715x1000
         """
         settings = self.get_window_settings()
@@ -100,3 +139,27 @@ class SettingsDatabase:
             # Центрируем окно на экране
             window.left = (window.system_size[0] - 715) // 2
             window.top = (window.system_size[1] - 1000) // 2
+            
+    def apply_settings_window_settings(self, window):
+        """
+        Применяет настройки окна настроек
+        Если настройки не найдены в базе данных, оставляет текущие размеры и положение
+        """
+        settings = self.get_settings_window_settings()
+        if settings:
+            width, height, x, y = settings
+            # Устанавливаем размеры окна
+            if hasattr(window, 'size'):
+                window.size = (width, height)
+            
+            # Устанавливаем позицию окна
+            if hasattr(window, 'left') and hasattr(window, 'top'):
+                window.left = x
+                window.top = y
+            elif hasattr(window, 'x') and hasattr(window, 'y'):
+                window.x = x
+                window.y = y
+            
+            # Принудительно обновляем размеры и позицию
+            if hasattr(window, 'do_layout'):
+                window.do_layout()

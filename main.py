@@ -175,6 +175,26 @@ class MainWindowApp(App):
         else:
             return 'square'
 
+    def save_main_window_state(self):
+        """
+        Сохраняет текущие параметры главного окна
+        """
+        if not is_mobile_device() and hasattr(self, 'settings_db'):
+            # Сохраняем текущие параметры окна
+            self.settings_db.save_window_settings(
+                width=Window.width,
+                height=Window.height,
+                x=Window.left,
+                y=Window.top
+            )
+    
+    def restore_main_window_state(self):
+        """
+        Восстанавливает сохраненные параметры главного окна
+        """
+        if not is_mobile_device() and hasattr(self, 'settings_db'):
+            self.settings_db.apply_window_settings(Window)
+    
     def on_window_touch_down_double_tap(self, window, touch):
         """
         Обработчик двойного касания

@@ -23,13 +23,34 @@ class SettingsManager:
             self.clock_label.color = SettingsWindow.get_color_tuple(saved_color)
 
     def open_settings_window(self):
-        """Открытие окна настроек"""
+        """
+        Открытие окна настроек с сохранением параметров главного окна
+        """
+        # Сохраняем текущие параметры главного окна
+        if hasattr(self.main_window, 'save_main_window_state'):
+            self.main_window.save_main_window_state()
+            
+        # Создаем и открываем окно настроек
         settings_window = SettingsWindow(
             self.db, 
             main_window=self.main_window,  
             apply_callback=self.apply_settings
         )
+        
+        # Привязываем обработчик закрытия окна настроек
+        settings_window.bind(on_dismiss=self.on_settings_dismiss)
         settings_window.open()
+        
+        # Настройки окна применяются автоматически при создании SettingsWindow
+        # в его методе __init__ через db.apply_settings_window_settings(self)
+    
+    def on_settings_dismiss(self, instance):
+        """
+        Обработчик закрытия окна настроек
+        Восстанавливаем параметры главного окна
+        """
+        if hasattr(self.main_window, 'restore_main_window_state'):
+            self.main_window.restore_main_window_state()
 
     def apply_settings(self, color_tuple):
         """

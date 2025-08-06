@@ -12,21 +12,27 @@ import logging
 
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
-from kivy.uix.label import Label
 from kivy.uix.widget import Widget
 from kivy.uix.modalview import ModalView
 from kivy.uix.button import Button
+from kivy.uix.label import Label
 from kivy.uix.spinner import Spinner
 from kivy.uix.dropdown import DropDown
 from kivy.uix.popup import Popup
-from kivy.uix.scrollview import ScrollView
-from kivy.uix.boxlayout import BoxLayout
-from kivy.graphics import Color, Line, Rectangle
+# Удаляем устаревший импорт ListView и ListItemButton
+# и используем Spinner вместо ListView
+from kivy.properties import ListProperty, StringProperty, ObjectProperty, NumericProperty
+from kivy.clock import Clock
 from kivy.metrics import dp, sp
 from kivy.core.window import Window
-from kivy.clock import Clock
+from kivy.graphics import Color, Rectangle, Line
+
+# Импортируем компоненты интерфейса
 from ui.settings_color import ColorButton
+
+# Импортируем базу данных и утилиты
 from data.database import SettingsDatabase
+from logic.display_utils import is_mobile_device
 
 logger = logging.getLogger(__name__)
 
@@ -167,6 +173,10 @@ class SettingsWindow(ModalView):
         self.db = db
         self.main_window = main_window
         self.apply_callback = apply_callback
+        
+        # Применяем сохраненные настройки окна после полной инициализации
+        if not is_mobile_device():
+            self.bind(on_open=self._apply_window_settings)
         
         # Получаем текущие настройки
         self.initial_color = self.db.get_setting('color')
@@ -626,76 +636,52 @@ class SettingsWindow(ModalView):
         self.dropdown.dismiss()
         
     def show_azan_popup(self, instance):
-        """Показывает всплывающее окно со списком азанов"""
-        try:
-            # Создаем контейнер содержимого
-            content = BoxLayout(orientation='vertical', spacing=10, padding=10)
-            
-            # Создаем кнопки для выбора азана
-            btn_layout = GridLayout(cols=1, spacing=5, size_hint_y=None)
-            btn_layout.bind(minimum_height=btn_layout.setter('height'))
-            
-            # Добавляем кнопки выбора азана
-            for i in range(1, 4):
-                btn = Button(
-                    text=f'Azan {i}',
-                    size_hint_y=None,
-                    height=dp(44),
-                    background_color=(0.3, 0.3, 0.3, 1),
-                    color=(1, 1, 1, 1)
-                )
-                btn.bind(on_release=lambda btn_instance, num=i: self._on_azan_selected(btn_instance.text))
-                btn_layout.add_widget(btn)
-            
-            # Создаем ScrollView для кнопок
-            scroll = ScrollView(size_hint=(1, 0.8))
-            scroll.add_widget(btn_layout)
-            
-            # Кнопка отмены
-            btn_cancel = Button(
-                text='Отмена',
-                size_hint_y=None,
-                height=dp(44),
-                background_color=(0.7, 0.1, 0.1, 1)
-            )
-            
-            # Добавляем виджеты в контейнер
-            content.add_widget(scroll)
-            content.add_widget(btn_cancel)
-            
-            # Создаем и показываем Popup
-            self.popup = Popup(
-                title='Выберите азан',
-                content=content,
-                size_hint=(0.8, 0.6),
-                background_color=(0.1, 0.1, 0.1, 1),
-                title_color=(1, 1, 1, 1),
-                auto_dismiss=False
-            )
-            
-            # Привязываем кнопку отмены
-            btn_cancel.bind(on_release=lambda x: self.popup.dismiss())
-            
-            # Показываем попап
-            self.popup.open()
-            
-        except Exception as e:
-            logger.error(f'Ошибка при показе попапа выбора азана: {str(e)}')
+        """Показывает всплывающее окно с выбором азана"""
+        # Создаем Spinner с выбором азана
+        spinner = Spinner(
+            text='Выберите азан',
+            values=('Azan 1', 'Azan 2', 'Azan 3'),
+            size_hint=(None, None),
+            size=(200, 44),
+            pos_hint={'center_x': 0.5, 'center_y': 0.5}
+        )
+        
+        # Создаем всплывающее окно
+        popup = Popup(
+            title='Выберите азан',
+            size_hint=(0.8, 0.4),
+            auto_dismiss=True
+        )
+        
+        # Создаем контейнер для Spinner
+        layout = GridLayout(cols=1, spacing=10, padding=10)
+        layout.add_widget(Widget())  # Пустой виджет для центрирования
+        layout.add_widget(spinner)
+        layout.add_widget(Widget())  # Пустой виджет для центрирования
+        
+        # Добавляем Spinner во всплывающее окно
+        popup.content = layout
+        
+        # Обработчик выбора элемента
+        spinner.bind(text=lambda instance, value: self._on_azan_selected(value))
+        
+        # Открываем всплывающее окно
+        popup.open()
             
     def _on_azan_selected(self, azan_text):
-        """Обработчик выбора азана в Popup"""
-        try:
-            self.popup_btn.text = azan_text
-            self.selected_azan_popup = azan_text
+        """Обработчик выбора азана в Spinner"""
+        if not azan_text or azan_text == 'Выберите азан':
+            return
             
-            # Закрываем попап, если он открыт
-            if hasattr(self, 'popup') and self.popup:
-                self.popup.dismiss()
-                self.popup = None
+        # Обновляем текст кнопки
+        self.popup_btn.text = azan_text
+        
+        # Закрываем всплывающее окно
+        for child in Window.children:
+            if isinstance(child, Popup):
+                child.dismiss()
+                break
                 
-        except Exception as e:
-            logger.error(f'Ошибка при выборе азана: {str(e)}')
-    
     def print_sizes(self, *args):
         """Выводит информацию о текущих настройках."""
         window = Window
@@ -812,17 +798,60 @@ class SettingsWindow(ModalView):
         self.width = min(dp(400), width * 0.95)
         self.height = min(dp(500), height * 0.95)
     
+    def _apply_window_settings(self, *args):
+        """
+        Применяет сохраненные настройки окна после его полной инициализации.
+        """
+        if hasattr(self, 'db'):
+            from kivy.core.window import Window
+            
+            # Получаем текущие настройки окна из базы данных
+            settings = self.db.get_settings_window_settings()
+            if settings:
+                width, height, x, y = settings
+                
+                # Устанавливаем размеры окна
+                Window.size = (width, height)
+                
+                # Устанавливаем позицию окна
+                Window.left = x
+                Window.top = y
+                
+                # Принудительно обновляем окно
+                Window.update_viewport()
+            
     def dismiss(self, *args):
         """
         Закрывает окно настроек.
         
         Если настройки не были сохранены, возвращает исходный цвет.
         """
+        # Если окно уже закрывается, выходим
+        if hasattr(self, '_window') and self._window is None:
+            return
+        
+        # Восстанавливаем исходный цвет, если настройки не были сохранены
         if not self.selected_color or args:  
             if hasattr(self.main_window, 'update_color') and self.initial_color:
                 self.main_window.update_color(self.initial_color)
         
-        super().dismiss()
+        # Сохраняем настройки окна при закрытии
+        if not is_mobile_device() and hasattr(self, 'db'):
+            from kivy.core.window import Window
+            
+            # Получаем текущую позицию окна
+            x, y = Window.left, Window.top
+            
+            # Сохраняем настройки окна
+            self.db.save_settings_window_settings(
+                width=Window.width,
+                height=Window.height,
+                x=x,
+                y=y
+            )
+            
+        # Вызываем оригинальный метод закрытия
+        super().dismiss(*args)
     
     @staticmethod
     def get_color_tuple(color_name):
