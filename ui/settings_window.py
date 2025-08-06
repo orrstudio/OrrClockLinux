@@ -466,14 +466,11 @@ class SettingsWindow(ModalView):
         popup_section.add_widget(popup_title)
         popup_section.add_widget(self.popup_btn)
         
-        # Добавляем отладочную информацию о размерах
-        def print_sizes(*args):
-            print("\n=== Размеры блоков ===")
-            print(f"Цвета: size={color_section.size}, pos={color_section.pos}")
-            print(f"Азан: size={azan_section.size}, pos={azan_section.pos}")
-            print(f"DropDown: size={dropdown_section.size}, pos={dropdown_section.pos}")
-            print(f"Popup: size={popup_section.size}, pos={popup_section.pos}")
-            print("===================\n")
+        # Инициализируем ссылки на виджеты для доступа из других методов
+        self.color_section = color_section
+        self.azan_section = azan_section
+        self.dropdown_section = dropdown_section
+        self.popup_section = popup_section
         
         # Добавляем все виджеты в основной контейнер
         content_container.clear_widgets()  # Очищаем контейнер
@@ -488,7 +485,7 @@ class SettingsWindow(ModalView):
         content_container.add_widget(popup_section)
         
         # Обновляем размеры после добавления всех виджетов
-        Clock.schedule_once(print_sizes, 0.5)
+        Clock.schedule_once(self.print_sizes, 0.5)
         
         # Добавляем контейнер в ScrollView
         content_layout.add_widget(content_container)
@@ -699,6 +696,64 @@ class SettingsWindow(ModalView):
         except Exception as e:
             logger.error(f'Ошибка при выборе азана: {str(e)}')
     
+    def print_sizes(self, *args):
+        """Выводит информацию о текущих настройках."""
+        window = Window
+        
+        # Получаем информацию о текущем мониторе из Window
+        try:
+            # Получаем системный размер (разрешение экрана)
+            sys_width, sys_height = Window.system_size
+            
+            # Получаем текущую позицию окна
+            win_left, win_top = int(window.left), int(window.top)
+            win_width, win_height = int(window.width), int(window.height)
+            
+        except Exception as e:
+            logger.error(f"Ошибка при получении информации о размерах: {e}")
+            return
+            
+        print("\n" + "=" * 10 + " НАСТРОЙКИ ПРИЛОЖЕНИЯ " + "=" * 10 + "\n")
+        
+        # Раздел: Размер и положение окна
+        print("-" * 13 + " Размер и положение окна " + "-" * 13)
+        print(f"Размер окна = {int(window.width)} x {int(window.height)}")
+        print(f"Позиция окна = {int(window.left)} x {int(window.top)}\n")
+        
+        # Раздел: Цвет часов
+        print("-" * 13 + " Цвет часов " + "-" * 13)
+        if hasattr(self, 'selected_color'):
+            color_name = self.selected_color.capitalize()
+            print(f"Выбран = {color_name}\n")
+        
+        # Раздел: Азан
+        print("-" * 13 + " Азан " + "-" * 13)
+        if hasattr(self, 'selected_azan_spinner'):
+            print(f"{self.selected_azan_spinner}\n")
+        
+        # Раздел: DropDown
+        print("-" * 13 + " DropDown " + "-" * 13)
+        if hasattr(self, 'selected_azan_dropdown'):
+            print(f"{self.selected_azan_dropdown}\n")
+        
+        # Раздел: Popup
+        print("-" * 13 + " Popup " + "-" * 13)
+        if hasattr(self, 'selected_azan_popup'):
+            print(f"{self.selected_azan_popup}\n")
+        
+        # Раздел: Размеры блоков
+        print("-" * 13 + " Размеры блоков в настройках " + "-" * 13)
+        if hasattr(self, 'color_section'):
+            print(f"Блок Цвета: size={self.color_section.size}, pos={self.color_section.pos}")
+        if hasattr(self, 'azan_section'):
+            print(f"Блок Азан: size={self.azan_section.size}, pos={self.azan_section.pos}")
+        if hasattr(self, 'dropdown_section'):
+            print(f"Блок DropDown: size={self.dropdown_section.size}, pos={self.dropdown_section.pos}")
+        if hasattr(self, 'popup_section'):
+            print(f"Блок Popup: size={self.popup_section.size}, pos={self.popup_section.pos}")
+        
+        print("\n" + "=" * 50 + "\n")
+
     def on_accept(self, *args):
         """Сохраняет настройки при нажатии кнопки Save."""
         try:
@@ -726,6 +781,10 @@ class SettingsWindow(ModalView):
                 
             if hasattr(self, 'selected_azan_popup'):
                 self.db.save_setting('azan_popup', self.selected_azan_popup)
+            
+            # Выводим обновленные настройки перед закрытием
+            print("\n=== НАСТРОЙКИ ПОСЛЕ СОХРАНЕНИЯ ===")
+            self.print_sizes()
                 
             self.dismiss()
         except Exception as e:
@@ -754,10 +813,15 @@ class SettingsWindow(ModalView):
         self.height = min(dp(500), height * 0.95)
     
     def dismiss(self, *args):
-        """При отмене возвращаем исходный цвет"""
+        """
+        Закрывает окно настроек.
+        
+        Если настройки не были сохранены, возвращает исходный цвет.
+        """
         if not self.selected_color or args:  
             if hasattr(self.main_window, 'update_color') and self.initial_color:
                 self.main_window.update_color(self.initial_color)
+        
         super().dismiss()
     
     @staticmethod
@@ -784,4 +848,4 @@ class SettingsWindow(ModalView):
             (1, 1, 0, 1): 'yellow',
             (1, 1, 1, 1): 'white'
         }
-        return colors.get(color_tuple, 'lime')  
+        return colors.get(color_tuple, 'lime')
