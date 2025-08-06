@@ -702,66 +702,7 @@ class SettingsWindow(ModalView):
         self.selected_azan_dropdown = text
         self.dropdown.dismiss()
         
-    def print_sizes(self, *args, show_before_save=False):
-        """
-        Выводит информацию о текущих настройках.
-        
-        Args:
-            show_before_save (bool): Если True, показывает настройки перед сохранением
-        """
-        print("\n" + "="*10 + " НАСТРОЙКИ ПРИЛОЖЕНИЯ " + "="*10 + "\n")
-        
-        # Раздел: Главное окно
-        print("-"*13 + " Главное окно " + "-"*13)
-        try:
-            # Получаем сохраненные настройки главного окна из базы данных
-            main_settings = self.db.get_window_settings()
-            if main_settings:
-                width, height, x, y = main_settings
-                print(f"Размер = {int(width)} x {int(height)}")
-                print(f"Позиция = {int(x)} x {int(y)}")
-            else:
-                print("Данные главного окна не найдены в базе")
-        except Exception as e:
-            print(f"Ошибка при получении данных главного окна: {e}")
-        print()  # Пустая строка для разделения
-        
-        # Раздел: Окно настроек
-        print("-"*13 + " Окно настроек " + "-"*13)
-        try:
-            # Получаем сохраненные настройки окна настроек из базы данных
-            settings = self.db.get_settings_window_settings()
-            if settings:
-                width, height, x, y = settings
-                print(f"Размер = {int(width)} x {int(height)}")
-                print(f"Позиция = {int(x)} x {int(y)}")
-            else:
-                print("Данные окна настроек не найдены в базе")
-        except Exception as e:
-            print(f"Ошибка при получении данных окна настроек: {e}")
-        print()
-        
-        # Раздел: Цвет часов
-        print("-"*13 + " Цвет часов " + "-"*13)
-        if hasattr(self, 'selected_color'):
-            color_name = self.selected_color.capitalize()
-            print(f"Выбран = {color_name}\n")
-        
-        # Раздел: Азан
-        print("-"*13 + " Азан " + "-"*13)
-        if hasattr(self, 'selected_azan_spinner'):
-            print(f"Spinner: {self.selected_azan_spinner}")
-        if hasattr(self, 'selected_azan_dropdown'):
-            print(f"Dropdown: {self.selected_azan_dropdown}")
-        if hasattr(self, 'selected_azan_popup'):
-            print(f"Popup: {self.selected_azan_popup}")
-            
-        # Обновляем текст кнопок, если они существуют
-        if hasattr(self, 'dropdown_btn') and hasattr(self, 'selected_azan_dropdown'):
-            self.dropdown_btn.text = self.selected_azan_dropdown
-            
-        if hasattr(self, 'popup_btn') and hasattr(self, 'selected_azan_popup'):
-            self.popup_btn.text = self.selected_azan_popup
+
 
     def _add_border_to_button(self, button):
         """
@@ -898,72 +839,88 @@ class SettingsWindow(ModalView):
         Args:
             show_before_save (bool): Если True, показывает настройки перед сохранением
         """
-        print("\n" + "="*10 + " НАСТРОЙКИ ПРИЛОЖЕНИЯ " + "="*10 + "\n")
+        # Заголовок раздела размеров и позиций окон
+        print("\n" + "="*50)
+        print("         РАЗМЕР И ПОЗИЦИЯ ОКОН ПРИЛОЖЕНИЯ")
+        print("="*50 + "\n")
         
         # Раздел: Главное окно
-        print("-"*13 + " Главное окно " + "-"*13)
+        print("-"*50)
+        print("          РАЗМЕР И ПОЗИЦИЯ ГЛАВНОГО ОКНА")
+        print("-"*50)
         try:
             # Получаем сохраненные настройки главного окна из базы данных
             main_settings = self.db.get_window_settings()
             if main_settings:
                 width, height, x, y = main_settings
-                print(f"Размер = {int(width)} x {int(height)}")
-                print(f"Позиция = {int(x)} x {int(y)}")
+                print(f"\nРазмер: {int(width)} x {int(height)}")
+                print(f"Позиция: x={int(x)}, y={int(y)}\n")
             else:
-                print("Данные главного окна не найдены в базе")
+                print("\nДанные главного окна не найдены в базе\n")
         except Exception as e:
-            print(f"Ошибка при получении данных главного окна: {e}")
-        print()  # Пустая строка для разделения
+            print(f"\nОшибка при получении данных главного окна: {e}\n")
         
         # Раздел: Окно настроек
-        print("-"*13 + " Окно настроек " + "-"*13)
+        print("-"*50)
+        print("          РАЗМЕР И ПОЗИЦИЯ ОКНА НАСТРОЕК")
+        print("-"*50)
         try:
             # Получаем сохраненные настройки окна настроек из базы данных
             settings = self.db.get_settings_window_settings()
             if settings:
                 width, height, x, y = settings
-                print(f"Размер = {int(width)} x {int(height)}")
-                print(f"Позиция = {int(x)} x {int(y)}")
+                print(f"\nРазмер: {int(width)} x {int(height)}")
+                print(f"Позиция: x={int(x)}, y={int(y)}\n")
             else:
-                print(f"Размер = {int(Window.width)} x {int(Window.height)}")
-                print(f"Позиция = {int(Window.left)} x {int(Window.top)}")
+                print("\nДанные окна настроек не найдены в базе\n")
         except Exception as e:
-            print(f"Ошибка при получении данных окна настроек: {e}")
-        print()
+            print(f"\nОшибка при получении данных окна настроек: {e}\n")
+        
+        # Заголовок раздела настроек приложения
+        print("="*50)
+        print("               НАСТРОЙКИ ПРИЛОЖЕНИЯ")
+        print("="*50 + "\n")
         
         # Раздел: Цвет часов
-        print("-"*13 + " Цвет часов " + "-"*13)
+        print("-"*50)
+        print("                    ЦВЕТ ЧАСОВ")
+        print("-"*50)
         if hasattr(self, 'selected_color'):
             color_name = self.selected_color.capitalize()
-            print(f"Выбран = {color_name}\n")
+            print(f"\n{color_name}\n")
         
-        # Раздел: Азан
-        print("-"*13 + " Азан " + "-"*13)
+        # Раздел: Настройка азанов
+        print("-"*50)
+        print("                 НАСТРОЙКА АЗАНОВ")
+        print("-"*50)
+        azan_output = []
         if hasattr(self, 'selected_azan_spinner'):
-            print(f"{self.selected_azan_spinner}\n")
-        
-        # Раздел: DropDown
-        print("-"*13 + " DropDown " + "-"*13)
+            azan_output.append(f"Spinner: {self.selected_azan_spinner}")
         if hasattr(self, 'selected_azan_dropdown'):
-            print(f"{self.selected_azan_dropdown}\n")
-        
-        # Раздел: Popup
-        print("-"*13 + " Popup " + "-"*13)
+            azan_output.append(f"DropDown: {self.selected_azan_dropdown}")
         if hasattr(self, 'selected_azan_popup'):
-            print(f"{self.selected_azan_popup}\n")
+            azan_output.append(f"Popup: {self.selected_azan_popup}")
+        
+        print("\n" + "\n".join(azan_output) + "\n")
         
         # Раздел: Размеры блоков
-        print("-"*13 + " Размеры блоков в настройках " + "-"*13)
-        if hasattr(self, 'color_section'):
-            print(f"Блок Цвета: size={self.color_section.size}, pos={self.color_section.pos}")
-        if hasattr(self, 'azan_section'):
-            print(f"Блок Азан: size={self.azan_section.size}, pos={self.azan_section.pos}")
-        if hasattr(self, 'dropdown_section'):
-            print(f"Блок DropDown: size={self.dropdown_section.size}, pos={self.dropdown_section.pos}")
-        if hasattr(self, 'popup_section'):
-            print(f"Блок Popup: size={self.popup_section.size}, pos={self.popup_section.pos}")
+        print("-"*50)
+        print("                  РАЗМЕРЫ БЛОКОВ")
+        print("-"*50)
         
-        print("\n" + "="*50 + "\n")
+        # Получаем размеры блоков, если они доступны
+        blocks_info = []
+        if hasattr(self, 'color_section'):
+            blocks_info.append(f"Цвет: size={[int(self.color_section.width), int(self.color_section.height)]}, pos=[{int(self.color_section.x)}, {int(self.color_section.y)}]")
+        if hasattr(self, 'azan_section'):
+            blocks_info.append(f"Spinner: size={[int(self.azan_section.width), int(self.azan_section.height)]}, pos=[{int(self.azan_section.x)}, {int(self.azan_section.y)}]")
+            print(f"Spinner: size={self.azan_section.size}, pos={self.azan_section.pos}")
+        if hasattr(self, 'dropdown_section'):
+            print(f"DropDown: size={self.dropdown_section.size}, pos={self.dropdown_section.pos}")
+        if hasattr(self, 'popup_section'):
+            print(f"Popup: size={self.popup_section.size}, pos={self.popup_section.pos}")
+        
+        print("\n" + "="*21 + " КОНЕЦ " + "="*22 + "\n")
 
     def on_accept(self, *args):
         """Сохраняет настройки при нажатии кнопки Save."""
