@@ -174,6 +174,10 @@ class SettingsWindow(ModalView):
         self.main_window = main_window
         self.apply_callback = apply_callback
         
+        # Сохраняем размеры главного окна
+        self.main_window_size = (main_window.width, main_window.height) if hasattr(main_window, 'width') else (0, 0)
+        self.main_window_pos = (main_window.x, main_window.y) if hasattr(main_window, 'x') else (0, 0)
+        
         # Применяем сохраненные настройки окна после полной инициализации
         if not is_mobile_device():
             self.bind(on_open=self._apply_window_settings)
@@ -463,7 +467,7 @@ class SettingsWindow(ModalView):
         
         # Кнопка для вызова Popup
         self.popup_btn = Button(
-            text='Azan 1',
+            text=self.selected_azan_popup if hasattr(self, 'selected_azan_popup') else 'Azan 1',
             size_hint_y=None,
             height=dp(40),
             background_color=(0.3, 0.3, 0.3, 1),
@@ -639,7 +643,7 @@ class SettingsWindow(ModalView):
         """Показывает всплывающее окно с выбором азана"""
         # Создаем Spinner с выбором азана
         spinner = Spinner(
-            text='Выберите азан',
+            text=self.selected_azan_popup if hasattr(self, 'selected_azan_popup') else 'Azan 1',
             values=('Azan 1', 'Azan 2', 'Azan 3'),
             size_hint=(None, None),
             size=(200, 44),
@@ -672,63 +676,284 @@ class SettingsWindow(ModalView):
         """Обработчик выбора азана в Spinner"""
         if not azan_text or azan_text == 'Выберите азан':
             return
-            
-        # Обновляем текст кнопки
-        self.popup_btn.text = azan_text
         
-        # Закрываем всплывающее окно
-        for child in Window.children:
-            if isinstance(child, Popup):
-                child.dismiss()
-                break
-                
-    def print_sizes(self, *args):
-        """Выводит информацию о текущих настройках."""
-        window = Window
-        
-        # Получаем информацию о текущем мониторе из Window
         try:
-            # Получаем системный размер (разрешение экрана)
-            sys_width, sys_height = Window.system_size
+            # Обновляем текст кнопки
+            self.popup_btn.text = azan_text
             
-            # Получаем текущую позицию окна
-            win_left, win_top = int(window.left), int(window.top)
-            win_width, win_height = int(window.width), int(window.height)
+            # Сохраняем выбранное значение
+            self.selected_azan_popup = azan_text
             
+            # Закрываем всплывающее окно
+            for child in Window.children:
+                if isinstance(child, Popup):
+                    child.dismiss()
+                    break
         except Exception as e:
-            logger.error(f"Ошибка при получении информации о размерах: {e}")
-            return
+            logger.error(f"Ошибка в _on_azan_selected: {e}")
+
+    def on_azan_selected(self, spinner, text):
+        """Обработчик выбора азана в Spinner"""
+        self.selected_azan_spinner = text
             
-        print("\n" + "=" * 10 + " НАСТРОЙКИ ПРИЛОЖЕНИЯ " + "=" * 10 + "\n")
+    def select_dropdown_item(self, text):
+        """Обработчик выбора азана в DropDown"""
+        self.dropdown_btn.text = text
+        self.selected_azan_dropdown = text
+        self.dropdown.dismiss()
         
-        # Раздел: Размер и положение окна
-        print("-" * 13 + " Размер и положение окна " + "-" * 13)
-        print(f"Размер окна = {int(window.width)} x {int(window.height)}")
-        print(f"Позиция окна = {int(window.left)} x {int(window.top)}\n")
+    def print_sizes(self, *args, show_before_save=False):
+        """
+        Выводит информацию о текущих настройках.
+        
+        Args:
+            show_before_save (bool): Если True, показывает настройки перед сохранением
+        """
+        print("\n" + "="*10 + " НАСТРОЙКИ ПРИЛОЖЕНИЯ " + "="*10 + "\n")
+        
+        # Раздел: Главное окно
+        print("-"*13 + " Главное окно " + "-"*13)
+        try:
+            # Получаем сохраненные настройки главного окна из базы данных
+            main_settings = self.db.get_window_settings()
+            if main_settings:
+                width, height, x, y = main_settings
+                print(f"Размер = {int(width)} x {int(height)}")
+                print(f"Позиция = {int(x)} x {int(y)}")
+            else:
+                print("Данные главного окна не найдены в базе")
+        except Exception as e:
+            print(f"Ошибка при получении данных главного окна: {e}")
+        print()  # Пустая строка для разделения
+        
+        # Раздел: Окно настроек
+        print("-"*13 + " Окно настроек " + "-"*13)
+        try:
+            # Получаем сохраненные настройки окна настроек из базы данных
+            settings = self.db.get_settings_window_settings()
+            if settings:
+                width, height, x, y = settings
+                print(f"Размер = {int(width)} x {int(height)}")
+                print(f"Позиция = {int(x)} x {int(y)}")
+            else:
+                print("Данные окна настроек не найдены в базе")
+        except Exception as e:
+            print(f"Ошибка при получении данных окна настроек: {e}")
+        print()
         
         # Раздел: Цвет часов
-        print("-" * 13 + " Цвет часов " + "-" * 13)
+        print("-"*13 + " Цвет часов " + "-"*13)
         if hasattr(self, 'selected_color'):
             color_name = self.selected_color.capitalize()
             print(f"Выбран = {color_name}\n")
         
         # Раздел: Азан
-        print("-" * 13 + " Азан " + "-" * 13)
+        print("-"*13 + " Азан " + "-"*13)
+        if hasattr(self, 'selected_azan_spinner'):
+            print(f"Spinner: {self.selected_azan_spinner}")
+        if hasattr(self, 'selected_azan_dropdown'):
+            print(f"Dropdown: {self.selected_azan_dropdown}")
+        if hasattr(self, 'selected_azan_popup'):
+            print(f"Popup: {self.selected_azan_popup}")
+            
+        # Обновляем текст кнопок, если они существуют
+        if hasattr(self, 'dropdown_btn') and hasattr(self, 'selected_azan_dropdown'):
+            self.dropdown_btn.text = self.selected_azan_dropdown
+            
+        if hasattr(self, 'popup_btn') and hasattr(self, 'selected_azan_popup'):
+            self.popup_btn.text = self.selected_azan_popup
+
+    def _add_border_to_button(self, button):
+        """
+        Добавляет белую рамку к кнопке.
+        
+        Args:
+            button: Кнопка, к которой добавляется рамка
+        """
+        if button is None:
+            return
+            
+        button.canvas.after.clear()
+        with button.canvas.after:
+            Color(1, 1, 1, 1)
+            self.border_line = Line(rectangle=(button.x, button.y, button.width, button.height), width=1.5)
+        
+        # Привязываем обновление рамки к изменению размера и позиции кнопки
+        button.bind(pos=self._update_border, size=self._update_border)
+
+    def _update_border(self, instance, value):
+        """Обновляет размер и позицию рамки при изменении размера кнопки"""
+        if hasattr(self, 'border_line'):
+            self.border_line.rectangle = (instance.x, instance.y, instance.width, instance.height)
+
+    def _on_color_button_press(self, button):
+        """
+        Обработка нажатия на цветную кнопку.
+        
+        Args:
+            button: Нажатая кнопка
+        """
+        try:
+            # Убираем рамку со старой активной кнопки
+            if hasattr(self, 'active_button') and self.active_button != button:
+                self.active_button.canvas.after.clear()
+            
+            # Добавляем рамку на новую кнопку
+            self._add_border_to_button(button)
+            
+            # Сохраняем ссылку на активную кнопку
+            self.active_button = button
+            
+            # Устанавливаем выбранный цвет из нажатой кнопки
+            self.selected_color = button.color_name.lower()
+            
+            # Инициализируем выбранные азаны, если они еще не были инициализированы
+            if not hasattr(self, 'selected_azan_spinner'):
+                self.selected_azan_spinner = self.db.get_setting('azan_spinner') or 'Azan 1'
+            if not hasattr(self, 'selected_azan_dropdown'):
+                self.selected_azan_dropdown = self.db.get_setting('azan_dropdown') or 'Azan 1'
+            if not hasattr(self, 'selected_azan_popup'):
+                self.selected_azan_popup = self.db.get_setting('azan_popup') or 'Azan 1'
+                
+        except Exception as e:
+            print(f"Ошибка при обработке нажатия на кнопку: {e}")
+    
+    def on_azan_selected(self, spinner, text):
+        """Обработчик выбора азана в Spinner"""
+        self.selected_azan_spinner = text
+            
+    def select_dropdown_item(self, text):
+        """Обработчик выбора азана в DropDown"""
+        self.dropdown_btn.text = text
+        self.selected_azan_dropdown = text
+        self.dropdown.dismiss()
+        
+    def show_azan_popup(self, instance):
+        """Показывает всплывающее окно с выбором азана"""
+        # Создаем Spinner с выбором азана
+        spinner = Spinner(
+            text=self.selected_azan_popup if hasattr(self, 'selected_azan_popup') else 'Azan 1',
+            values=('Azan 1', 'Azan 2', 'Azan 3'),
+            size_hint=(None, None),
+            size=(200, 44),
+            pos_hint={'center_x': 0.5, 'center_y': 0.5}
+        )
+        
+        # Создаем всплывающее окно
+        popup = Popup(
+            title='Выберите азан',
+            size_hint=(0.8, 0.4),
+            auto_dismiss=True
+        )
+        
+        # Создаем контейнер для Spinner
+        layout = GridLayout(cols=1, spacing=10, padding=10)
+        layout.add_widget(Widget())  # Пустой виджет для центрирования
+        layout.add_widget(spinner)
+        layout.add_widget(Widget())  # Пустой виджет для центрирования
+        
+        # Добавляем Spinner во всплывающее окно
+        popup.content = layout
+        
+        # Обработчик выбора элемента
+        spinner.bind(text=lambda instance, value: self._on_azan_selected(value))
+        
+        # Открываем всплывающее окно
+        popup.open()
+    
+    def _on_azan_selected(self, azan_text):
+        """Обработчик выбора азана в Spinner"""
+        if not azan_text or azan_text == 'Выберите азан':
+            return
+        
+        try:
+            # Обновляем текст кнопки
+            self.popup_btn.text = azan_text
+            
+            # Сохраняем выбранное значение
+            self.selected_azan_popup = azan_text
+            
+            # Закрываем всплывающее окно
+            for child in Window.children:
+                if isinstance(child, Popup):
+                    child.dismiss()
+                    break
+        except Exception as e:
+            print(f"Ошибка в _on_azan_selected: {e}")
+    
+    def on_azan_selected(self, spinner, text):
+        """Обработчик выбора азана в Spinner"""
+        self.selected_azan_spinner = text
+    
+    def select_dropdown_item(self, text):
+        """Обработчик выбора азана в DropDown"""
+        self.dropdown_btn.text = text
+        self.selected_azan_dropdown = text
+        self.dropdown.dismiss()
+    
+    def print_sizes(self, *args, show_before_save=False):
+        """
+        Выводит информацию о текущих настройках.
+        
+        Args:
+            show_before_save (bool): Если True, показывает настройки перед сохранением
+        """
+        print("\n" + "="*10 + " НАСТРОЙКИ ПРИЛОЖЕНИЯ " + "="*10 + "\n")
+        
+        # Раздел: Главное окно
+        print("-"*13 + " Главное окно " + "-"*13)
+        try:
+            # Получаем сохраненные настройки главного окна из базы данных
+            main_settings = self.db.get_window_settings()
+            if main_settings:
+                width, height, x, y = main_settings
+                print(f"Размер = {int(width)} x {int(height)}")
+                print(f"Позиция = {int(x)} x {int(y)}")
+            else:
+                print("Данные главного окна не найдены в базе")
+        except Exception as e:
+            print(f"Ошибка при получении данных главного окна: {e}")
+        print()  # Пустая строка для разделения
+        
+        # Раздел: Окно настроек
+        print("-"*13 + " Окно настроек " + "-"*13)
+        try:
+            # Получаем сохраненные настройки окна настроек из базы данных
+            settings = self.db.get_settings_window_settings()
+            if settings:
+                width, height, x, y = settings
+                print(f"Размер = {int(width)} x {int(height)}")
+                print(f"Позиция = {int(x)} x {int(y)}")
+            else:
+                print(f"Размер = {int(Window.width)} x {int(Window.height)}")
+                print(f"Позиция = {int(Window.left)} x {int(Window.top)}")
+        except Exception as e:
+            print(f"Ошибка при получении данных окна настроек: {e}")
+        print()
+        
+        # Раздел: Цвет часов
+        print("-"*13 + " Цвет часов " + "-"*13)
+        if hasattr(self, 'selected_color'):
+            color_name = self.selected_color.capitalize()
+            print(f"Выбран = {color_name}\n")
+        
+        # Раздел: Азан
+        print("-"*13 + " Азан " + "-"*13)
         if hasattr(self, 'selected_azan_spinner'):
             print(f"{self.selected_azan_spinner}\n")
         
         # Раздел: DropDown
-        print("-" * 13 + " DropDown " + "-" * 13)
+        print("-"*13 + " DropDown " + "-"*13)
         if hasattr(self, 'selected_azan_dropdown'):
             print(f"{self.selected_azan_dropdown}\n")
         
         # Раздел: Popup
-        print("-" * 13 + " Popup " + "-" * 13)
+        print("-"*13 + " Popup " + "-"*13)
         if hasattr(self, 'selected_azan_popup'):
             print(f"{self.selected_azan_popup}\n")
         
         # Раздел: Размеры блоков
-        print("-" * 13 + " Размеры блоков в настройках " + "-" * 13)
+        print("-"*13 + " Размеры блоков в настройках " + "-"*13)
         if hasattr(self, 'color_section'):
             print(f"Блок Цвета: size={self.color_section.size}, pos={self.color_section.pos}")
         if hasattr(self, 'azan_section'):
@@ -738,7 +963,7 @@ class SettingsWindow(ModalView):
         if hasattr(self, 'popup_section'):
             print(f"Блок Popup: size={self.popup_section.size}, pos={self.popup_section.pos}")
         
-        print("\n" + "=" * 50 + "\n")
+        print("\n" + "="*50 + "\n")
 
     def on_accept(self, *args):
         """Сохраняет настройки при нажатии кнопки Save."""
@@ -756,7 +981,7 @@ class SettingsWindow(ModalView):
                     if self.apply_callback:
                         self.apply_callback(self.colors[color_key])
                 else:
-                    logger.warning(f"Unknown color: {self.selected_color}")
+                    print(f"Предупреждение: Неизвестный цвет: {self.selected_color}")
             
             # Сохраняем выбранные азаны для каждого блока
             if hasattr(self, 'selected_azan_spinner'):
@@ -768,15 +993,14 @@ class SettingsWindow(ModalView):
             if hasattr(self, 'selected_azan_popup'):
                 self.db.save_setting('azan_popup', self.selected_azan_popup)
             
-            # Выводим обновленные настройки перед закрытием
-            print("\n=== НАСТРОЙКИ ПОСЛЕ СОХРАНЕНИЯ ===")
-            self.print_sizes()
-                
+            # Выводим обновленные настройки после сохранения
+            self.print_sizes(show_before_save=False)
+            
             self.dismiss()
         except Exception as e:
-            logger.error(f"Error in on_accept: {e}")
+            print(f"Ошибка при сохранении настроек: {e}")
             self.dismiss()
-
+    
     def _update_title_rect(self, instance, value):
         """Обновляет фон заголовка."""
         self.title_rect.pos = instance.pos
