@@ -919,74 +919,65 @@ class SettingsWindow(ModalView):
         try:
             # Импортируем менеджер молитв
             from logic.prayer_times import prayer_times_manager
-            
-            # Получаем данные из базы
-            cursor = prayer_times_manager.db.connection.cursor()
+            from datetime import datetime, timedelta
             
             # Получаем текущую дату и дату завтра
-            from datetime import datetime, timedelta
             today = datetime.now()
             tomorrow = today + timedelta(days=1)
             date_format = "%Y-%m-%d"
+            today_str = today.strftime(date_format)
+            tomorrow_str = tomorrow.strftime(date_format)
             
+            # Получаем данные из базы для сегодня и завтра
+            cursor = prayer_times_manager.db.connection.cursor()
             cursor.execute('''
                 SELECT * FROM prayer_times 
                 WHERE date = ? OR date = ?
                 ORDER BY date ASC
-            ''', (today.strftime(date_format), tomorrow.strftime(date_format)))
+            ''', (today_str, tomorrow_str))
             
             # Получаем строки с данными
             rows = cursor.fetchall()
             
-            if rows:
-                # Получаем заголовки колонок
-                columns = [desc[0] for desc in cursor.description]
-                
-                # Пропускаем служебные поля
-                skip_columns = {'date', 'created_at'}
-                prayer_columns = [col for col in columns if col not in skip_columns]
-                
-                # Формируем данные для вывода
-                dates = []
-                prayer_data = {col: [] for col in prayer_columns}
-                
-                for row in rows:
-                    row_dict = dict(zip(columns, row))
-                    # Форматируем дату из YYYY-MM-DD в DD/MM
-                    date_parts = row_dict['date'].split('-')
-                    if len(date_parts) == 3:
-                        dates.append(f"{date_parts[2]}/{date_parts[1]}")
-                    else:
-                        dates.append(row_dict['date'])
-                    
+            # Получаем заголовки колонок
+            columns = [desc[0] for desc in cursor.description]
+            
+            # Пропускаем служебные поля
+            skip_columns = {'date', 'created_at'}
+            prayer_columns = [col for col in columns if col not in skip_columns]
+            
+            # Создаем словарь для хранения данных по датам
+            prayer_data = {
+                today_str: {col: '00:00' for col in prayer_columns},  # По умолчанию нули
+                tomorrow_str: {col: '00:00' for col in prayer_columns}  # По умолчанию нули
+            }
+            
+            # Заполняем данные из базы
+            for row in rows:
+                row_dict = dict(zip(columns, row))
+                date = row_dict['date']
+                if date in prayer_data:
                     for col in prayer_columns:
-                        time_value = row_dict.get(col, '--:--')
-                        # Оставляем только часы и минуты (первые 5 символов)
-                        prayer_data[col].append(time_value[:5] if time_value else '--:--')
-                
-                # Выводим заголовок с датами
-                header = "Date     |"
-                separator = "----------"
-                
-                for date in dates:
-                    header += f" {date} |"
-                    separator += "-------"
-                
-                print(separator)
-                print(header)
-                print(separator)
-                
-                # Выводим времена молитв
-                for prayer in prayer_columns:
-                    times = prayer_data[prayer]
-                    line = f"{prayer:<9}|"
-                    for time in times:
-                        line += f" {time} |"
-                    print(line)
-                
-                print(separator + "\n")
-            else:
-                print("В базе данных нет информации о временах молитв\n")
+                        if col in row_dict and row_dict[col]:
+                            prayer_data[date][col] = row_dict[col][:5]  # Берем только часы и минуты
+            
+            # Формируем даты для заголовка
+            today_display = f"{today.day:02d}/{today.month:02d}"
+            tomorrow_display = f"{tomorrow.day:02d}/{tomorrow.month:02d}"
+            
+            # Выводим заголовок таблицы
+            separator = "-" * 26
+            print(separator)
+            print(f"Date     | {today_display} | {tomorrow_display} |")
+            print(separator)
+            
+            # Выводим времена молитв
+            for prayer in prayer_columns:
+                today_time = prayer_data[today_str].get(prayer, '00:00')
+                tomorrow_time = prayer_data[tomorrow_str].get(prayer, '00:00')
+                print(f"{prayer:<8} | {today_time} | {tomorrow_time} |")
+            
+            print(separator + "\n")
                 
         except Exception as e:
             print(f"Ошибка при получении данных из базы: {e}\n")
