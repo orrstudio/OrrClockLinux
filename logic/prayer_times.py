@@ -71,32 +71,66 @@ class PrayerTimesManager:
         """Получает времена молитв только на сегодня и завтра"""
         today = datetime.now()
         prayer_times_data = {}
+        need_api_call = False
         
+        # Сначала проверяем, есть ли данные в базе за оба дня
+        for offset in range(2):
+            date = today + timedelta(days=offset)
+            date_str = date.strftime('%Y-%m-%d')
+            
+            # Проверяем наличие данных в базе
+            self.db.cursor.execute('SELECT * FROM prayer_times WHERE date = ?', (date_str,))
+            result = self.db.cursor.fetchone()
+            
+            if result and self._is_valid_cache(result):
+                # Данные есть в базе и они актуальны
+                current_times = {k: result[i+1] for i, k in enumerate(self.prayer_times)}
+                prayer_times_data[date_str] = current_times
+                print(f"[DEBUG] prayer_times: данные за {date_str} найдены в базе")
+            else:
+                # Нужно запросить данные из API
+                need_api_call = True
+                print(f"[DEBUG] prayer_times: данные за {date_str} не найдены в базе или устарели")
+                break
+        
+        # Если данные за оба дня есть в базе, возвращаем их
+        if not need_api_call:
+            print("[DEBUG] prayer_times: данные за два дня найдены в базе, пропускаем запрос к API")
+            return prayer_times_data
+            
+        # Если данных нет или они устарели, запрашиваем из API
+        print("[DEBUG] prayer_times: запрашиваем данные из API")
         for offset in range(2):  # 0 = сегодня, 1 = завтра
             date = today + timedelta(days=offset)
+            date_str = date.strftime('%Y-%m-%d')
+            
+            # Пропускаем, если данные уже есть в prayer_times_data (из базы)
+            if date_str in prayer_times_data:
+                continue
+                
             params = {
                 'city': self.city,
                 'country': self.country,
                 'method': self.method,
             }
-            date_str = date.strftime('%d-%m-%Y')
-            url = f"{self.api_url}/{date_str}"
+            api_date_str = date.strftime('%d-%m-%Y')
+            url = f"{self.api_url}/{api_date_str}"
             print(f"[DEBUG] prayer_times: API url={url} params={params}")
             try:
                 response = requests.get(url, params=params)
-                print(f"[DEBUG] prayer_times: API {date.strftime('%Y-%m-%d')} params={params} status_code={response.status_code}")
-                print(f"[DEBUG] prayer_times: API raw response: {response.text}")
+                print(f"[DEBUG] prayer_times: API {date_str} params={params} status_code={response.status_code}")
                 if response.status_code == 200:
                     data = response.json()
                     print(f"[DEBUG] prayer_times: API parsed response: {data}")
                     if data['code'] == 200:
                         times = data['data']['timings']
                         current_times = {prayer: times[prayer] for prayer in self.prayer_times}
-                        print(f"[DEBUG] prayer_times: API {date.strftime('%Y-%m-%d')} current_times={current_times}")
-                        prayer_times_data[date.strftime('%Y-%m-%d')] = current_times
+                        print(f"[DEBUG] prayer_times: API {date_str} current_times={current_times}")
+                        prayer_times_data[date_str] = current_times
             except Exception as e:
                 print(f"Error fetching prayer times for {date}: {str(e)}")
                 continue
+                
         return prayer_times_data
 
     def update_prayer_times(self):
