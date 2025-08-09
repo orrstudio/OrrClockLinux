@@ -105,73 +105,69 @@ class NextPrayerTimeBox(GridLayout):
         print("[DEBUG] Установлен начальный цвет иконок")
         
         # Создаем анимацию для левой иконки
-        self._anim_left = (
-            Animation(color=self.highlight_icon_color, duration=self.animation_duration) +  # Темно-желтый -> Ярко-желтый
-            Animation(color=self.black_color, duration=self.animation_duration) +           # Ярко-желтый -> Черный
-            Animation(color=self.highlight_icon_color, duration=self.animation_duration)    # Черный -> Ярко-желтый
-        )
+        self._anim_left = Animation(color=self.highlight_icon_color, duration=0.5) + \
+                         Animation(color=self.normal_icon_color, duration=0.5)
         self._anim_left.repeat = True
         
-        # Создаем анимацию для правой иконки
-        self._anim_right = (
-            Animation(color=self.highlight_icon_color, duration=self.animation_duration) +  # Темно-желтый -> Ярко-желтый
-            Animation(color=self.black_color, duration=self.animation_duration) +           # Ярко-желтый -> Черный
-            Animation(color=self.highlight_icon_color, duration=self.animation_duration)    # Черный -> Ярко-желтый
-        )
+        # Создаем анимацию для правой иконки (с небольшой задержкой)
+        self._anim_right = Animation(color=self.highlight_icon_color, duration=0.5) + \
+                          Animation(color=self.normal_icon_color, duration=0.5)
         self._anim_right.repeat = True
         
-        # Применяем анимацию к иконкам
+        # Запускаем анимации
+        print("[DEBUG] Запуск анимаций иконок")
         self._anim_left.start(self.prayer_icon_left)
-        self._anim_right.start(self.prayer_icon_right)
-        print("[DEBUG] Анимация иконок запущена")
+        Clock.schedule_once(lambda dt: self._anim_right.start(self.prayer_icon_right), 0.25)
         
         # Запускаем анимацию часов, если доступно приложение
-        if self.app:
-            print("[DEBUG] Приложение доступно, проверяем метод start_clock_animation")
-            if hasattr(self.app, 'start_clock_animation'):
-                print("[DEBUG] Вызываем app.start_clock_animation()")
-                self.app.start_clock_animation()
-            else:
-                print("[DEBUG] У приложения нет метода start_clock_animation")
-                print(f"[DEBUG] Доступные методы: {[m for m in dir(self.app) if not m.startswith('_')]}")
+        if self.app and hasattr(self.app, 'start_clock_animation'):
+            print("[DEBUG] Запуск анимации часов")
+            self.app.start_clock_animation()
         else:
-            print("[DEBUG] Приложение не доступно (self.app = None)")
+            print("[DEBUG] У приложения нет метода start_clock_animation")
+            print(f"[DEBUG] Доступные методы: {[m for m in dir(self.app) if not m.startswith('_')]}")
+        
+        # Если есть ссылка на PrayerTimesBox, запускаем его анимацию
+        if hasattr(self, 'prayer_times_box') and self.prayer_times_box:
+            print("[DEBUG] Запуск анимации списка молитв")
+            self.prayer_times_box.start_animation()
         
         # Останавливаем анимацию через 1 минуту
         print("[DEBUG] Планируем остановку анимации через 60 секунд")
         Clock.schedule_once(self.stop_animation, 60)
     
     def stop_animation(self, *args):
-        """Останавливаем анимацию и возвращаем исходный цвет"""
-        print("[DEBUG] Остановка анимации иконок")
-        
-        # Отменяем запланированную остановку, если она есть
-        if hasattr(self, '_stop_event') and self._stop_event:
-            self._stop_event.cancel()
+        """Останавливаем анимацию иконок"""
+        if not self.is_animating:
+            return
             
-        # Останавливаем анимации иконок
+        print("[DEBUG] Остановка анимации иконок")
+        self.is_animating = False
+        
+        # Отменяем предыдущие анимации
         if hasattr(self, '_anim_left'):
             self._anim_left.cancel(self.prayer_icon_left)
-            print("[DEBUG] Анимация левой иконки остановлена")
         if hasattr(self, '_anim_right'):
             self._anim_right.cancel(self.prayer_icon_right)
-            print("[DEBUG] Анимация правой иконки остановлена")
-            
-        # Сбрасываем флаг анимации
-        self.is_animating = False
-        print("[DEBUG] Сброшен флаг is_animating = False")
         
-        # Возвращаем исходный темно-желтый цвет
+        # Возвращаем исходный цвет
         self.prayer_icon_left.color = self.normal_icon_color
         self.prayer_icon_right.color = self.normal_icon_color
-        print("[DEBUG] Восстановлен исходный цвет иконок")
         
         # Останавливаем анимацию часов, если доступно приложение
         if self.app and hasattr(self.app, 'stop_clock_animation'):
-            print("[DEBUG] Вызываем app.stop_clock_animation()")
+            print("[DEBUG] Остановка анимации часов")
             self.app.stop_clock_animation()
-        else:
-            print("[DEBUG] Не удалось вызвать stop_clock_animation: приложение или метод недоступны")
+            
+        # Останавливаем анимацию списка молитв, если есть ссылка
+        if hasattr(self, 'prayer_times_box') and self.prayer_times_box:
+            print("[DEBUG] Остановка анимации списка молитв")
+            self.prayer_times_box.stop_animation()
+            
+        # Отменяем запланированные события
+        if hasattr(self, '_stop_event') and self._stop_event:
+            self._stop_event.cancel()
+            self._stop_event = None
     
     def update_time(self):
         """Обновляет отображаемое время до следующей молитвы"""

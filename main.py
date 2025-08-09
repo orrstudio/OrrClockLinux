@@ -376,32 +376,34 @@ class MainWindowApp(App):
         """
         Обработчик изменения размера окна
         """
-        # Удаляем старую таблицу
-        for child in self.layout.children[:]:
-            if isinstance(child, GridLayout) and child != self.title_label:
-                self.layout.remove_widget(child)
-        
-        # Определяем новую ориентацию
+        # Отменяем запланированные события
+        if hasattr(self, '_blink_event'):
+            self._blink_event.cancel()
+            print("[DEBUG] Отменено событие _blink_event")
+                
+        if hasattr(self, '_stop_clock_event'):
+            self._stop_clock_event.cancel()
+            print("[DEBUG] Отменено событие _stop_clock_event")
+            
+        # Получаем текущую ориентацию
         current_orientation = self.get_current_orientation()
         
-        # Создаем новую таблицу
+        # Удаляем старые виджеты, если они есть
+        if hasattr(self, 'layout'):
+            for child in self.layout.children[:]:
+                if isinstance(child, (GridLayout, Label)) and child != self.title_label:
+                    self.layout.remove_widget(child)
+        
+        # Создаем новый layout в зависимости от ориентации
         if current_orientation == 'portrait':
-            portrait_layout = GridLayout(
-                cols=1,
-                spacing=dp(0),
-                size_hint=(1, 1)
-            )
-            
-            # Создаем и заполняем портретный layout
-            portrait_layout = self.create_portrait_widgets(portrait_layout)
-            main_window_body = portrait_layout
+            main_window_body = self.create_portrait_widgets(GridLayout(cols=1, spacing=0, size_hint=(1, 1)))
         elif current_orientation == 'landscape':
             main_window_body = create_landscape_prayer_times_table(self)
         else:  # square
             main_window_body = create_square_prayer_times_table(self)
         
         # Добавляем таблицу, если она не None
-        if main_window_body:
+        if main_window_body and hasattr(self, 'layout'):
             self.layout.add_widget(main_window_body)
 
     def classify_block_orientation(self, block):

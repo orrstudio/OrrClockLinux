@@ -1,5 +1,7 @@
 from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
+from kivy.animation import Animation
+from kivy.clock import Clock
 from logic.prayer_times import prayer_times_manager
 from logic.prayer_time_calculator import prayer_time_calculator
 from datetime import datetime
@@ -24,12 +26,15 @@ class PrayerTimesBox(GridLayout):
             'Gecə -------': 'Isha'
         }
         self.prayer_labels = {}  # {api_key: {'time_label': Label, 'name_label': Label}}
+        self._original_colors = {}  # Для хранения исходных цветов
+        self._animation_event = None
+        self._is_animating = False
+        
         self._build_layout()
         prayer_times_manager.add_update_listener(self.refresh_prayer_times)
         self.refresh_prayer_times()
         
         # Запускаем таймер для обновления активной молитвы каждую минуту
-        from kivy.clock import Clock
         self._update_event = Clock.schedule_interval(lambda dt: self.refresh_prayer_times(), 60)
 
     def _build_layout(self):
@@ -130,6 +135,93 @@ class PrayerTimesBox(GridLayout):
             prayer_times_manager.remove_update_listener(self.refresh_prayer_times)
             if hasattr(self, '_update_event') and self._update_event:
                 self._update_event.cancel()
+            self.stop_animation()
+            
+    def start_animation(self):
+        """Запускаем анимацию: делаем все молитвы прозрачными, кроме текущей"""
+        if self._is_animating:
+            return
+            
+        self._is_animating = True
+        print("[DEBUG] Запуск анимации списка молитв")
+        
+        # Сохраняем текущие цвета
+        self._original_colors = {}
+        for api_key, labels in self.prayer_labels.items():
+            self._original_colors[api_key] = {
+                'time_color': labels['time_label'].color,
+                'name_color': labels['name_label'].color
+            }
+        
+        # Запускаем анимацию
+        self._update_animation()
+        
+        # Останавливаем анимацию через 60 секунд
+        self._animation_event = Clock.schedule_once(self.stop_animation, 60)
+    
+    def stop_animation(self, *args):
+        """Останавливаем анимацию и возвращаем исходные цвета"""
+        if not self._is_animating:
+            return
+            
+        print("[DEBUG] Остановка анимации списка молитв")
+        self._is_animating = False
+        
+        # Отменяем запланированные события
+        if self._animation_event:
+            self._animation_event.cancel()
+            self._animation_event = None
+        
+        # Возвращаем исходные цвета
+        for api_key, labels in self.prayer_labels.items():
+            if api_key in self._original_colors:
+                labels['time_label'].color = self._original_colors[api_key]['time_color']
+                labels['name_label'].color = self._original_colors[api_key]['name_color']
+        
+        self._original_colors = {}
+    
+    def _update_animation(self):
+        """Обновляет анимацию"""
+        if not self._is_animating:
+            return
+            
+        # Получаем текущую активную молитву
+        current_prayer = None
+        prayer_times_data = prayer_times_manager.get_prayer_times()
+        current_time = datetime.now().time()
+        
+        # Находим текущую активную молитву
+        prayer_times_list = []
+        for api_key, time_str in prayer_times_data.items():
+            if api_key in self.prayer_mapping.values():
+                try:
+                    prayer_time = datetime.strptime(time_str, '%H:%M').time()
+                    prayer_times_list.append((api_key, prayer_time))
+                except (ValueError, TypeError):
+                    continue
+        
+        # Сортируем времена молитв
+        prayer_times_list.sort(key=lambda x: x[1])
+        
+        # Находим текущую активную молитву
+        for api_key, prayer_time in prayer_times_list:
+            if prayer_time > current_time:
+                break
+            current_prayer = api_key
+        
+        # Применяем анимацию: текущая молитва аква, остальные прозрачные
+        for api_key, labels in self.prayer_labels.items():
+            if api_key == current_prayer:
+                # Аква для текущей молитвы
+                labels['time_label'].color = (0, 1, 1, 1)
+                labels['name_label'].color = (0, 1, 1, 1)
+            else:
+                # Прозрачность для остальных
+                labels['time_label'].color = (0.6, 0.5, 0.0, 0)
+                labels['name_label'].color = (0.6, 0.5, 0.0, 0)
+        
+        # Запускаем следующий кадр анимации
+        Clock.schedule_once(lambda dt: self._update_animation(), 0.5)
 
 def create_prayer_times_layout(self, base_font_size):
     """Создает layout для отображения времён молитв"""

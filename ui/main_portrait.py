@@ -52,9 +52,15 @@ def create_portrait_widgets(self, portrait_layout):
     portrait_layout.add_widget(next_time_widget)                    # Виджет с временем до следующей молитвы
     portrait_layout.add_widget(create_line_label(base_font_size))   # Линия-разделитель
     
-    # Добавляем реактивный layout с временами молитв
+    # Создаем реактивный layout с временами молитв
     self.prayer_times_box = PrayerTimesBox(base_font_size=base_font_size)
     print(f"[DEBUG] create_portrait_widgets: создан self.prayer_times_box = {self.prayer_times_box}, id = {id(self.prayer_times_box)}, type = {type(self.prayer_times_box)}")
+    
+    # Связываем NextPrayerTimeBox с PrayerTimesBox для синхронизации анимаций
+    next_time_widget.prayer_times_box = self.prayer_times_box
+    print("[DEBUG] Связан NextPrayerTimeBox с PrayerTimesBox для синхронизации анимаций")
+    
+    # Добавляем виджет в layout
     portrait_layout.add_widget(self.prayer_times_box)
     
     return portrait_layout
