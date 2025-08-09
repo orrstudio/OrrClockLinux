@@ -155,14 +155,16 @@ class NextPrayerTimeBox(GridLayout):
             debug_info += f"Осталось: {time_until_str}"
             print(debug_info)
             
-            # Проверяем, изменилось ли время намаза (сравниваем с предыдущим значением)
-            if hasattr(self, 'previous_time_str') and self.previous_time_str != time_until_str:
-                print(f"Время изменилось с {self.previous_time_str} на {time_until_str}")
-                # Если время изменилось, запускаем анимацию
-                self.animate_icons()
+            # Проверяем, изменилось ли время следующего намаза (а не оставшееся время)
+            current_next_prayer = f"{next_prayer_time_str}"
+            if hasattr(self, 'previous_next_prayer'):
+                if self.previous_next_prayer != current_next_prayer:
+                    print(f"Время намаза изменилось с {self.previous_next_prayer} на {current_next_prayer}")
+                    # Если изменилось время намаза, запускаем анимацию
+                    self.animate_icons()
             
-            # Сохраняем текущее время для следующей проверки
-            self.previous_time_str = time_until_str
+            # Сохраняем текущее время следующего намаза для следующей проверки
+            self.previous_next_prayer = current_next_prayer
             
             # Обновляем текст
             self.time_label.text = time_until_str
