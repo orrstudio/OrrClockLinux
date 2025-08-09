@@ -236,7 +236,7 @@ class NextPrayerTimeBox(GridLayout):
         """Воспроизведение звукового уведомления
         
         Args:
-            notification_type (str): Тип уведомления ('15min', '30min' или '45min')
+            notification_type (str): Тип уведомления ('15min', '30min', '45min' или '60min')
         """
         with NextPrayerTimeBox._sound_lock:
             current_time = time.time()
@@ -255,6 +255,8 @@ class NextPrayerTimeBox(GridLayout):
                 sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet-30dakikakaldi.mp3')
             elif notification_type == '45min':
                 sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet-45dakikakaldi.mp3')
+            elif notification_type == '60min':
+                sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet-60dakikakaldi.mp3')
             else:  # По умолчанию 15-минутное уведомление
                 sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet-15dakikakaldi.mp3')
             
@@ -344,12 +346,17 @@ class NextPrayerTimeBox(GridLayout):
     def _start_60min_warning(self):
         """Запуск анимации предупреждения за 60 минут"""
         if self._is_60min_warning:
+            print("[DEBUG] Анимация за 60 минут уже запущена, пропускаем повторный запуск")
             return
             
         print("[DEBUG] Запуск анимации предупреждения за 60 минут")
         self._is_60min_warning = True
         self._60min_blink_opacity = 1.0
         self._60min_blink_direction = -1
+        
+        # Воспроизводим звуковое уведомление для 60-минутного предупреждения
+        print("[DEBUG] Запуск воспроизведения звукового уведомления за 60 минут")
+        self._play_notification_sound(notification_type='60min')
         
         # Запускаем обновление анимации каждые 100 мс
         self._60min_blink_event = Clock.schedule_interval(self._update_60min_blink, 0.1)
