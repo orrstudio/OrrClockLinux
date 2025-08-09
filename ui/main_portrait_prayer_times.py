@@ -145,15 +145,25 @@ class PrayerTimesBox(GridLayout):
         self._is_animating = True
         print("[DEBUG] Запуск анимации списка молитв")
         
-        # Сохраняем текущие цвета
+        # Получаем текущую активную молитву
+        current_prayer = self._get_current_prayer()
+        
+        # Сохраняем текущие цвета и прозрачность
         self._original_colors = {}
         for api_key, labels in self.prayer_labels.items():
             self._original_colors[api_key] = {
                 'time_color': labels['time_label'].color,
-                'name_color': labels['name_label'].color
+                'name_color': labels['name_label'].color,
+                'time_opacity': labels['time_label'].opacity,
+                'name_opacity': labels['name_label'].opacity
             }
+            
+            # Делаем все молитвы прозрачными, кроме активной
+            if api_key != current_prayer:
+                labels['time_label'].opacity = 0
+                labels['name_label'].opacity = 0
         
-        # Запускаем анимацию
+        # Запускаем анимацию мигания для активной молитвы
         self._update_animation()
         
         # Останавливаем анимацию через 60 секунд
@@ -172,23 +182,28 @@ class PrayerTimesBox(GridLayout):
             self._animation_event.cancel()
             self._animation_event = None
         
-        # Вместо восстановления старых цветов, обновляем все цвета в соответствии с текущим временем
+        # Отменяем все анимации и восстанавливаем видимость всех молитв
+        for api_key, labels in self.prayer_labels.items():
+            # Отменяем анимации
+            Animation.cancel_all(labels['time_label'])
+            Animation.cancel_all(labels['name_label'])
+            
+            # Восстанавливаем видимость
+            labels['time_label'].opacity = 1.0
+            labels['name_label'].opacity = 1.0
+        
+        # Обновляем все цвета в соответствии с текущим временем
         self.refresh_prayer_times()
         
         # Очищаем сохраненные цвета, так как они больше не нужны
         self._original_colors = {}
     
-    def _update_animation(self):
-        """Обновляет анимацию"""
-        if not self._is_animating:
-            return
-            
-        # Получаем текущую активную молитву
-        current_prayer = None
+    def _get_current_prayer(self):
+        """Возвращает ключ текущей активной молитвы"""
         prayer_times_data = prayer_times_manager.get_prayer_times()
         current_time = datetime.now().time()
         
-        # Находим текущую активную молитву
+        # Собираем все времена молитв и сортируем их
         prayer_times_list = []
         for api_key, time_str in prayer_times_data.items():
             if api_key in self.prayer_mapping.values():
@@ -201,25 +216,44 @@ class PrayerTimesBox(GridLayout):
         # Сортируем времена молитв
         prayer_times_list.sort(key=lambda x: x[1])
         
-        # Находим текущую активную молитву
+        # Находим текущую активную молитву (последняя молитва, время которой прошло)
+        current_prayer = None
         for api_key, prayer_time in prayer_times_list:
             if prayer_time > current_time:
                 break
             current_prayer = api_key
         
-        # Применяем анимацию: текущая молитва аква, остальные прозрачные
-        for api_key, labels in self.prayer_labels.items():
-            if api_key == current_prayer:
-                # Аква для текущей молитвы
-                labels['time_label'].color = (0, 1, 1, 1)
-                labels['name_label'].color = (0, 1, 1, 1)
-            else:
-                # Прозрачность для остальных
-                labels['time_label'].color = (0.6, 0.5, 0.0, 0)
-                labels['name_label'].color = (0.6, 0.5, 0.0, 0)
+        # Если текущее время позже последней молитвы, то активной считается последняя молитва дня
+        if current_prayer is None and prayer_times_list:
+            current_prayer = prayer_times_list[-1][0]
+            
+        return current_prayer
+    
+    def _update_animation(self):
+        """Обновляет анимацию мигания активной молитвы"""
+        if not self._is_animating:
+            return
+            
+        # Получаем текущую активную молитву
+        current_prayer = self._get_current_prayer()
+        if not current_prayer:
+            return
+            
+        # Получаем метки активной молитвы
+        labels = self.prayer_labels.get(current_prayer)
+        if not labels:
+            return
+            
+        # Создаем анимацию мигания для активной молитвы
+        anim = Animation(opacity=0.3, duration=0.75) + Animation(opacity=1.0, duration=0.75)
+        anim.repeat = True
         
-        # Запускаем следующий кадр анимации
-        Clock.schedule_once(lambda dt: self._update_animation(), 0.5)
+        # Применяем анимацию к меткам времени и названия молитвы
+        anim.start(labels['time_label'])
+        anim.start(labels['name_label'])
+        
+        # Запускаем следующее обновление через 1.5 секунды (длительность полного цикла)
+        Clock.schedule_once(lambda dt: self._update_animation(), 1.5)
 
 def create_prayer_times_layout(self, base_font_size):
     """Создает layout для отображения времён молитв"""
