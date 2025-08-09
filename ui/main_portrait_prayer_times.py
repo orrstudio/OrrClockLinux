@@ -160,7 +160,7 @@ class PrayerTimesBox(GridLayout):
         self._animation_event = Clock.schedule_once(self.stop_animation, 60)
     
     def stop_animation(self, *args):
-        """Останавливаем анимацию и возвращаем исходные цвета"""
+        """Останавливаем анимацию и обновляем цвета в соответствии с текущим временем"""
         if not self._is_animating:
             return
             
@@ -172,12 +172,10 @@ class PrayerTimesBox(GridLayout):
             self._animation_event.cancel()
             self._animation_event = None
         
-        # Возвращаем исходные цвета
-        for api_key, labels in self.prayer_labels.items():
-            if api_key in self._original_colors:
-                labels['time_label'].color = self._original_colors[api_key]['time_color']
-                labels['name_label'].color = self._original_colors[api_key]['name_color']
+        # Вместо восстановления старых цветов, обновляем все цвета в соответствии с текущим временем
+        self.refresh_prayer_times()
         
+        # Очищаем сохраненные цвета, так как они больше не нужны
         self._original_colors = {}
     
     def _update_animation(self):

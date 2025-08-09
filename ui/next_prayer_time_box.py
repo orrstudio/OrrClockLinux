@@ -104,14 +104,16 @@ class NextPrayerTimeBox(GridLayout):
         self.prayer_icon_right.color = self.normal_icon_color
         print("[DEBUG] Установлен начальный цвет иконок")
         
-        # Создаем анимацию для левой иконки
-        self._anim_left = Animation(color=self.highlight_icon_color, duration=0.5) + \
-                         Animation(color=self.normal_icon_color, duration=0.5)
+        # Устанавливаем ярко-желтый цвет для иконок
+        self.prayer_icon_left.color = self.highlight_icon_color
+        self.prayer_icon_right.color = self.highlight_icon_color
+        
+        # Создаем анимацию изменения прозрачности для левой иконки (мигание)
+        self._anim_left = Animation(opacity=0.3, duration=0.75) + Animation(opacity=1, duration=0.75)
         self._anim_left.repeat = True
         
         # Создаем анимацию для правой иконки (с небольшой задержкой)
-        self._anim_right = Animation(color=self.highlight_icon_color, duration=0.5) + \
-                          Animation(color=self.normal_icon_color, duration=0.5)
+        self._anim_right = Animation(opacity=0.3, duration=0.75) + Animation(opacity=1, duration=0.75)
         self._anim_right.repeat = True
         
         # Запускаем анимации
@@ -147,6 +149,12 @@ class NextPrayerTimeBox(GridLayout):
         # Отменяем предыдущие анимации
         if hasattr(self, '_anim_left'):
             self._anim_left.cancel(self.prayer_icon_left)
+            
+        # Возвращаем иконки в исходное состояние (темно-желтый цвет, полная непрозрачность)
+        self.prayer_icon_left.color = self.normal_icon_color
+        self.prayer_icon_right.color = self.normal_icon_color
+        self.prayer_icon_left.opacity = 1.0
+        self.prayer_icon_right.opacity = 1.0
         if hasattr(self, '_anim_right'):
             self._anim_right.cancel(self.prayer_icon_right)
         
