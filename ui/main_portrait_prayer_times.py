@@ -29,13 +29,15 @@ class PrayerTimesBox(GridLayout):
         self._original_colors = {}  # Для хранения исходных цветов
         self._animation_event = None
         self._is_animating = False
+        self._next_prayer_blink_event = None
+        self._is_next_prayer_blinking = False
         
         self._build_layout()
         prayer_times_manager.add_update_listener(self.refresh_prayer_times)
         self.refresh_prayer_times()
         
-        # Запускаем таймер для обновления активной молитвы каждую минуту
-        self._update_event = Clock.schedule_interval(lambda dt: self.refresh_prayer_times(), 60)
+        # Запускаем таймер для обновления активной молитвы каждую секунду для более точного отслеживания
+        self._update_event = Clock.schedule_interval(lambda dt: self.refresh_prayer_times(), 1)
 
     def _build_layout(self):
         prayer_times_data = prayer_times_manager.get_prayer_times()
@@ -68,6 +70,73 @@ class PrayerTimesBox(GridLayout):
                 'name_label': prayer_name_label
             }
 
+    def _is_within_15_minutes_before_prayer(self, prayer_time, current_time):
+        """Проверяет, осталось ли до времени намаза 15 минут или меньше"""
+        if not prayer_time or not current_time:
+            return False
+            
+        # Преобразуем время в datetime для удобства вычислений
+        prayer_dt = datetime.combine(datetime.today(), prayer_time)
+        current_dt = datetime.combine(datetime.today(), current_time)
+        
+        # Вычисляем разницу во времени
+        time_diff = (prayer_dt - current_dt).total_seconds()
+        
+        # Возвращаем True, если до намаза осталось от 0 до 15 минут
+        return 0 <= time_diff <= 900  # 900 секунд = 15 минут
+    
+    def _start_next_prayer_blink(self, next_prayer_key):
+        """Запускает анимацию мигания для следующего намаза"""
+        if self._is_next_prayer_blinking:
+            return
+            
+        print("[DEBUG] Запуск мигания следующего намаза:", next_prayer_key)
+        self._is_next_prayer_blinking = True
+        self._next_prayer_key = next_prayer_key
+        self._update_next_prayer_blink()
+    
+    def _stop_next_prayer_blink(self):
+        """Останавливает анимацию мигания для следующего намаза"""
+        if not self._is_next_prayer_blinking:
+            return
+            
+        print("[DEBUG] Остановка мигания следующего намаза")
+        self._is_next_prayer_blinking = False
+        
+        # Отменяем запланированное событие мигания
+        if self._next_prayer_blink_event:
+            self._next_prayer_blink_event.cancel()
+            self._next_prayer_blink_event = None
+        
+        # Восстанавливаем полную непрозрачность для следующего намаза
+        if hasattr(self, '_next_prayer_key') and self._next_prayer_key in self.prayer_labels:
+            labels = self.prayer_labels[self._next_prayer_key]
+            labels['time_label'].opacity = 1.0
+            labels['name_label'].opacity = 1.0
+    
+    def _update_next_prayer_blink(self, *args):
+        """Обновляет анимацию мигания для следующего намаза"""
+        if not self._is_next_prayer_blinking or not hasattr(self, '_next_prayer_key'):
+            return
+            
+        # Получаем метки следующего намаза
+        labels = self.prayer_labels.get(self._next_prayer_key)
+        if not labels:
+            return
+        
+        # Инвертируем прозрачность (мигание)
+        current_opacity = labels['time_label'].opacity
+        new_opacity = 0.3 if current_opacity > 0.7 else 1.0
+        
+        # Применяем новую прозрачность
+        labels['time_label'].opacity = new_opacity
+        labels['name_label'].opacity = new_opacity
+        
+        # Запускаем следующее обновление через 0.5 секунды
+        self._next_prayer_blink_event = Clock.schedule_once(
+            self._update_next_prayer_blink, 0.5
+        )
+    
     def refresh_prayer_times(self):
         prayer_times_data = prayer_times_manager.get_prayer_times()
         current_time = datetime.now().time()
@@ -92,10 +161,12 @@ class PrayerTimesBox(GridLayout):
         # и следующую молитву
         current_prayer = None
         next_prayer = None
+        next_prayer_time = None
         
         for i, (api_key, prayer_time) in enumerate(prayer_times_list):
             if prayer_time > current_time:
                 next_prayer = api_key
+                next_prayer_time = prayer_time
                 break
             current_prayer = api_key
         
@@ -105,6 +176,17 @@ class PrayerTimesBox(GridLayout):
             current_prayer = prayer_times_list[-1][0]
         if next_prayer is None and prayer_times_list:
             next_prayer = prayer_times_list[0][0]
+            next_prayer_time = prayer_times_list[0][1]
+        
+        # Проверяем, нужно ли запускать мигание для следующей молитвы
+        if next_prayer_time and next_prayer:
+            if self._is_within_15_minutes_before_prayer(next_prayer_time, current_time):
+                if not self._is_next_prayer_blinking or getattr(self, '_next_prayer_key', None) != next_prayer:
+                    self._start_next_prayer_blink(next_prayer)
+            else:
+                self._stop_next_prayer_blink()
+        else:
+            self._stop_next_prayer_blink()
         
         # Обновляем текст и цвет для всех меток
         for api_key, labels in self.prayer_labels.items():
