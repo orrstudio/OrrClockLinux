@@ -1,6 +1,7 @@
 import kivy
 from datetime import datetime
 import math
+from kivy.animation import Animation
 kivy.require('2.2.1')
 
 # Импорты базовых классов Kivy
@@ -117,7 +118,8 @@ class MainWindowApp(App):
             height=str(Window.width * 0.3) + 'dp',  # высота зависит от ширины
             pos_hint={'top': 1},  # прижат к верху
             font_size=str(Window.width // 3.5) + 'sp',  # начальный размер шрифта
-            halign='center'  # центрирование текста
+            halign='center',  # центрирование текста
+            opacity=1,  # Начальная прозрачность (1 - полностью непрозрачный)
         )
         
         # Привязываем обновление размера шрифта и высоты к изменению размера окна
@@ -251,10 +253,92 @@ class MainWindowApp(App):
             self.update_title_color(color_tuple)
         
     def update_title_color(self, color):
-        """
-        Обновляем цвет заголовка
-        """
+        """Обновляем цвет заголовка"""
         self.title_label.color = color
+        
+    def start_clock_animation(self, *args):
+        """Запускаем анимацию мигания часов"""
+        print("[DEBUG] Запуск анимации часов")
+        
+        # Останавливаем предыдущую анимацию, если она есть
+        self.stop_clock_animation()
+            
+        # Сохраняем исходный цвет и прозрачность
+        if not hasattr(self, '_original_clock_color'):
+            self._original_clock_color = self.title_label.color.copy()
+            print("[DEBUG] Сохранен исходный цвет часов:", self._original_clock_color)
+            
+        # Устанавливаем начальную прозрачность
+        self.title_label.opacity = 1
+        print(f"[DEBUG] Начальная прозрачность: {self.title_label.opacity}")
+        
+        # Создаем функцию для мигания, которая будет вызываться периодически
+        def blink_clock(dt):
+            if not hasattr(self, '_blinking') or not self._blinking:
+                return
+                
+            # Инвертируем прозрачность
+            new_opacity = 0 if self.title_label.opacity > 0.5 else 1
+            Animation.cancel_all(self.title_label, 'opacity')
+            anim = Animation(opacity=new_opacity, duration=0.5)
+            anim.start(self.title_label)
+            
+            # Запускаем следующий кадр анимации
+            if hasattr(self, '_blink_event'):
+                self._blink_event.cancel()
+            self._blink_event = Clock.schedule_once(blink_clock, 0.5)
+        
+        # Запускаем анимацию мигания
+        self._blinking = True
+        blink_clock(0)
+        print("[DEBUG] Анимация мигания запущена")
+        
+        # Останавливаем анимацию через 1 минуту
+        def stop_blinking(dt):
+            if hasattr(self, '_blinking') and self._blinking:
+                print("[DEBUG] Остановка мигания по таймеру")
+                self._blinking = False
+                if hasattr(self, '_blink_event'):
+                    self._blink_event.cancel()
+                self.stop_clock_animation()
+        
+        if hasattr(self, '_stop_clock_event'):
+            self._stop_clock_event.cancel()
+        self._stop_clock_event = Clock.schedule_once(stop_blinking, 60)
+        print("[DEBUG] Запланирована остановка анимации через 60 секунд")
+        print("[DEBUG] Запланирована остановка анимации через 60 секунд")
+        
+    def stop_clock_animation(self, *args):
+        """Останавливаем анимацию и восстанавливаем исходное состояние"""
+        print("[DEBUG] Остановка анимации часов")
+        
+        # Отменяем все анимации прозрачности
+        Animation.cancel_all(self.title_label, 'opacity')
+        
+        # Останавливаем мигание, если оно активно
+        if hasattr(self, '_blinking'):
+            self._blinking = False
+            print("[DEBUG] Флаг _blinking установлен в False")
+            
+        # Отменяем запланированные события
+        if hasattr(self, '_blink_event'):
+            self._blink_event.cancel()
+            print("[DEBUG] Отменено событие _blink_event")
+            
+        if hasattr(self, '_stop_clock_event'):
+            self._stop_clock_event.cancel()
+            print("[DEBUG] Отменено событие _stop_clock_event")
+        
+        # Восстанавливаем исходную прозрачность и цвет
+        if hasattr(self, '_original_clock_color'):
+            self.title_label.color = self._original_clock_color
+            print("[DEBUG] Восстановлен исходный цвет часов")
+            
+        self.title_label.opacity = 1
+        print(f"[DEBUG] Восстановлена прозрачность: {self.title_label.opacity}")
+        
+        # Принудительно обновляем отображение
+        self.title_label.canvas.ask_update()
         
     def update_color(self, color_name):
         """

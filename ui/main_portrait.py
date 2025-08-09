@@ -42,7 +42,7 @@ def create_portrait_widgets(self, portrait_layout):
     date_hijri_label = create_hijri_date_label(base_font_size)
     
     # Создаем виджет с временем до следующей молитвы (автообновляется каждую минуту)
-    next_time_widget = NextPrayerTimeBox(base_font_size=base_font_size)
+    next_time_widget = NextPrayerTimeBox(base_font_size=base_font_size, app=self)
 
     # Добавляем виджеты в layout в нужном порядке
     portrait_layout.add_widget(create_space_label(base_font_size))  # Пустое пространство
