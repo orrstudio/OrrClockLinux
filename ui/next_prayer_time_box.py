@@ -1,5 +1,9 @@
 from kivy.clock import Clock
 import os
+import subprocess
+import logging
+import threading
+import time
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.image import Image
@@ -19,6 +23,10 @@ class NextPrayerTimeBox(GridLayout):
     next_prayer_time = StringProperty('00:00')
     time_until = StringProperty('00:00')
     base_font_size = NumericProperty(20)
+    
+    # Глобальная блокировка для предотвращения одновременного воспроизведения звука
+    _sound_lock = threading.Lock()
+    _last_sound_time = 0
     
     # Ссылка на главное приложение для доступа к часам
     app = ObjectProperty(None)
@@ -224,15 +232,64 @@ class NextPrayerTimeBox(GridLayout):
         if hasattr(self, 'time_label'):
             self.time_label.opacity = self._blink_opacity
     
+    def _play_notification_sound(self):
+        """Воспроизведение звукового уведомления"""
+        with NextPrayerTimeBox._sound_lock:
+            current_time = time.time()
+            # Проверяем, что с момента последнего воспроизведения прошло больше 30 секунд
+            if current_time - NextPrayerTimeBox._last_sound_time < 30:
+                print("[DEBUG] Пропускаем воспроизведение звука: не прошло 30 секунд с последнего воспроизведения")
+                return
+                
+            print("[DEBUG] Вход в _play_notification_sound")
+        try:
+            # Получаем путь к корневой папке проекта
+            project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet-15dakikakaldi.mp3')
+            
+            print(f"[DEBUG] Проверяем файл: {sound_file}")
+            
+            # Проверяем существование файла
+            if not os.path.exists(sound_file):
+                error_msg = f"Файл уведомления не найден: {sound_file}"
+                print(f"[ERROR] {error_msg}")
+                logging.error(error_msg)
+                return False
+                
+            print("[DEBUG] Запускаем MPV для воспроизведения звука")
+            
+            # Воспроизводим звук через MPV в фоновом режиме
+            process = subprocess.Popen(
+                ['mpv', '--no-video', '--no-terminal', '--really-quiet', sound_file],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE
+            )
+            
+            print(f"[DEBUG] MPV запущен с PID: {process.pid}")
+            logging.info("Воспроизведено звуковое уведомление о скором намазе")
+            NextPrayerTimeBox._last_sound_time = time.time()
+            return True
+            
+        except Exception as e:
+            error_msg = f"Ошибка при воспроизведении звукового уведомления: {str(e)}"
+            print(f"[ERROR] {error_msg}")
+            logging.error(error_msg, exc_info=True)
+            return False
+    
     def _start_time_blink(self):
         """Запуск анимации мигания времени следующего намаза"""
         if self._is_time_blinking:
+            print("[DEBUG] Анимация уже запущена, пропускаем повторный запуск")
             return
             
-        print("[DEBUG] Запуск мигания времени следующего намаза")
+        print(f"[DEBUG] Запуск мигания времени следующего намаза")
         self._is_time_blinking = True
         self._blink_opacity = 1.0
         self._blink_direction = -1
+        
+        # Воспроизводим звуковое уведомление
+        print("[DEBUG] Запуск воспроизведения звукового уведомления")
+        self._play_notification_sound()
         
         # Запускаем обновление анимации каждые 100 мс
         self._blink_event = Clock.schedule_interval(self._update_time_blink, 0.1)
