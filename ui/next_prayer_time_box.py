@@ -138,6 +138,11 @@ class NextPrayerTimeBox(GridLayout):
             halign='center',
             size_hint_x=1
         )
+        # Отключаем анимацию для свойства opacity, устанавливая его напрямую
+        self.time_label.opacity = 1.0
+        # Отключаем анимацию через стиль
+        from kivy.animation import Animation
+        Animation.cancel_all(self.time_label, 'opacity')
         
         self.prayer_icon_right = Label(
             text='\uf353',  # Код иконки prayer_times из Material Symbols
@@ -179,28 +184,6 @@ class NextPrayerTimeBox(GridLayout):
         if hasattr(self, '_anim_right'):
             print("[DEBUG] Отмена предыдущей анимации правой иконки")
             self._anim_right.cancel(self.prayer_icon_right)
-        
-        # Устанавливаем начальный темно-желтый цвет
-        self.prayer_icon_left.color = self.normal_icon_color
-        self.prayer_icon_right.color = self.normal_icon_color
-        print("[DEBUG] Установлен начальный цвет иконок")
-        
-        # Устанавливаем ярко-желтый цвет для иконок
-        self.prayer_icon_left.color = self.highlight_icon_color
-        self.prayer_icon_right.color = self.highlight_icon_color
-        
-        # Создаем анимацию изменения прозрачности для левой иконки (мигание)
-        self._anim_left = Animation(opacity=0.3, duration=0.75) + Animation(opacity=1, duration=0.75)
-        self._anim_left.repeat = True
-        
-        # Создаем анимацию для правой иконки (с небольшой задержкой)
-        self._anim_right = Animation(opacity=0.3, duration=0.75) + Animation(opacity=1, duration=0.75)
-        self._anim_right.repeat = True
-        
-        # Запускаем анимации
-        print("[DEBUG] Запуск анимаций иконок")
-        self._anim_left.start(self.prayer_icon_left)
-        Clock.schedule_once(lambda dt: self._anim_right.start(self.prayer_icon_right), 0.25)
         
         # Запускаем анимацию часов, если доступно приложение
         if self.app and hasattr(self.app, 'start_clock_animation'):
@@ -262,24 +245,18 @@ class NextPrayerTimeBox(GridLayout):
         self._stop_time_blink()
     
     def _update_time_blink(self, dt):
-        """Обновление анимации мигания времени следующего намаза"""
-        if not self._is_time_blinking:
+        """Обновление мигания времени следующего намаза
+        
+        Параметры:
+        - Прозрачность переключается между 1.0 (видимый) и 0.0 (прозрачный)
+        - Частота переключения: 500 мс (0.5 секунды)
+        - Без анимации - только мгновенное переключение
+        """
+        if not self._is_time_blinking or not hasattr(self, 'time_label'):
             return
             
-        # Изменяем прозрачность
-        self._blink_opacity += self._blink_direction * 0.1
-        
-        # Меняем направление, если достигли границ
-        if self._blink_opacity <= 0.3:
-            self._blink_opacity = 0.3
-            self._blink_direction = 1
-        elif self._blink_opacity >= 1.0:
-            self._blink_opacity = 1.0
-            self._blink_direction = -1
-            
-        # Применяем прозрачность к метке времени
-        if hasattr(self, 'time_label'):
-            self.time_label.opacity = self._blink_opacity
+        # Мгновенное переключение видимости
+        self.time_label.opacity = 0.0 if self.time_label.opacity == 1.0 else 1.0
     
     def _play_sound_file(self, sound_file, is_adhan=False):
         """
@@ -481,15 +458,14 @@ class NextPrayerTimeBox(GridLayout):
         print(f"[DEBUG] Запуск мигания времени следующего намаза")
         self._is_time_blinking = True
         self._blink_opacity = 1.0
-        self._blink_direction = -1
         
         # Воспроизводим звуковое уведомление для 15-минутного предупреждения
         print("[DEBUG] Запуск воспроизведения звукового уведомления за 15 минут")
         self._play_notification_sound(notification_type='15min')
         
-        # Запускаем обновление анимации каждые 100 мс
-        self._blink_event = Clock.schedule_interval(self._update_time_blink, 0.1)
-    
+        # Запускаем обновление анимации каждые 500 мс
+        self._blink_event = Clock.schedule_interval(self._update_time_blink, 0.5)
+        
     def _stop_time_blink(self):
         """Остановка анимации мигания времени следующего намаза"""
         if not self._is_time_blinking:
@@ -512,19 +488,8 @@ class NextPrayerTimeBox(GridLayout):
         if not self._is_30min_warning or not hasattr(self, 'time_label'):
             return
             
-        # Изменяем прозрачность
-        self._30min_blink_opacity += self._30min_blink_direction * 0.1
-        
-        # Меняем направление, если достигли границ
-        if self._30min_blink_opacity <= 0.3:
-            self._30min_blink_opacity = 0.3
-            self._30min_blink_direction = 1
-        elif self._30min_blink_opacity >= 1.0:
-            self._30min_blink_opacity = 1.0
-            self._30min_blink_direction = -1
-            
-        # Применяем прозрачность к метке времени
-        self.time_label.opacity = self._30min_blink_opacity
+        # Мгновенное переключение видимости
+        self.time_label.opacity = 0.0 if self.time_label.opacity == 1.0 else 1.0
     
     def _start_60min_warning(self):
         """Запуск анимации предупреждения за 60 минут"""
@@ -552,19 +517,8 @@ class NextPrayerTimeBox(GridLayout):
         if not self._is_60min_warning or not hasattr(self, 'time_label'):
             return
             
-        # Изменяем прозрачность
-        self._60min_blink_opacity += self._60min_blink_direction * 0.1
-        
-        # Меняем направление, если достигли границ
-        if self._60min_blink_opacity <= 0.3:
-            self._60min_blink_opacity = 0.3
-            self._60min_blink_direction = 1
-        elif self._60min_blink_opacity >= 1.0:
-            self._60min_blink_opacity = 1.0
-            self._60min_blink_direction = -1
-            
-        # Применяем прозрачность к метке времени
-        self.time_label.opacity = self._60min_blink_opacity
+        # Мгновенное переключение видимости
+        self.time_label.opacity = 0.0 if self.time_label.opacity == 1.0 else 1.0
         
     def _stop_60min_warning(self):
         """Остановка анимации предупреждения за 60 минут"""
@@ -609,19 +563,8 @@ class NextPrayerTimeBox(GridLayout):
         if not self._is_45min_warning or not hasattr(self, 'time_label'):
             return
             
-        # Изменяем прозрачность
-        self._45min_blink_opacity += self._45min_blink_direction * 0.1
-        
-        # Меняем направление, если достигли границ
-        if self._45min_blink_opacity <= 0.3:
-            self._45min_blink_opacity = 0.3
-            self._45min_blink_direction = 1
-        elif self._45min_blink_opacity >= 1.0:
-            self._45min_blink_opacity = 1.0
-            self._45min_blink_direction = -1
-            
-        # Применяем прозрачность к метке времени
-        self.time_label.opacity = self._45min_blink_opacity
+        # Мгновенное переключение видимости
+        self.time_label.opacity = 0.0 if self.time_label.opacity == 1.0 else 1.0
         
     def _stop_45min_warning(self):
         """Остановка анимации предупреждения за 45 минут"""
@@ -800,32 +743,33 @@ class NextPrayerTimeBox(GridLayout):
         print("[DEBUG] Запуск мигания желтого текста следующего намаза")
         self._is_yellow_text_blinking = True
         self._yellow_text_blink_opacity = 1.0
-        self._yellow_text_blink_direction = -1
         
-        # Запускаем обновление анимации каждые 500 мс (как в оригинальной реализации)
+        # Запускаем обновление анимации каждые 500 мс
         self._yellow_text_blink_event = Clock.schedule_interval(self._update_yellow_text_blink, 0.5)
     
     def _update_yellow_text_blink(self, dt):
-        """Обновление анимации мигания желтого текста"""
+        """Обновление анимации мигания желтого текста
+        
+        Параметры анимации:
+        - Прозрачность переключается между 1.0 (полностью видимый) и 0.0 (полностью прозрачный)
+        - Частота обновления: 500 мс (0.5 секунды)
+        - Без плавности - мгновенное переключение
+        """
         if not hasattr(self, '_is_yellow_text_blinking') or not self._is_yellow_text_blinking:
             return
             
-        # Изменяем прозрачность
-        self._yellow_text_blink_opacity += self._yellow_text_blink_direction * 0.7
-        
-        # Меняем направление, если достигли границ
-        if self._yellow_text_blink_opacity <= 0.3:
-            self._yellow_text_blink_opacity = 0.3
-            self._yellow_text_blink_direction = 1
-        elif self._yellow_text_blink_opacity >= 1.0:
-            self._yellow_text_blink_opacity = 1.0
-            self._yellow_text_blink_direction = -1
+        # Мгновенное переключение между 0.0 и 1.0 без плавности
+        self._yellow_text_blink_opacity = 0.0 if self._yellow_text_blink_opacity == 1.0 else 1.0
             
         # Применяем прозрачность к метке времени и названию следующего намаза
         if hasattr(self, 'prayer_times_box'):
             next_prayer = self._get_next_prayer_key()
             if next_prayer and next_prayer in self.prayer_times_box.prayer_labels:
                 labels = self.prayer_times_box.prayer_labels[next_prayer]
+                # Устанавливаем прозрачность без анимации
+                # Устанавливаем полную видимость без анимации
+                labels['time_label'].opacity = 1.0
+                labels['name_label'].opacity = 1.0
                 labels['time_label'].opacity = self._yellow_text_blink_opacity
                 labels['name_label'].opacity = self._yellow_text_blink_opacity
     
@@ -975,8 +919,11 @@ class NextPrayerTimeBox(GridLayout):
                 if self._is_time_blinking and current_minutes != 15:
                     print("[DEBUG] Остановка анимации мигания времени (условия не выполняются)")
                     self._stop_time_blink()
-                
-                # Аналогично для других анимаций
+                    
+                if hasattr(self, '_is_yellow_text_blinking') and self._is_yellow_text_blinking and current_minutes not in [15, 30, 45, 60]:
+                    print("[DEBUG] Остановка мигания желтого текста (условия не выполняются)")
+                    self._stop_yellow_text_blink()
+                    
                 if self._is_30min_warning and current_minutes != 30:
                     print("[DEBUG] Остановка 30-минутного предупреждения (условия не выполняются)")
                     self._stop_30min_warning()
