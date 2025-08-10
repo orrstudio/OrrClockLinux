@@ -252,13 +252,13 @@ class NextPrayerTimeBox(GridLayout):
             
             # Выбираем файл в зависимости от типа уведомления
             if notification_type == '30min':
-                sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet-30dakikakaldi.mp3')
+                sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-30dakikakaldi.mp3')
             elif notification_type == '45min':
-                sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet-45dakikakaldi.mp3')
+                sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-45dakikakaldi.mp3')
             elif notification_type == '60min':
-                sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet-60dakikakaldi.mp3')
+                sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-60dakikakaldi.mp3')
             else:  # По умолчанию 15-минутное уведомление
-                sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet-15dakikakaldi.mp3')
+                sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-15dakikakaldi.mp3')
             
             print(f"[DEBUG] Проверяем файл: {sound_file}")
             
