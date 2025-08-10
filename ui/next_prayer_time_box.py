@@ -282,14 +282,24 @@ class NextPrayerTimeBox(GridLayout):
                     loglevel='fatal' # Только критические ошибки
                 )
                 
-                # Воспроизводим звук
+                # Воспроизводим первый звук
                 player.play(sound_file)
                 player.wait_for_playback()
+                
+                # Если это уведомление о смене намаза, воспроизводим второй звук
+                if notification_type == 'prayer_change':
+                    adhan_file = os.path.join(project_dir, 'audio', 'adhan', 'Adhan01.mp3')
+                    if os.path.exists(adhan_file):
+                        print("[DEBUG] Воспроизведение азана после смены намаза")
+                        player.play(adhan_file)
+                        player.wait_for_playback()
+                    else:
+                        print(f"[ERROR] Файл азана не найден: {adhan_file}")
                 
                 # Освобождаем ресурсы
                 player.terminate()
                 
-                print("[DEBUG] Воспроизведение звука завершено")
+                print("[DEBUG] Воспроизведение звуков завершено")
                 logging.info(f"Воспроизведено звуковое уведомление: {notification_type}")
                 NextPrayerTimeBox._last_sound_time = time.time()
                 return True
