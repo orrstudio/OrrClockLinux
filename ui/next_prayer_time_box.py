@@ -252,7 +252,9 @@ class NextPrayerTimeBox(GridLayout):
             project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             
             # Выбираем файл в зависимости от типа уведомления
-            if notification_type == '30min':
+            if notification_type == 'prayer_change':
+                sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-VaxtGirdi.mp3')
+            elif notification_type == '30min':
                 sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-30dakikakaldi.mp3')
             elif notification_type == '45min':
                 sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-45dakikakaldi.mp3')
@@ -678,8 +680,9 @@ class NextPrayerTimeBox(GridLayout):
             if hasattr(self, 'previous_next_prayer'):
                 if self.previous_next_prayer != current_next_prayer:
                     print(f"Время намаза изменилось с {self.previous_next_prayer} на {current_next_prayer}")
-                    # Если изменилось время намаза, запускаем анимацию
+                    # Если изменилось время намаза, запускаем анимацию и воспроизводим азан
                     self.animate_icons()
+                    self._play_notification_sound('prayer_change')
             
             # Сохраняем текущее время следующего намаза для следующей проверки
             self.previous_next_prayer = current_next_prayer
