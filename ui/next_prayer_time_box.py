@@ -764,6 +764,185 @@ class NextPrayerTimeBox(GridLayout):
             traceback.print_exc()
             return 0
     
+    def _check_prayer_time(self, current_time, next_prayer_time_str):
+        """
+        Проверяет оставшееся время до намаза и возвращает кортеж (найдено_совпадение, минут_до_намаза)
+        
+        Args:
+            current_time: Текущее время
+            next_prayer_time_str: Время следующего намаза в формате 'ЧЧ:ММ'
+            
+        Returns:
+            tuple: (bool, int) - (найдено_совпадение, минут_до_намаза)
+        """
+        minutes = self._get_minutes_until_prayer(current_time, next_prayer_time_str)
+        
+        # Добавляем проверку на уже показанное уведомление
+        if hasattr(self, '_last_notification_minutes') and self._last_notification_minutes == minutes:
+            return False, minutes
+            
+        print(f"[DEBUG] Проверка времени до намаза: {minutes} минут")
+        
+        # Проверяем все временные интервалы
+        if minutes in [15, 30, 45, 60]:
+            print(f"[DEBUG] Обнаружено {minutes} минут до намаза")
+            self._last_notification_minutes = minutes
+            return True, minutes
+            
+        return False, minutes
+    
+    def _start_yellow_text_blink(self):
+        """Запуск анимации мигания желтого текста следующего намаза"""
+        if hasattr(self, '_is_yellow_text_blinking') and self._is_yellow_text_blinking:
+            print("[DEBUG] Анимация мигания желтого текста уже запущена")
+            return
+            
+        print("[DEBUG] Запуск мигания желтого текста следующего намаза")
+        self._is_yellow_text_blinking = True
+        self._yellow_text_blink_opacity = 1.0
+        self._yellow_text_blink_direction = -1
+        
+        # Запускаем обновление анимации каждые 500 мс (как в оригинальной реализации)
+        self._yellow_text_blink_event = Clock.schedule_interval(self._update_yellow_text_blink, 0.5)
+    
+    def _update_yellow_text_blink(self, dt):
+        """Обновление анимации мигания желтого текста"""
+        if not hasattr(self, '_is_yellow_text_blinking') or not self._is_yellow_text_blinking:
+            return
+            
+        # Изменяем прозрачность
+        self._yellow_text_blink_opacity += self._yellow_text_blink_direction * 0.7
+        
+        # Меняем направление, если достигли границ
+        if self._yellow_text_blink_opacity <= 0.3:
+            self._yellow_text_blink_opacity = 0.3
+            self._yellow_text_blink_direction = 1
+        elif self._yellow_text_blink_opacity >= 1.0:
+            self._yellow_text_blink_opacity = 1.0
+            self._yellow_text_blink_direction = -1
+            
+        # Применяем прозрачность к метке времени и названию следующего намаза
+        if hasattr(self, 'prayer_times_box'):
+            next_prayer = self._get_next_prayer_key()
+            if next_prayer and next_prayer in self.prayer_times_box.prayer_labels:
+                labels = self.prayer_times_box.prayer_labels[next_prayer]
+                labels['time_label'].opacity = self._yellow_text_blink_opacity
+                labels['name_label'].opacity = self._yellow_text_blink_opacity
+    
+    def _stop_yellow_text_blink(self):
+        """Остановка анимации мигания желтого текста"""
+        if not hasattr(self, '_is_yellow_text_blinking') or not self._is_yellow_text_blinking:
+            return
+            
+        print("[DEBUG] Остановка мигания желтого текста следующего намаза")
+        self._is_yellow_text_blinking = False
+        
+        # Отменяем запланированное обновление
+        if hasattr(self, '_yellow_text_blink_event') and self._yellow_text_blink_event:
+            self._yellow_text_blink_event.cancel()
+            self._yellow_text_blink_event = None
+            
+        # Восстанавливаем полную видимость
+        if hasattr(self, 'prayer_times_box'):
+            next_prayer = self._get_next_prayer_key()
+            if next_prayer and next_prayer in self.prayer_times_box.prayer_labels:
+                labels = self.prayer_times_box.prayer_labels[next_prayer]
+                labels['time_label'].opacity = 1.0
+                labels['name_label'].opacity = 1.0
+    
+    def _get_next_prayer_key(self):
+        """Возвращает ключ следующей молитвы"""
+        if not hasattr(self, 'prayer_times_box') or not hasattr(self.prayer_times_box, 'prayer_mapping'):
+            return None
+            
+        current_time = datetime.now().time()
+        prayer_times_data = prayer_times_manager.get_prayer_times()
+        
+        # Находим следующую молитву
+        next_prayer_time_str = prayer_time_calculator.get_next_prayer_time(
+            current_time, 
+            prayer_times_data
+        )
+        
+        # Находим ключ следующей молитвы
+        for key, value in self.prayer_times_box.prayer_mapping.items():
+            if value in prayer_times_data and prayer_times_data[value] == next_prayer_time_str:
+                return value
+                
+        return None
+    
+    def _stop_all_animations(self):
+        """
+        Останавливает все активные анимации уведомлений.
+        Используется перед запуском новой анимации, чтобы избежать конфликтов.
+        """
+        # Останавливаем анимацию мигания времени
+        self._stop_time_blink()
+        
+        # Останавливаем анимацию мигания желтого текста
+        self._stop_yellow_text_blink()
+        
+        # Останавливаем анимации предупреждений
+        if hasattr(self, '_stop_30min_warning'):
+            self._stop_30min_warning()
+        if hasattr(self, '_stop_45min_warning'):
+            self._stop_45min_warning()
+        if hasattr(self, '_stop_60min_warning'):
+            self._stop_60min_warning()
+            
+        if self._is_45min_warning:
+            print("[DEBUG] Остановка 45-минутного предупреждения")
+            self._stop_45min_warning()
+            
+            print("[DEBUG] Остановка 60-минутного предупреждения")
+            self._stop_60min_warning()
+    
+    def _handle_prayer_notification(self, minutes_left, next_prayer_time_str):
+        """
+        Обрабатывает уведомление о времени до намаза.
+        
+        Args:
+            minutes_left (int): Количество минут до намаза (15, 30, 45, 60)
+            next_prayer_time_str (str): Время следующего намаза в формате 'ЧЧ:ММ'
+        """
+        print(f"[DEBUG] Обработка уведомления за {minutes_left} минут до намаза {next_prayer_time_str}")
+        
+        # Останавливаем все текущие анимации
+        self._stop_all_animations()
+        
+        # Запускаем соответствующую анимацию и звуковое уведомление
+        if minutes_left == 15:
+            print("[DEBUG] Запуск анимации мигания времени (15 минут)")
+            self._start_time_blink()  # Мигание красных цифр
+            self._start_yellow_text_blink()  # Мигание желтого текста
+            self._play_notification_sound('15min')
+            # Устанавливаем таймер на остановку анимации желтого текста через 1 минуту
+            Clock.schedule_once(lambda dt: self._stop_yellow_text_blink() if hasattr(self, '_stop_yellow_text_blink') else None, 60)
+        elif minutes_left == 30:
+            print("[DEBUG] Запуск 30-минутного предупреждения")
+            self._start_30min_warning()
+            self._start_yellow_text_blink()  # Мигание желтого текста
+            self._play_notification_sound('30min')
+            # Устанавливаем таймер на остановку анимаций через 1 минуту
+            Clock.schedule_once(lambda dt: self._stop_30min_warning() if hasattr(self, '_stop_30min_warning') else None, 60)
+            Clock.schedule_once(lambda dt: self._stop_yellow_text_blink() if hasattr(self, '_stop_yellow_text_blink') else None, 60)
+        elif minutes_left == 45:
+            print("[DEBUG] Запуск 45-минутного предупреждения")
+            self._start_45min_warning()
+            self._start_yellow_text_blink()  # Мигание желтого текста
+            self._play_notification_sound('45min')
+            # Устанавливаем таймер на остановку анимаций через 1 минуту
+            Clock.schedule_once(lambda dt: self._stop_45min_warning() if hasattr(self, '_stop_45min_warning') else None, 60)
+            Clock.schedule_once(lambda dt: self._stop_yellow_text_blink() if hasattr(self, '_stop_yellow_text_blink') else None, 60)
+        elif minutes_left == 60:
+            print("[DEBUG] Запуск 60-минутного предупреждения")
+            self._start_60min_warning()
+            self._start_yellow_text_blink()  # Мигание желтого текста
+            self._play_notification_sound('60min')
+            # Устанавливаем таймер на остановку анимаций через 1 минуту
+            Clock.schedule_once(lambda dt: self._stop_60min_warning() if hasattr(self, '_stop_60min_warning') else None, 60)
+            Clock.schedule_once(lambda dt: self._stop_yellow_text_blink() if hasattr(self, '_stop_yellow_text_blink') else None, 60)
+    
     def update_time(self):
         """Обновляет отображаемое время до следующей молитвы"""
         try:
@@ -771,67 +950,106 @@ class NextPrayerTimeBox(GridLayout):
             now = datetime.now()
             current_time = now.time()
             
-            # Получаем времена молитв
-            prayer_times_data = prayer_times_manager.get_prayer_times()
+            # Получаем времена молитв (кешируем вызов)
+            if not hasattr(self, '_last_prayer_times_update') or (now - self._last_prayer_times_update).total_seconds() > 60:
+                self._prayer_times_cache = prayer_times_manager.get_prayer_times()
+                self._last_prayer_times_update = now
             
             # Находим следующую молитву
             next_prayer_time_str = prayer_time_calculator.get_next_prayer_time(
                 current_time, 
-                prayer_times_data
-            )
+                self._prayer_times_cache)
             
-            # Вычисляем оставшееся время
-            time_until_str = prayer_time_calculator.get_time_until_next_prayer(
-                current_time,
-                next_prayer_time_str
-            )
+            # Проверяем, нужно ли показать уведомление
+            is_notification_time, minutes_left = self._check_prayer_time(current_time, next_prayer_time_str)
             
-            # Проверяем условия для различных предупреждений
-            if self._is_exactly_30_minutes_before_prayer(current_time, next_prayer_time_str):
-                # Ровно 30 минут до намаза - запускаем 30-минутное предупреждение
-                if not self._is_30min_warning and not self._is_time_blinking:
-                    print(f"[DEBUG] До намаза {next_prayer_time_str} осталось 30 минут, запускаем 30-минутное предупреждение")
-                    self._start_30min_warning()
-                # Останавливаем другие предупреждения, если они активны
-                if self._is_45min_warning:
-                    self._stop_45min_warning()
-                if self._is_60min_warning:
-                    self._stop_60min_warning()
-            elif self._is_exactly_45_minutes_before_prayer(current_time, next_prayer_time_str):
-                # Ровно 45 минут до намаза - запускаем 45-минутное предупреждение
-                if not self._is_45min_warning and not self._is_time_blinking and not self._is_30min_warning:
-                    print(f"[DEBUG] До намаза {next_prayer_time_str} осталось 45 минут, запускаем 45-минутное предупреждение")
-                    self._start_45min_warning()
-                # Останавливаем 60-минутное предупреждение, если оно активно
-                if self._is_60min_warning:
-                    self._stop_60min_warning()
-            elif self._is_exactly_60_minutes_before_prayer(current_time, next_prayer_time_str):
-                # Ровно 60 минут до намаза - запускаем 60-минутное предупреждение
-                print(f"[DEBUG] Проверка условий для 60-минутного предупреждения:")
-                print(f"[DEBUG] _is_60min_warning: {self._is_60min_warning}")
-                print(f"[DEBUG] _is_time_blinking: {self._is_time_blinking}")
-                print(f"[DEBUG] _is_30min_warning: {self._is_30min_warning}")
-                print(f"[DEBUG] _is_45min_warning: {self._is_45min_warning}")
-                
-                if not self._is_60min_warning and not self._is_time_blinking and not self._is_30min_warning and not self._is_45min_warning:
-                    print(f"[DEBUG] До намаза {next_prayer_time_str} остался 1 час, запускаем 60-минутное предупреждение")
-                    self._start_60min_warning()
-                else:
-                    print("[DEBUG] 60-минутное предупреждение не запущено из-за активных анимаций")
+            # Если пришло время для уведомления, обрабатываем его
+            if is_notification_time:
+                self._handle_prayer_notification(minutes_left, next_prayer_time_str)
             else:
-                # В остальных случаях останавливаем все анимации, если их условия не выполняются
-                if self._is_time_blinking and minutes_until > 15:
-                    print(f"[DEBUG] Останавливаем быстрое мигание, так как условия не выполняются")
+                # Если уведомление не требуется, проверяем, не нужно ли остановить анимации
+                # Это нужно, если пользователь изменил время вручную или произошел сдвиг времени
+                current_minutes = self._get_minutes_until_prayer(current_time, next_prayer_time_str)
+                
+                # Останавливаем анимации, если они активны, но условия для них больше не выполняются
+                if self._is_time_blinking and current_minutes != 15:
+                    print("[DEBUG] Остановка анимации мигания времени (условия не выполняются)")
                     self._stop_time_blink()
-                if self._is_30min_warning and not self._is_exactly_30_minutes_before_prayer(current_time, next_prayer_time_str):
-                    print(f"[DEBUG] Останавливаем 30-минутное предупреждение, так как условия не выполняются")
+                
+                # Аналогично для других анимаций
+                if self._is_30min_warning and current_minutes != 30:
+                    print("[DEBUG] Остановка 30-минутного предупреждения (условия не выполняются)")
                     self._stop_30min_warning()
-                if self._is_45min_warning and not self._is_exactly_45_minutes_before_prayer(current_time, next_prayer_time_str):
-                    print(f"[DEBUG] Останавливаем 45-минутное предупреждение, так как условия не выполняются")
+                    
+                if self._is_45min_warning and current_minutes != 45:
+                    print("[DEBUG] Остановка 45-минутного предупреждения (условия не выполняются)")
                     self._stop_45min_warning()
-                if self._is_60min_warning and not self._is_exactly_60_minutes_before_prayer(current_time, next_prayer_time_str):
-                    print(f"[DEBUG] Останавливаем 60-минутное предупреждение, так как условия не выполняются")
+                    
+                if self._is_60min_warning and current_minutes != 60:
+                    print("[DEBUG] Остановка 60-минутного предупреждения (условия не выполняются)")
                     self._stop_60min_warning()
+            
+            # Продолжаем с оставшейся частью метода
+            prayer_time = datetime.strptime(next_prayer_time_str, '%H:%M').time()
+            current_date = now.date()
+            prayer_datetime = datetime.combine(current_date, prayer_time)
+            
+            # Если время намаза уже прошло сегодня, берем намаз на следующий день
+            if prayer_datetime < now:
+                prayer_datetime += timedelta(days=1)
+                
+            # Вычисляем разницу во времени
+            time_diff = prayer_datetime - now
+            
+            # Преобразуем разницу в часы и минуты
+            total_seconds = int(time_diff.total_seconds())
+            hours, remainder = divmod(total_seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            
+            # Форматируем строку с оставшимся временем в формате ЧЧ:ММ
+            time_until_str = f"{hours:02d}:{minutes:02d}"
+            
+            # Обновляем свойство, чтобы обновить отображение
+            self.time_until = time_until_str
+            
+            # Обновляем время следующего намаза
+            self.next_prayer_time = next_prayer_time_str
+            
+            # Обновляем текст в time_label (оставшееся время до намаза)
+            self.time_label.text = time_until_str
+            
+            # Проверяем, изменилось ли время следующего намаза (а не оставшееся время)
+            current_next_prayer = f"{next_prayer_time_str}"
+            if hasattr(self, 'previous_next_prayer'):
+                if self.previous_next_prayer != current_next_prayer:
+                    print(f"[DEBUG] Время намаза изменилось с {self.previous_next_prayer} на {current_next_prayer}")
+                    # Если изменилось время намаза, запускаем анимацию и воспроизводим азан
+                    self.animate_icons()
+                    self._play_notification_sound('prayer_change')
+            
+            # Сохраняем текущее время следующего намаза для следующей проверки
+            self.previous_next_prayer = current_next_prayer
+            
+            # Выводим отладочную информацию
+            debug_info = f"Текущее время: {current_time.strftime('%H:%M:%S')}, "
+            debug_info += f"Следующий намаз: {next_prayer_time_str}, "
+            debug_info += f"Осталось: {time_until_str}"
+            
+            if self._is_time_blinking:
+                debug_info += " [МИГАНИЕ АКТИВНО]"
+                
+            print(debug_info)
+            
+        except Exception as e:
+            print(f"[ERROR] Ошибка при обновлении времени намаза: {e}")
+            import traceback
+            traceback.print_exc()
+        finally:
+            # Запланировать следующее обновление через 1 секунду
+            if hasattr(self, '_update_event') and self._update_event is not None:
+                self._update_event.cancel()
+                
+            self._update_event = Clock.schedule_once(lambda dt: self.update_time(), 1.0)
             
             # Для отладки выводим в консоль информацию о смене времени
             debug_info = f"Текущее время: {current_time.strftime('%H:%M:%S')}, "
@@ -841,24 +1059,6 @@ class NextPrayerTimeBox(GridLayout):
                 debug_info += " [МИГАНИЕ АКТИВНО]"
             print(debug_info)
             
-            # Проверяем, изменилось ли время следующего намаза (а не оставшееся время)
-            current_next_prayer = f"{next_prayer_time_str}"
-            if hasattr(self, 'previous_next_prayer'):
-                if self.previous_next_prayer != current_next_prayer:
-                    print(f"Время намаза изменилось с {self.previous_next_prayer} на {current_next_prayer}")
-                    # Если изменилось время намаза, запускаем анимацию и воспроизводим азан
-                    self.animate_icons()
-                    self._play_notification_sound('prayer_change')
-            
-            # Сохраняем текущее время следующего намаза для следующей проверки
-            self.previous_next_prayer = current_next_prayer
-            
-            # Обновляем текст
-            self.time_label.text = time_until_str
-            
-        except Exception as e:
-            print(f"[ERROR] Error updating next prayer time: {e}")
-    
     def on_parent(self, widget, parent):
         # Отписываемся от таймера при удалении виджета
         if parent is None and hasattr(self, '_update_event') and self._update_event:
