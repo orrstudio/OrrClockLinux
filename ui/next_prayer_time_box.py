@@ -3,6 +3,7 @@ import os
 import subprocess
 import logging
 import threading
+import mpv
 import time
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
@@ -269,19 +270,33 @@ class NextPrayerTimeBox(GridLayout):
                 logging.error(error_msg)
                 return False
                 
-            print("[DEBUG] Запускаем MPV для воспроизведения звука")
+            print(f"[DEBUG] Запускаем MPV для воспроизведения звука")
             
-            # Воспроизводим звук через MPV в фоновом режиме
-            process = subprocess.Popen(
-                ['mpv', '--no-video', '--no-terminal', '--really-quiet', sound_file],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.PIPE
-            )
-            
-            print(f"[DEBUG] MPV запущен с PID: {process.pid}")
-            logging.info(f"Воспроизведено звуковое уведомление: {notification_type}")
-            NextPrayerTimeBox._last_sound_time = time.time()
-            return True
+            try:
+                # Создаем экземпляр MPV-плеера с минимальными настройками
+                player = mpv.MPV(
+                    vo='null',      # Без видеовыхода
+                    quiet=True,     # Тихий режим
+                    loglevel='fatal' # Только критические ошибки
+                )
+                
+                # Воспроизводим звук
+                player.play(sound_file)
+                player.wait_for_playback()
+                
+                # Освобождаем ресурсы
+                player.terminate()
+                
+                print("[DEBUG] Воспроизведение звука завершено")
+                logging.info(f"Воспроизведено звуковое уведомление: {notification_type}")
+                NextPrayerTimeBox._last_sound_time = time.time()
+                return True
+                
+            except Exception as e:
+                error_msg = f"Ошибка при воспроизведении через python-mpv: {str(e)}"
+                print(f"[ERROR] {error_msg}")
+                logging.error(error_msg, exc_info=True)
+                return False
             
         except Exception as e:
             error_msg = f"Ошибка при воспроизведении звукового уведомления: {str(e)}"
