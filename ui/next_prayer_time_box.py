@@ -28,6 +28,54 @@ class NextPrayerTimeBox(GridLayout):
     # Глобальная блокировка для предотвращения одновременного воспроизведения звука
     _sound_lock = threading.Lock()
     _last_sound_time = 0
+    _current_player = None  # Текущий экземпляр плеера
+    
+    @classmethod
+    def stop_playback(cls):
+        """
+        Останавливает текущее воспроизведение звука, если оно активно.
+        Возвращает True, если воспроизведение было остановлено, иначе False.
+        """
+        with cls._sound_lock:
+            if cls._current_player is not None:
+                try:
+                    player = cls._current_player
+                    cls._current_player = None  # Сначала обнуляем ссылку, чтобы избежать рекурсии
+                    
+                    # Устанавливаем громкость на 0 и принудительно останавливаем
+                    try:
+                        player.volume = 0
+                        player.command('stop')
+                    except Exception as e:
+                        print(f"[DEBUG] Ошибка при попытке остановить плеер: {e}")
+                    
+                    # Даем время на корректную остановку
+                    import time
+                    time.sleep(0.1)
+                    
+                    # Завершаем работу плеера
+                    try:
+                        player.terminate()
+                    except Exception as e:
+                        print(f"[DEBUG] Ошибка при завершении плеера: {e}")
+                    
+                    # Освобождаем ресурсы
+                    try:
+                        del player
+                    except Exception as e:
+                        print(f"[DEBUG] Ошибка при освобождении ресурсов плеера: {e}")
+                    
+                    # Принудительный сбор мусора
+                    import gc
+                    gc.collect()
+                    
+                    print("[DEBUG] Воспроизведение звука остановлено")
+                    return True
+                except Exception as e:
+                    print(f"[ERROR] Критическая ошибка при остановке воспроизведения: {e}")
+                    cls._current_player = None
+                    return False
+            return False
     
     # Ссылка на главное приложение для доступа к часам
     app = ObjectProperty(None)
@@ -233,11 +281,128 @@ class NextPrayerTimeBox(GridLayout):
         if hasattr(self, 'time_label'):
             self.time_label.opacity = self._blink_opacity
     
-    def _play_notification_sound(self, notification_type='15min'):
-        """Воспроизведение звукового уведомления
+    def _play_sound_file(self, sound_file, is_adhan=False):
+        """
+        Воспроизводит звуковой файл в отдельном потоке
         
         Args:
-            notification_type (str): Тип уведомления ('15min', '30min', '45min' или '60min')
+            sound_file (str): Путь к звуковому файлу для воспроизведения
+            is_adhan (bool): Флаг, указывающий, что воспроизводится азан
+            
+        Returns:
+            bool: True, если воспроизведение успешно запущено, иначе False
+        """
+        if not os.path.exists(sound_file):
+            print(f"[ERROR] Файл не найден: {sound_file}")
+            return False
+            
+        print(f"[DEBUG] Запуск воспроизведения файла: {sound_file}")
+        player = None
+        
+        try:
+            # Создаем экземпляр MPV-плеера с минимальными настройками
+            with NextPrayerTimeBox._sound_lock:
+                # Останавливаем текущее воспроизведение, если оно есть
+                if NextPrayerTimeBox._current_player is not None:
+                    NextPrayerTimeBox.stop_playback()
+                
+                # Создаем новый экземпляр плеера
+                try:
+                    player = mpv.MPV(
+                        vo='null',      # Без видеовыхода
+                        quiet=True,     # Тихий режим
+                        loglevel='fatal', # Только критические ошибки
+                        input_default_bindings=True,
+                        input_vo_keyboard=True,
+                        input_cursor=False,
+                        cursor_autohide='no',
+                        msg_level='all=error'
+                    )
+                    
+                    # Устанавливаем обработчики событий
+                    @player.event_callback('end-file')
+                    def on_end(event):
+                        # Этот колбэк будет вызван при завершении воспроизведения
+                        print(f"[DEBUG] Воспроизведение завершено: {sound_file}")
+                        
+                    # Сохраняем ссылку на текущий плеер
+                    NextPrayerTimeBox._current_player = player
+                    
+                except Exception as e:
+                    print(f"[ERROR] Ошибка при создании MPV-плеера: {e}")
+                    if player:
+                        try:
+                            player.terminate()
+                        except:
+                            pass
+                    return False
+            
+            # Воспроизводим звук
+            print(f"[DEBUG] Запуск воспроизведения: {sound_file}")
+            player.play(sound_file)
+            
+            # Ждем завершения воспроизведения с таймаутом
+            try:
+                # Ждем окончания воспроизведения с таймаутом
+                # (таймаут в секундах, None означает бесконечно)
+                player.wait_for_playback(timeout=None)
+            except Exception as e:
+                print(f"[DEBUG] Ошибка при ожидании завершения воспроизведения: {e}")
+            
+            # Даем время на корректное завершение
+            import time
+            time.sleep(0.1)
+            
+            return True
+            
+        except Exception as e:
+            error_msg = f"Критическая ошибка при воспроизведении звука {sound_file}: {str(e)}"
+            print(f"[ERROR] {error_msg}")
+            import traceback
+            traceback.print_exc()
+            return False
+            
+        finally:
+            # Всегда освобождаем ресурсы
+            with NextPrayerTimeBox._sound_lock:
+                if NextPrayerTimeBox._current_player is player:
+                    NextPrayerTimeBox._current_player = None
+                
+                if player:
+                    try:
+                        # Плавно уменьшаем громкость перед остановкой
+                        try:
+                            player.volume = 0
+                            player.command('stop')
+                            time.sleep(0.1)
+                        except:
+                            pass
+                            
+                        # Завершаем работу плеера
+                        try:
+                            player.terminate()
+                        except:
+                            pass
+                            
+                        # Явно освобождаем ресурсы
+                        try:
+                            del player
+                        except:
+                            pass
+                            
+                        # Принудительный сбор мусора
+                        import gc
+                        gc.collect()
+                        
+                    except Exception as e:
+                        print(f"[DEBUG] Ошибка при освобождении ресурсов плеера: {e}")
+    
+    def _play_notification_sound(self, notification_type='15min'):
+        """
+        Воспроизведение звукового уведомления в отдельном потоке
+        
+        Args:
+            notification_type (str): Тип уведомления ('15min', '30min', '45min', '60min' или 'prayer_change')
         """
         with NextPrayerTimeBox._sound_lock:
             current_time = time.time()
@@ -245,76 +410,67 @@ class NextPrayerTimeBox(GridLayout):
             if current_time - NextPrayerTimeBox._last_sound_time < 30:
                 print("[DEBUG] Пропускаем воспроизведение звука: не прошло 30 секунд с последнего воспроизведения")
                 return
-                
-            print(f"[DEBUG] Вход в _play_notification_sound для уведомления: {notification_type}")
-        try:
-            # Получаем путь к корневой папке проекта
-            project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             
-            # Выбираем файл в зависимости от типа уведомления
-            if notification_type == 'prayer_change':
-                sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-VaxtGirdi.mp3')
-            elif notification_type == '30min':
-                sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-30dakikakaldi.mp3')
-            elif notification_type == '45min':
-                sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-45dakikakaldi.mp3')
-            elif notification_type == '60min':
-                sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-60dakikakaldi.mp3')
-            else:  # По умолчанию 15-минутное уведомление
-                sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-15dakikakaldi.mp3')
+            NextPrayerTimeBox._last_sound_time = current_time
             
-            print(f"[DEBUG] Проверяем файл: {sound_file}")
-            
-            # Проверяем существование файла
-            if not os.path.exists(sound_file):
-                error_msg = f"Файл уведомления не найден: {sound_file}"
-                print(f"[ERROR] {error_msg}")
-                logging.error(error_msg)
-                return False
-                
-            print(f"[DEBUG] Запускаем MPV для воспроизведения звука")
-            
+        print(f"[DEBUG] Запуск воспроизведения уведомления: {notification_type}")
+        
+        # Запускаем в отдельном потоке, чтобы не блокировать интерфейс
+        def play_sounds():
             try:
-                # Создаем экземпляр MPV-плеера с минимальными настройками
-                player = mpv.MPV(
-                    vo='null',      # Без видеовыхода
-                    quiet=True,     # Тихий режим
-                    loglevel='fatal' # Только критические ошибки
-                )
+                # Получаем путь к корневой папке проекта
+                project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
                 
-                # Воспроизводим первый звук
-                player.play(sound_file)
-                player.wait_for_playback()
-                
-                # Если это уведомление о смене намаза, воспроизводим второй звук
+                # Выбираем файл в зависимости от типа уведомления
                 if notification_type == 'prayer_change':
+                    sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-VaxtGirdi.mp3')
                     adhan_file = os.path.join(project_dir, 'audio', 'adhan', 'Adhan01.mp3')
+                    
+                    # Воспроизводим первый звук
+                    if os.path.exists(sound_file):
+                        self._play_sound_file(sound_file)
+                    else:
+                        print(f"[ERROR] Файл уведомления не найден: {sound_file}")
+                    
+                    # Воспроизводим азан
                     if os.path.exists(adhan_file):
                         print("[DEBUG] Воспроизведение азана после смены намаза")
-                        player.play(adhan_file)
-                        player.wait_for_playback()
+                        self._play_sound_file(adhan_file, is_adhan=True)
                     else:
                         print(f"[ERROR] Файл азана не найден: {adhan_file}")
+                    
+                else:  # Для других типов уведомлений
+                    if notification_type == '30min':
+                        sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-30dakikakaldi.mp3')
+                    elif notification_type == '45min':
+                        sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-45dakikakaldi.mp3')
+                    elif notification_type == '60min':
+                        sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-60dakikakaldi.mp3')
+                    else:  # По умолчанию 15-минутное уведомление
+                        sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-15dakikakaldi.mp3')
+                    
+                    print(f"[DEBUG] Проверяем файл: {sound_file}")
+                    
+                    if os.path.exists(sound_file):
+                        self._play_sound_file(sound_file)
+                    else:
+                        error_msg = f"Файл уведомления не найден: {sound_file}"
+                        print(f"[ERROR] {error_msg}")
+                        logging.error(error_msg)
                 
-                # Освобождаем ресурсы
-                player.terminate()
-                
-                print("[DEBUG] Воспроизведение звуков завершено")
-                logging.info(f"Воспроизведено звуковое уведомление: {notification_type}")
-                NextPrayerTimeBox._last_sound_time = time.time()
-                return True
+                logging.info(f"Завершено воспроизведение уведомления: {notification_type}")
                 
             except Exception as e:
-                error_msg = f"Ошибка при воспроизведении через python-mpv: {str(e)}"
+                error_msg = f"Ошибка при воспроизведении уведомления {notification_type}: {str(e)}"
                 print(f"[ERROR] {error_msg}")
                 logging.error(error_msg, exc_info=True)
-                return False
-            
-        except Exception as e:
-            error_msg = f"Ошибка при воспроизведении звукового уведомления: {str(e)}"
-            print(f"[ERROR] {error_msg}")
-            logging.error(error_msg, exc_info=True)
-            return False
+        
+        # Запускаем поток с воспроизведением звуков
+        import threading
+        sound_thread = threading.Thread(target=play_sounds, daemon=True)
+        sound_thread.start()
+        
+        return True
     
     def _start_time_blink(self):
         """Запуск анимации мигания времени следующего намаза"""

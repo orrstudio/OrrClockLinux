@@ -98,7 +98,8 @@ class MainWindowApp(App):
         # Черный фон
         Window.clearcolor = (0, 0, 0, 1)
         
-        # Привязываем обработчик двойного касания
+        # Привязываем обработчики событий
+        Window.bind(on_touch_down=self.on_window_touch_down)
         Window.bind(on_touch_down=self.on_window_touch_down_double_tap)
         
         # Основной layout - GridLayout
@@ -197,6 +198,32 @@ class MainWindowApp(App):
         if not is_mobile_device() and hasattr(self, 'settings_db'):
             self.settings_db.apply_window_settings(Window)
     
+    def on_window_touch_down(self, window, touch):
+        """
+        Обработчик нажатия на окно.
+        Останавливает воспроизведение звука при любом клике.
+        """
+        try:
+            # Импортируем класс только при необходимости
+            from ui.next_prayer_time_box import NextPrayerTimeBox
+            
+            # Логируем попытку остановки воспроизведения
+            print("[DEBUG] Обработка клика - остановка воспроизведения звука")
+            
+            # Останавливаем воспроизведение звука
+            stopped = NextPrayerTimeBox.stop_playback()
+            
+            if stopped:
+                print("[DEBUG] Воспроизведение звука успешно остановлено")
+            else:
+                print("[DEBUG] Нет активного воспроизведения для остановки")
+                
+        except Exception as e:
+            print(f"[ERROR] Ошибка при обработке клика: {e}")
+        
+        # Продолжаем обработку события (False = не перехватывать событие)
+        return False
+        
     def on_window_touch_down_double_tap(self, window, touch):
         """
         Обработчик двойного касания
