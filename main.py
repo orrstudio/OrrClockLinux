@@ -5,20 +5,13 @@ import math
 from kivy.animation import Animation
 kivy.require('2.2.1')
 
-# Устанавливаем переменную окружения для отладки ДО импорта логгера
-os.environ.setdefault('ORRCLOCK_DEBUG', '0')  # По умолчанию отключаем отладочные сообщения
-
 # Импорты базовых классов Kivy
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
-from kivy.input.motionevent import MotionEvent
 from kivy.clock import Clock
-from kivy.core.text import LabelBase
-from kivy.metrics import sp, dp
-from kivy.uix.anchorlayout import AnchorLayout
-
+from kivy.metrics import dp  # Используется для задания размеров в пикселях, независимых от плотности экрана
 # Импорты локальных модулей приложения
 from ui.settings_window import SettingsWindow
 from ui.settings_manager import SettingsManager

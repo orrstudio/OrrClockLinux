@@ -17,12 +17,10 @@ from kivy.uix.widget import Widget
 from kivy.uix.modalview import ModalView
 from kivy.uix.button import Button
 from kivy.uix.label import Label
+from kivy.uix.switch import Switch
 from kivy.uix.spinner import Spinner
 from kivy.uix.dropdown import DropDown
 from kivy.uix.popup import Popup
-from kivy.uix.switch import Switch
-# Удаляем устаревший импорт ListView и ListItemButton
-# и используем Spinner вместо ListView
 from kivy.properties import ListProperty, StringProperty, ObjectProperty, NumericProperty
 from kivy.clock import Clock
 from kivy.metrics import dp, sp

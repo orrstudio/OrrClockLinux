@@ -1,8 +1,6 @@
 # data/database.py
 from pathlib import Path
 import sqlite3
-from logic.display_utils import is_mobile_device, find_current_monitor, get_monitor_info
-from kivy.core.window import Window
 
 class SettingsDatabase:
     def __init__(self, db_path='data/settings.db'):

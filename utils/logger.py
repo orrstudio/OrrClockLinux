@@ -5,7 +5,7 @@
 
 import sys
 import builtins
-from typing import Optional, Any
+from typing import Any
 
 # Сохраняем оригинальный print
 _original_print = builtins.print
