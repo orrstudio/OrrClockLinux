@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 from kivy.core.text import LabelBase
 from logic.prayer_times import prayer_times_manager
 from logic.prayer_time_calculator import prayer_time_calculator
-from utils.logger import logger
+from utils.logger import logger  # Импорт логгера
 
 class NextPrayerTimeBox(GridLayout):
     """
@@ -170,38 +170,46 @@ class NextPrayerTimeBox(GridLayout):
         
     def animate_icons(self, *args):
         """Анимация изменения цвета иконок"""
-        print("[DEBUG] Запуск анимации иконок")
+        logger.debug("Запуск анимации иконок")
         
         if self.is_animating:
-            print("[DEBUG] Анимация уже запущена, пропускаем")
+            logger.debug("Анимация уже запущена, пропускаем")
             return
             
         self.is_animating = True
-        print("[DEBUG] Установлен флаг is_animating = True")
+        logger.debug("Установлен флаг is_animating = True")
         
         # Останавливаем предыдущие анимации, если они есть
         if hasattr(self, '_anim_left'):
-            print("[DEBUG] Отмена предыдущей анимации левой иконки")
+            logger.debug("Отмена предыдущей анимации левой иконки")
             self._anim_left.cancel(self.prayer_icon_left)
         if hasattr(self, '_anim_right'):
-            print("[DEBUG] Отмена предыдущей анимации правой иконки")
+            logger.debug("Отмена предыдущей анимации правой иконки")
             self._anim_right.cancel(self.prayer_icon_right)
         
         # Запускаем анимацию часов, если доступно приложение
         if self.app and hasattr(self.app, 'start_clock_animation'):
-            print("[DEBUG] Запуск анимации часов")
+            logger.debug("Запуск анимации часов")
             self.app.start_clock_animation()
         else:
-            print("[DEBUG] У приложения нет метода start_clock_animation")
-            print(f"[DEBUG] Доступные методы: {[m for m in dir(self.app) if not m.startswith('_')]}")
+            logger.warning("У приложения нет метода start_clock_animation")
+            logger.debug(f"Доступные методы: {[m for m in dir(self.app) if not m.startswith('_')]}")
         
         # Если есть ссылка на PrayerTimesBox, запускаем его анимацию
         if hasattr(self, 'prayer_times_box') and self.prayer_times_box:
-            print("[DEBUG] Запуск анимации списка молитв")
-            self.prayer_times_box.start_animation()
+            try:
+                if hasattr(self.prayer_times_box, 'start_animation'):
+                    logger.debug("Запуск анимации списка молитв")
+                    self.prayer_times_box.start_animation()
+                else:
+                    logger.warning("У prayer_times_box нет метода start_animation")
+            except Exception as e:
+                logger.error(f"Ошибка при запуске анимации списка молитв: {e}")
+        else:
+            logger.debug("Нет доступа к prayer_times_box для запуска анимации")
         
         # Останавливаем анимацию через 1 минуту
-        print("[DEBUG] Планируем остановку анимации через 60 секунд")
+        logger.debug("Планируем остановку анимации через 60 секунд")
         Clock.schedule_once(self.stop_animation, 60)
     
     def stop_animation(self, *args):
@@ -209,7 +217,7 @@ class NextPrayerTimeBox(GridLayout):
         if not self.is_animating:
             return
             
-        print("[DEBUG] Остановка анимации иконок")
+        logger.debug("Остановка анимации иконок")
         self.is_animating = False
         
         # Отменяем предыдущие анимации
