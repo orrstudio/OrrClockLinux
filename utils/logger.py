@@ -3,104 +3,213 @@
 Позволяет включать/отключать отладочные сообщения во всем приложении.
 """
 
-import os
 import sys
 import builtins
-import io
-from typing import Optional, TextIO
+from typing import Optional, Any
 
 # Сохраняем оригинальный print
 _original_print = builtins.print
+_original_stdout = sys.stdout
+_original_stderr = sys.stderr
+
+def _get_debug_state() -> bool:
+    """
+    Получает текущее состояние отладочного режима из базы данных.
+    
+    Returns:
+        bool: True, если отладка включена, иначе False.
+    """
+    try:
+        from data.database import SettingsDatabase
+        db = SettingsDatabase()
+        debug_mode = db.get_setting('debug_mode', '0')
+        return debug_mode == '1'
+    except Exception as e:
+        _original_print(f"[ERROR] Ошибка при получении настройки отладки: {e}", file=sys.stderr)
+        return False
 
 # Глобальная переменная для хранения состояния отладки
-_DEBUG_ENABLED = None
+_DEBUG_ENABLED = _get_debug_state()
 
-def _update_debug_state():
-    """Обновляет внутреннее состояние отладочного режима."""
+def _update_global_debug_state():
+    """
+    Обновляет глобальное состояние отладки на основе текущих настроек из базы данных.
+    
+    Returns:
+        bool: Текущее состояние отладки (True - включено, False - выключено)
+    """
     global _DEBUG_ENABLED
-    debug_value = os.environ.get('ORRCLOCK_DEBUG', '0').strip().lower()
-    _DEBUG_ENABLED = debug_value in ('1', 'true', 'yes')
-    return _DEBUG_ENABLED
+    try:
+        new_state = _get_debug_state()
+        if _DEBUG_ENABLED != new_state:
+            _DEBUG_ENABLED = new_state
+            _original_print(f"[ИНФО] Глобальное состояние отладки обновлено: {'ВКЛЮЧЕН' if _DEBUG_ENABLED else 'ВЫКЛЮЧЕН'}", file=sys.stderr)
+        return _DEBUG_ENABLED
+    except Exception as e:
+        _original_print(f"[ОШИБКА] Ошибка при обновлении состояния отладки: {e}", file=sys.stderr)
+        return _DEBUG_ENABLED
 
-# Инициализируем состояние отладки при импорте
-_update_debug_state()
-
-class DebugFilterStream(io.TextIOBase):
-    """Поток для фильтрации отладочных сообщений."""
-    
-    def __init__(self, stream: TextIO):
-        self.stream = stream
-        
-    def write(self, text: str) -> int:
-        # Пропускаем отладочные сообщения, если отладка отключена
-        if text.startswith('[DEBUG]') and not Logger.debug_enabled():
-            return len(text)
-        return self.stream.write(text)
-    
-    def flush(self) -> None:
-        self.stream.flush()
-
-class Logger:
-    _instance = None
-    
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(Logger, cls).__new__(cls)
-        return cls._instance
+# Определяем классы для разных режимов работы логгера
+class DebugLogger:
+    """Класс логгера с включенным отладочным выводом."""
     
     @classmethod
     def debug_enabled(cls) -> bool:
+        return True
+    
+    @classmethod
+    def debug(cls, message: str, *args: Any, **kwargs: Any) -> None:
+        """Выводит отладочное сообщение."""
+        if not message.startswith('[DEBUG]'):
+            message = f'[DEBUG] {message}'
+        _original_print(message, *args, **kwargs, file=_original_stdout)
+    
+    @classmethod
+    def info(cls, message: str, *args: Any, **kwargs: Any) -> None:
+        """Выводит информационное сообщение."""
+        _original_print(f"[INFO] {message}", *args, **kwargs, file=_original_stdout)
+    
+    @classmethod
+    def warning(cls, message: str, *args: Any, **kwargs: Any) -> None:
+        """Выводит предупреждающее сообщение."""
+        _original_print(f"[WARNING] {message}", *args, **kwargs, file=_original_stderr)
+    
+    @classmethod
+    def error(cls, message: str, *args: Any, **kwargs: Any) -> None:
+        """Выводит сообщение об ошибке."""
+        _original_print(f"[ERROR] {message}", *args, **kwargs, file=_original_stderr)
+    
+    @classmethod
+    def save_debug_state(cls, enabled: bool) -> bool:
         """
-        Проверяет, включены ли отладочные сообщения.
+        Сохраняет состояние отладки в базу данных.
         
+        Args:
+            enabled (bool): Включён ли отладочный режим
+            
         Returns:
-            bool: True, если отладочные сообщения включены, иначе False.
-            По умолчанию возвращает False, если переменная ORRCLOCK_DEBUG не установлена.
+            bool: True, если сохранение прошло успешно, иначе False
         """
-        # Используем глобальное состояние для повышения производительности
-        return _DEBUG_ENABLED
+        try:
+            from data.database import SettingsDatabase
+            db = SettingsDatabase()
+            db.save_setting('debug_mode', '1' if enabled else '0')
+            return True
+        except Exception as e:
+            _original_print(f"[ОШИБКА] Не удалось сохранить состояние отладки: {e}", file=sys.stderr)
+            return False
     
     @classmethod
     def set_debug(cls, enabled: bool):
-        """Включает или отключает отладочные сообщения."""
-        os.environ['ORRCLOCK_DEBUG'] = '1' if enabled else '0'
-        _update_debug_state()
+        """
+        Переключает режим отладки и сохраняет его в базу данных.
+        
+        Args:
+            enabled (bool): Включить или выключить отладочный режим
+        """
+        global logger, _DEBUG_ENABLED
+        
+        # Сохраняем новое состояние в БД
+        if not cls.save_debug_state(enabled):
+            _original_print("[ОШИБКА] Не удалось сохранить состояние отладки в базу данных", file=sys.stderr)
+            return
+        
+        # Обновляем глобальное состояние
+        _DEBUG_ENABLED = enabled
+        
+        # Меняем класс логгера в зависимости от состояния
+        if enabled:
+            logger = DebugLogger()
+            _original_print("[ИНФО] Отладочный режим включён", file=sys.stderr)
+        else:
+            logger = NoopLogger()
+            _original_print("[ИНФО] Отладочный режим выключен", file=sys.stderr)
+            
+        # Принудительно обновляем состояние в логгере
+        _update_global_debug_state()
+
+class NoopLogger:
+    """Класс логгера с отключенным отладочным выводом."""
     
     @classmethod
-    def debug(cls, message: str, *args, **kwargs):
-        """Выводит отладочное сообщение, если отладка включена."""
-        if cls.debug_enabled():
-            # Удаляем [DEBUG] из сообщения, если оно уже есть
-            if message.startswith('[DEBUG]'):
-                message = message[7:].lstrip()
-            print(f"[DEBUG] {message}", *args, **kwargs)
+    def debug_enabled(cls) -> bool:
+        return False
     
     @classmethod
-    def info(cls, message: str, *args, **kwargs):
+    def debug(cls, message: str, *args: Any, **kwargs: Any) -> None:
+        """Не делает ничего (отладочный вывод отключен)."""
+        pass
+    
+    @classmethod
+    def info(cls, message: str, *args: Any, **kwargs: Any) -> None:
         """Выводит информационное сообщение."""
-        print(f"[INFO] {message}", *args, **kwargs)
+        _original_print(f"[INFO] {message}", *args, **kwargs, file=_original_stdout)
     
     @classmethod
-    def warning(cls, message: str, *args, **kwargs):
+    def warning(cls, message: str, *args: Any, **kwargs: Any) -> None:
         """Выводит предупреждающее сообщение."""
-        print(f"[WARNING] {message}", *args, **kwargs)
+        _original_print(f"[WARNING] {message}", *args, **kwargs, file=_original_stderr)
     
     @classmethod
-    def error(cls, message: str, *args, **kwargs):
+    def error(cls, message: str, *args: Any, **kwargs: Any) -> None:
         """Выводит сообщение об ошибке."""
-        print(f"[ERROR] {message}", *args, **kwargs, file=sys.stderr)
+        _original_print(f"[ERROR] {message}", *args, **kwargs, file=_original_stderr)
+    
+    @classmethod
+    def set_debug(cls, enabled: bool) -> None:
+        """
+        Устанавливает режим отладки.
+        
+        Args:
+            enabled: Включить (True) или выключить (False) отладочный режим
+        """
+        global logger, _DEBUG_ENABLED
+        
+        try:
+            # Обновляем значение в базе данных
+            from data.database import SettingsDatabase
+            db = SettingsDatabase()
+            db.save_setting('debug_mode', '1' if enabled else '0')
+            
+            # Обновляем глобальное состояние
+            _DEBUG_ENABLED = enabled
+            
+            # Устанавливаем соответствующий класс логгера
+            if enabled:
+                if not isinstance(logger, DebugLogger):
+                    logger = DebugLogger()
+                    _original_print("[ИНФО] Отладочный режим включен", file=sys.stderr)
+            else:
+                if not isinstance(logger, NoopLogger):
+                    logger = NoopLogger()
+                    _original_print("[ИНФО] Отладочный режим выключен", file=sys.stderr)
+                    
+            # Принудительно обновляем глобальное состояние
+            _update_global_debug_state()
+            
+        except Exception as e:
+            _original_print(f"[ОШИБКА] Не удалось обновить отладочный режим: {e}", file=sys.stderr)
 
 # Создаем глобальный экземпляр логгера
-logger = Logger()
+logger = DebugLogger() if _get_debug_state() else NoopLogger()
 
-# Настраиваем перехват стандартного вывода
-sys.stdout = DebugFilterStream(sys.stdout)
+# Перехватываем стандартный print
+class PrintInterceptor:
+    def __init__(self):
+        self.original_print = _original_print
+    
+    def __call__(self, *args: Any, **kwargs: Any) -> None:
+        # Если это отладочное сообщение и отладка выключена, полностью подавляем вывод
+        if args and isinstance(args[0], str) and '[DEBUG]' in args[0]:
+            # Используем глобальное состояние отладки
+            if not _DEBUG_ENABLED:
+                return
+            # Если отладка включена, добавляем префикс [DEBUG], если его нет
+            if not args[0].startswith('[DEBUG]'):
+                args = (f'[DEBUG] {args[0]}',) + args[1:]
+        
+        # Выводим сообщение, если это не отладочное или отладка включена
+        self.original_print(*args, **kwargs)
 
-# Переопределяем глобальный print, чтобы он использовал наш фильтр
-def custom_print(*args, **kwargs):
-    # Если это отладочное сообщение и отладка отключена, пропускаем его
-    if args and isinstance(args[0], str) and args[0].startswith('[DEBUG]') and not logger.debug_enabled():
-        return
-    _original_print(*args, **kwargs)
-
-builtins.print = custom_print
+# Переопределяем глобальный print
+builtins.print = PrintInterceptor()

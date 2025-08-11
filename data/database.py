@@ -22,11 +22,17 @@ class SettingsDatabase:
             )
         """)
         
-        # Вставляем значение по умолчанию для цвета, если его нет
-        self.cursor.execute("""
-            INSERT OR IGNORE INTO settings (key, value) 
-            VALUES ('color', 'lime')
-        """)
+        # Вставляем значения по умолчанию, если их нет
+        default_settings = [
+            ('color', 'lime'),
+            ('debug_mode', '0')  # По умолчанию отладочный режим выключен
+        ]
+        
+        for key, value in default_settings:
+            self.cursor.execute("""
+                INSERT OR IGNORE INTO settings (key, value) 
+                VALUES (?, ?)
+            """, (key, value))
         
         # Создаем таблицу для хранения параметров главного окна, если она не существует
         self.cursor.execute('''
@@ -52,11 +58,48 @@ class SettingsDatabase:
         
         self.connection.commit()
 
-    def get_setting(self, key):
-        """Получение значения настройки"""
-        self.cursor.execute("SELECT value FROM settings WHERE key = ?", (key,))
-        result = self.cursor.fetchone()
-        return result[0] if result else None
+    def get_setting(self, key, default_value=None):
+        """
+        Получение значения настройки
+        
+        Args:
+            key (str): Ключ настройки
+            default_value: Значение по умолчанию, если настройка не найдена
+            
+        Returns:
+            Значение настройки или default_value, если настройка не найдена
+            
+        Note:
+            Для булевых значений возвращает строки '1' (True) или '0' (False)
+        """
+        # Значения по умолчанию для настроек
+        default_settings = {
+            'debug_mode': '0',  # По умолчанию отладочный режим выключен
+            'color': 'lime',    # Цвет по умолчанию
+            'azan_spinner': 'Azan 1',
+            'azan_dropdown': 'Azan 1',
+            'azan_popup': 'Azan 1'
+        }
+        
+        # Если запрашиваемая настройка есть в значениях по умолчанию,
+        # но не указано значение по умолчанию, используем наше
+        if key in default_settings and default_value is None:
+            default_value = default_settings[key]
+        
+        try:
+            self.cursor.execute("SELECT value FROM settings WHERE key = ?", (key,))
+            result = self.cursor.fetchone()
+            
+            # Если настройка не найдена, сохраняем значение по умолчанию
+            if result is None and key in default_settings:
+                self.save_setting(key, default_settings[key])
+                return default_settings[key]
+                
+            return result[0] if result is not None else default_value
+            
+        except Exception as e:
+            print(f"Ошибка при получении настройки {key}: {e}")
+            return default_value
     
     def save_setting(self, key, value):
         """Сохранение значения настройки"""

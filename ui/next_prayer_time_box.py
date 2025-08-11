@@ -982,7 +982,7 @@ class NextPrayerTimeBox(GridLayout):
             
             if self.debug_mode:
                 # Логируем отладочную информацию
-                logger.debug(f"Текущее время: {current_time.strftime('%H:%M:%S')}, "
+                logger.debug(f"[DEBUG] Текущее время: {current_time.strftime('%H:%M:%S')}, "
                            f"Следующий намаз: {next_prayer_time_str}, "
                            f"Осталось: {time_until_str}" + 
                            (" [МИГАНИЕ АКТИВНО]" if self._is_time_blinking else ""))
@@ -999,7 +999,7 @@ class NextPrayerTimeBox(GridLayout):
             self._update_event = Clock.schedule_once(lambda dt: self.update_time(), 1.0)
             
             # Для отладки выводим в консоль информацию о смене времени
-            debug_info = f"Текущее время: {current_time.strftime('%H:%M:%S')}, "
+            debug_info = f"[DEBUG] Текущее время: {current_time.strftime('%H:%M:%S')}, "
             debug_info += f"Следующий намаз: {next_prayer_time_str}, "
             debug_info += f"Осталось: {time_until_str}"
             if self._is_time_blinking:

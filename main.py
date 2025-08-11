@@ -34,7 +34,7 @@ from logic.prayer_time_calculator import prayer_time_calculator
 from logic.hijri_date import hijri_date_manager
 from logic.midnight_update_manager import MidnightUpdateManager
 from logic.prayer_times import prayer_times_manager
-from utils.logger import logger, Logger
+from utils.logger import logger
 
 class MainWindowApp(App):
     def on_new_day(self):

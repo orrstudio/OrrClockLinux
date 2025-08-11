@@ -11,6 +11,7 @@ Settings Window Module.
 import logging
 
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.widget import Widget
 from kivy.uix.modalview import ModalView
@@ -19,6 +20,7 @@ from kivy.uix.label import Label
 from kivy.uix.spinner import Spinner
 from kivy.uix.dropdown import DropDown
 from kivy.uix.popup import Popup
+from kivy.uix.switch import Switch
 # Удаляем устаревший импорт ListView и ListItemButton
 # и используем Spinner вместо ListView
 from kivy.properties import ListProperty, StringProperty, ObjectProperty, NumericProperty
@@ -498,6 +500,62 @@ class SettingsWindow(ModalView):
         content_container.add_widget(Widget(size_hint_y=None, height=dp(10)))  # Разделитель
         content_container.add_widget(popup_section)
         
+        # Секция отладки
+        debug_section = GridLayout(
+            cols=1,
+            size_hint_y=None,
+            height=dp(100),
+            padding=[dp(20), dp(15), dp(20), dp(20)],
+            spacing=dp(10),
+            size_hint=(1, None)
+        )
+        
+        # Заголовок секции отладки
+        debug_title = Label(
+            text='Admin Panel',
+            color=(1, 1, 1, 1),
+            font_size=sp(22),
+            size_hint=(1, None),
+            height=dp(30),
+            halign='left'
+        )
+        
+        # Получаем текущее состояние отладочного режима из базы данных
+        from utils.logger import _get_debug_state
+        debug_enabled = _get_debug_state()
+        
+        # Создаем переключатель отладочного режима
+        switch_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(40))
+        
+        # Текстовая метка
+        debug_label = Label(
+            text='Отладочный режим:',
+            color=(1, 1, 1, 1),
+            size_hint=(None, 1),
+            width=dp(200),
+            halign='left',
+            valign='middle'
+        )
+        
+        # Переключатель
+        self.debug_switch = Switch(
+            active=debug_enabled,
+            size_hint=(None, 1),
+            width=dp(50)
+        )
+        
+        # Добавляем виджеты в layout
+        switch_layout.add_widget(debug_label)
+        switch_layout.add_widget(self.debug_switch)
+        
+        # Добавляем виджеты в секцию
+        debug_section.add_widget(debug_title)
+        debug_section.add_widget(switch_layout)
+        
+        # Добавляем секцию в контейнер контента
+        content_container.add_widget(Widget(size_hint_y=None, height=dp(10)))  # Разделитель
+        content_container.add_widget(debug_section)
+        
         # Обновляем размеры после добавления всех виджетов
         Clock.schedule_once(self.print_sizes, 0.5)
         
@@ -901,6 +959,17 @@ class SettingsWindow(ModalView):
             print(f"Popup: {self.selected_azan_popup}")
         print("-"*50)
         
+        # Раздел: Отладочный режим
+        print("\n" + "-"*50)
+        print("                ОТЛАДОЧНЫЙ РЕЖИМ")
+        print("-"*50)
+        if hasattr(self, 'debug_switch'):
+            debug_state = "ВКЛЮЧЕН" if self.debug_switch.active else "ВЫКЛЮЧЕН"
+            print(f"Состояние: {debug_state}")
+        else:
+            print("Отладочный режим: настройка недоступна")
+        print("-"*50)
+        
         # Раздел: Размеры блоков
         print("                  РАЗМЕРЫ БЛОКОВ")
         print("-"*50)
@@ -1011,7 +1080,33 @@ class SettingsWindow(ModalView):
                 
             if hasattr(self, 'selected_azan_popup'):
                 self.db.save_setting('azan_popup', self.selected_azan_popup)
-            
+                
+            # Сохраняем состояние отладочного режима
+            if hasattr(self, 'debug_switch'):
+                debug_enabled = self.debug_switch.active
+                
+                try:
+                    from utils.logger import logger
+                    
+                    # Устанавливаем новое состояние отладки
+                    # Метод set_debug сам сохранит состояние в БД и обновит логгер
+                    logger.set_debug(debug_enabled)
+                    
+                    # Выводим сообщение о результате
+                    status = 'включён' if debug_enabled else 'выключен'
+                    print(f"[ИНФО] Отладочный режим {status}")
+                    
+                except Exception as e:
+                    print(f"[ОШИБКА] Не удалось обновить отладочный режим: {e}")
+                    # Пробуем сохранить состояние напрямую в БД на случай ошибки в логгере
+                    try:
+                        from data.database import SettingsDatabase
+                        db = SettingsDatabase()
+                        db.save_setting('debug_mode', '1' if debug_enabled else '0')
+                        print("[ИНФО] Значение отладочного режима сохранено напрямую в БД")
+                    except Exception as db_error:
+                        print(f"[КРИТИЧЕСКАЯ ОШИБКА] Не удалось сохранить состояние отладки: {db_error}")
+                
             # Выводим обновленные настройки после сохранения
             self.print_sizes(show_before_save=False)
             
