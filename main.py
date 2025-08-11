@@ -284,41 +284,43 @@ class MainWindowApp(App):
         self.title_label.color = color
         
     def start_clock_animation(self, *args):
-        """Запускаем анимацию мигания часов"""
-        print("[DEBUG] Запуск анимации часов")
+        """
+        Запускаем анимацию мигания часов.
+        Мигание происходит мгновенным переключением прозрачности каждые 0.5 секунд.
+        """
+        print("[DEBUG] Запуск анимации мигания часов")
         
         # Останавливаем предыдущую анимацию, если она есть
         self.stop_clock_animation()
             
-        # Сохраняем исходный цвет и прозрачность
+        # Сохраняем исходный цвет
         if not hasattr(self, '_original_clock_color'):
             self._original_clock_color = self.title_label.color.copy()
             print("[DEBUG] Сохранен исходный цвет часов:", self._original_clock_color)
-            
+        
         # Устанавливаем начальную прозрачность
-        self.title_label.opacity = 1
+        self.title_label.opacity = 1.0
         print(f"[DEBUG] Начальная прозрачность: {self.title_label.opacity}")
         
-        # Создаем функцию для мигания, которая будет вызываться периодически
+        # Флаг для отслеживания состояния мигания
+        self._blinking = True
+        
+        # Функция для мгновенного переключения прозрачности
         def blink_clock(dt):
             if not hasattr(self, '_blinking') or not self._blinking:
                 return
                 
-            # Инвертируем прозрачность
-            new_opacity = 0 if self.title_label.opacity > 0.5 else 1
-            Animation.cancel_all(self.title_label, 'opacity')
-            anim = Animation(opacity=new_opacity, duration=0.5)
-            anim.start(self.title_label)
+            # Мгновенно переключаем прозрачность
+            self.title_label.opacity = 0.0 if self.title_label.opacity == 1.0 else 1.0
             
-            # Запускаем следующий кадр анимации
+            # Запускаем следующий кадр мигания
             if hasattr(self, '_blink_event'):
                 self._blink_event.cancel()
             self._blink_event = Clock.schedule_once(blink_clock, 0.5)
         
-        # Запускаем анимацию мигания
-        self._blinking = True
-        blink_clock(0)
-        print("[DEBUG] Анимация мигания запущена")
+        # Запускаем первое мигание
+        self._blink_event = Clock.schedule_once(blink_clock, 0.5)
+        print("[DEBUG] Запущено мгновенное мигание")
         
         # Останавливаем анимацию через 1 минуту
         def stop_blinking(dt):
@@ -332,7 +334,6 @@ class MainWindowApp(App):
         if hasattr(self, '_stop_clock_event'):
             self._stop_clock_event.cancel()
         self._stop_clock_event = Clock.schedule_once(stop_blinking, 60)
-        print("[DEBUG] Запланирована остановка анимации через 60 секунд")
         print("[DEBUG] Запланирована остановка анимации через 60 секунд")
         
     def stop_clock_animation(self, *args):
