@@ -404,6 +404,12 @@ class MainWindowApp(App):
         """
         Обработчик изменения размера окна
         """
+        # Логируем размеры и положение окна
+        from kivy.core.window import Window
+        from kivy.logger import Logger
+        pos = Window.left, Window.top
+        Logger.info(f'Window: size={int(width)}x{int(height)} position={int(pos[0])}x{int(pos[1])}')
+        
         # Отменяем запланированные события
         if hasattr(self, '_blink_event'):
             self._blink_event.cancel()
