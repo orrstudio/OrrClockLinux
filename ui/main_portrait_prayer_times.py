@@ -5,6 +5,7 @@ from kivy.clock import Clock
 from logic.prayer_times import prayer_times_manager
 from logic.prayer_time_calculator import prayer_time_calculator
 from datetime import datetime
+from utils.logger import logger  # Импорт логгера
 
 class PrayerTimesBox(GridLayout):
     """
@@ -159,11 +160,13 @@ class PrayerTimesBox(GridLayout):
             
     def start_animation(self):
         """Запускаем анимацию: делаем все молитвы прозрачными, кроме текущей"""
+        import logging
+        
         if self._is_animating:
             return
             
         self._is_animating = True
-        logger.debug("[DEBUG] Запуск анимации мигания активной молитвы")
+        logging.info('Запуск анимации мигания активной молитвы')
         
         # Получаем текущую активную молитву
         current_prayer = self._get_current_prayer()
@@ -196,10 +199,12 @@ class PrayerTimesBox(GridLayout):
     
     def stop_animation(self, *args):
         """Останавливаем анимацию и обновляем цвета в соответствии с текущим временем"""
+        import logging
+        
         if not self._is_animating:
             return
             
-        logger.debug("[DEBUG] Остановка анимации списка молитв")
+        logging.info('Остановка анимации списка молитв')
         self._is_animating = False
         
         # Отменяем запланированные события
