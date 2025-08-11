@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from kivy.core.text import LabelBase
 from logic.prayer_times import prayer_times_manager
 from logic.prayer_time_calculator import prayer_time_calculator
+from utils.logger import logger
 
 class NextPrayerTimeBox(GridLayout):
     """
@@ -47,7 +48,7 @@ class NextPrayerTimeBox(GridLayout):
                         player.volume = 0
                         player.command('stop')
                     except Exception as e:
-                        print(f"[DEBUG] Ошибка при попытке остановить плеер: {e}")
+                        logger.error(f"Ошибка при попытке остановить плеер: {e}")
                     
                     # Даем время на корректную остановку
                     import time
@@ -80,10 +81,11 @@ class NextPrayerTimeBox(GridLayout):
     # Ссылка на главное приложение для доступа к часам
     app = ObjectProperty(None)
     
-    def __init__(self, base_font_size, app=None, **kwargs):
+    def __init__(self, base_font_size, app=None, debug_mode=False, **kwargs):
         # Используем SVG иконки
         super().__init__(**kwargs)
         self.app = app
+        self.debug_mode = debug_mode  # Режим отладки (по умолчанию выключен)
         self.base_font_size = base_font_size
         self.cols = 3
         self.size_hint_x = 1
@@ -969,7 +971,8 @@ class NextPrayerTimeBox(GridLayout):
             current_next_prayer = f"{next_prayer_time_str}"
             if hasattr(self, 'previous_next_prayer'):
                 if self.previous_next_prayer != current_next_prayer:
-                    print(f"[DEBUG] Время намаза изменилось с {self.previous_next_prayer} на {current_next_prayer}")
+                    if self.debug_mode:
+                        logger.debug(f"Время намаза изменилось с {self.previous_next_prayer} на {current_next_prayer}")
                     # Если изменилось время намаза, запускаем анимацию и воспроизводим азан
                     self.animate_icons()
                     self._play_notification_sound('prayer_change')
@@ -977,18 +980,15 @@ class NextPrayerTimeBox(GridLayout):
             # Сохраняем текущее время следующего намаза для следующей проверки
             self.previous_next_prayer = current_next_prayer
             
-            # Выводим отладочную информацию
-            debug_info = f"Текущее время: {current_time.strftime('%H:%M:%S')}, "
-            debug_info += f"Следующий намаз: {next_prayer_time_str}, "
-            debug_info += f"Осталось: {time_until_str}"
-            
-            if self._is_time_blinking:
-                debug_info += " [МИГАНИЕ АКТИВНО]"
-                
-            print(debug_info)
+            if self.debug_mode:
+                # Логируем отладочную информацию
+                logger.debug(f"Текущее время: {current_time.strftime('%H:%M:%S')}, "
+                           f"Следующий намаз: {next_prayer_time_str}, "
+                           f"Осталось: {time_until_str}" + 
+                           (" [МИГАНИЕ АКТИВНО]" if self._is_time_blinking else ""))
             
         except Exception as e:
-            print(f"[ERROR] Ошибка при обновлении времени намаза: {e}")
+            logger.error(f"[ERROR] Ошибка при обновлении времени намаза: {e}")
             import traceback
             traceback.print_exc()
         finally:

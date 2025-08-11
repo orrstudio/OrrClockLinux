@@ -5,6 +5,7 @@ import locale
 from ui.main_portrait_prayer_times import create_prayer_times_layout, PrayerTimesBox
 from ui.next_prayer_time_box import NextPrayerTimeBox
 from logic.date_formatted import create_gregorian_date_label, create_hijri_date_label, get_formatted_dates
+from utils.logger import logger
 
 def create_line_label(base_font_size):
     return Label(
@@ -54,11 +55,11 @@ def create_portrait_widgets(self, portrait_layout):
     
     # Создаем реактивный layout с временами молитв
     self.prayer_times_box = PrayerTimesBox(base_font_size=base_font_size)
-    print(f"[DEBUG] create_portrait_widgets: создан self.prayer_times_box = {self.prayer_times_box}, id = {id(self.prayer_times_box)}, type = {type(self.prayer_times_box)}")
+    logger.debug(f"[DEBUG] create_portrait_widgets: создан self.prayer_times_box = {self.prayer_times_box}, id = {id(self.prayer_times_box)}, type = {type(self.prayer_times_box)}")
     
     # Связываем NextPrayerTimeBox с PrayerTimesBox для синхронизации анимаций
     next_time_widget.prayer_times_box = self.prayer_times_box
-    print("[DEBUG] Связан NextPrayerTimeBox с PrayerTimesBox для синхронизации анимаций")
+    logger.debug("[DEBUG] Связан NextPrayerTimeBox с PrayerTimesBox для синхронизации анимаций")
     
     # Добавляем виджет в layout
     portrait_layout.add_widget(self.prayer_times_box)

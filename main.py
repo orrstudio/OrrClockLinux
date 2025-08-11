@@ -1,8 +1,12 @@
+import os
 import kivy
 from datetime import datetime
 import math
 from kivy.animation import Animation
 kivy.require('2.2.1')
+
+# Устанавливаем переменную окружения для отладки ДО импорта логгера
+os.environ.setdefault('ORRCLOCK_DEBUG', '0')  # По умолчанию отключаем отладочные сообщения
 
 # Импорты базовых классов Kivy
 from kivy.app import App
@@ -30,6 +34,7 @@ from logic.prayer_time_calculator import prayer_time_calculator
 from logic.hijri_date import hijri_date_manager
 from logic.midnight_update_manager import MidnightUpdateManager
 from logic.prayer_times import prayer_times_manager
+from utils.logger import logger, Logger
 
 class MainWindowApp(App):
     def on_new_day(self):
@@ -39,11 +44,13 @@ class MainWindowApp(App):
         - Обновляет все связанные с датой элементы UI
         - Запускает все необходимые проверки для нового дня
         """
+        logger.info("Начало обработки нового дня")
+        
         # Принудительно обновляем дату хиджры (пересчёт и кэширование)
         hijri_date_manager.get_hijri_date()
 
         # Принудительно обновляем времена молитв (запрос к API и обновление базы)
-        print("[DEBUG] on_new_day: вызываю update_prayer_times() ДО пересоздания layout")
+        logger.debug("on_new_day: вызываю update_prayer_times() ДО пересоздания layout")
         prayer_times_manager.update_prayer_times()
 
         # Пересоздаём/обновляем UI для нового дня

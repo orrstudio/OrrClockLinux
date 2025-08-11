@@ -1,10 +1,10 @@
 import requests
 import json
+import sys
 from datetime import datetime, timedelta
 from data.database import SettingsDatabase
 from kivy.clock import Clock
-
-from kivy.clock import Clock
+from utils.logger import logger
 
 class PrayerTimesManager:
     def __init__(self):
@@ -35,16 +35,19 @@ class PrayerTimesManager:
             self._listeners.remove(callback)
 
     def _notify_update(self):
-        print("[DEBUG] prayer_times: вызван _notify_update (кол-во callback: {}):".format(len(self._listeners)))
+        """Уведомляет всех подписчиков об обновлении времени намаза."""
+        logger.debug(f"prayer_times: вызван _notify_update (кол-во callback: {len(self._listeners)})")
+        
         for callback in self._listeners:
             try:
                 callback()
             except Exception as e:
-                print(f"PrayerTimesManager: ошибка в callback: {e}")
+                logger.error(f"PrayerTimesManager: ошибка в callback: {e}")
 
 
     def _setup_database(self):
         """Создает таблицу для хранения времён молитв"""
+        logger.debug("prayer_times: создание таблицы, если её нет")
         self.db.cursor.execute('''
             CREATE TABLE IF NOT EXISTS prayer_times (
                 date TEXT PRIMARY KEY,
