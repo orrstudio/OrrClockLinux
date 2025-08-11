@@ -163,7 +163,7 @@ class PrayerTimesBox(GridLayout):
             return
             
         self._is_animating = True
-        print("[DEBUG] Запуск анимации списка молитв")
+        print("[DEBUG] Запуск анимации мигания активной молитвы")
         
         # Получаем текущую активную молитву
         current_prayer = self._get_current_prayer()
@@ -180,14 +180,19 @@ class PrayerTimesBox(GridLayout):
             
             # Делаем все молитвы прозрачными, кроме активной
             if api_key != current_prayer:
-                labels['time_label'].opacity = 0
-                labels['name_label'].opacity = 0
+                labels['time_label'].opacity = 0.0
+                labels['name_label'].opacity = 0.0
+            else:
+                labels['time_label'].opacity = 1.0
+                labels['name_label'].opacity = 1.0
         
-        # Запускаем анимацию мигания для активной молитвы
+        # Запускаем мигание для активной молитвы
         self._update_animation()
         
         # Останавливаем анимацию через 60 секунд
-        self._animation_event = Clock.schedule_once(self.stop_animation, 60)
+        if hasattr(self, '_stop_timer'):
+            self._stop_timer.cancel()
+        self._stop_timer = Clock.schedule_once(self.stop_animation, 60)
     
     def stop_animation(self, *args):
         """Останавливаем анимацию и обновляем цвета в соответствии с текущим временем"""
@@ -198,16 +203,13 @@ class PrayerTimesBox(GridLayout):
         self._is_animating = False
         
         # Отменяем запланированные события
-        if self._animation_event:
-            self._animation_event.cancel()
-            self._animation_event = None
+        if hasattr(self, '_blink_event'):
+            self._blink_event.cancel()
+        if hasattr(self, '_stop_timer'):
+            self._stop_timer.cancel()
         
-        # Отменяем все анимации и восстанавливаем видимость всех молитв
+        # Восстанавливаем видимость всех молитв
         for api_key, labels in self.prayer_labels.items():
-            # Отменяем анимации
-            Animation.cancel_all(labels['time_label'])
-            Animation.cancel_all(labels['name_label'])
-            
             # Восстанавливаем видимость
             labels['time_label'].opacity = 1.0
             labels['name_label'].opacity = 1.0
@@ -249,8 +251,8 @@ class PrayerTimesBox(GridLayout):
             
         return current_prayer
     
-    def _update_animation(self):
-        """Обновляет анимацию мигания активной молитвы"""
+    def _update_animation(self, *args):
+        """Обновляет анимацию мигания активной молитвы с мгновенным переключением"""
         if not self._is_animating:
             return
             
@@ -263,17 +265,18 @@ class PrayerTimesBox(GridLayout):
         labels = self.prayer_labels.get(current_prayer)
         if not labels:
             return
-            
-        # Создаем анимацию мигания для активной молитвы
-        anim = Animation(opacity=0.3, duration=0.75) + Animation(opacity=1.0, duration=0.75)
-        anim.repeat = True
         
-        # Применяем анимацию к меткам времени и названия молитвы
-        anim.start(labels['time_label'])
-        anim.start(labels['name_label'])
+        # Меняем прозрачность на противоположную
+        new_opacity = 0.0 if labels['time_label'].opacity == 1.0 else 1.0
         
-        # Запускаем следующее обновление через 1.5 секунды (длительность полного цикла)
-        Clock.schedule_once(lambda dt: self._update_animation(), 1.5)
+        # Применяем новую прозрачность
+        labels['time_label'].opacity = new_opacity
+        labels['name_label'].opacity = new_opacity
+        
+        # Запускаем следующее переключение через 0.5 секунды
+        if hasattr(self, '_blink_event'):
+            self._blink_event.cancel()
+        self._blink_event = Clock.schedule_once(self._update_animation, 0.5)
 
 def create_prayer_times_layout(self, base_font_size):
     """Создает layout для отображения времён молитв"""
