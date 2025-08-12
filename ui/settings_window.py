@@ -178,6 +178,10 @@ class SettingsWindow(ModalView):
         from .settings_blocks.notifications import create_notifications_section
         notifications_section = create_notifications_section(self)
         
+        # Импортируем и создаем секцию админ-панели
+        from .settings_blocks.admin import create_admin_section
+        admin_section = create_admin_section(self)
+        
         # Инициализируем ссылки на виджеты для доступа из других методов
         self.color_section = color_section
         self.azan_section = azan_section
@@ -197,80 +201,8 @@ class SettingsWindow(ModalView):
         content_container.add_widget(popup_section)
         content_container.add_widget(Widget(size_hint_y=None, height=dp(10)))  # Разделитель
         content_container.add_widget(notifications_section)
-        
-        # Секция админ-панели
-        debug_section = GridLayout(
-            cols=1,
-            size_hint_y=None,
-            height=dp(110),  # Такая же высота, как у других блоков
-            padding=[dp(20), dp(15), dp(20), dp(20)],
-            spacing=dp(10),
-            size_hint=(1, None)
-        )
-        
-        # Адаптивный заголовок блока
-        debug_title = Label(
-            text='Панель администратора',
-            color=(1, 1, 1, 1),
-            font_size=sp(22),
-            size_hint=(1, None),
-            height=dp(30),
-            halign='left',
-            valign='middle',
-            text_size=(Window.width - dp(40), None),
-            padding=(0, dp(5)),
-            shorten=True,
-            shorten_from='right'
-        )
-        
-        def update_debug_title_size(*args):
-            debug_title.text_size = (Window.width - dp(40), None)
-            debug_title.texture_update()
-        
-        Window.bind(width=update_debug_title_size)
-        Clock.schedule_once(update_debug_title_size)
-        
-        # Контейнер для элементов управления (3 колонки по 1/3 ширины)
-        controls_layout = GridLayout(
-            cols=3,
-            size_hint_y=None,
-            height=dp(40),
-            spacing=dp(10)
-        )
-        
-        # Получаем текущее состояние отладочного режима из базы данных
-        from utils.logger import _get_debug_state
-        debug_enabled = _get_debug_state()
-        
-        # Метка (1/3 ширины) с переносом текста
-        switch_label = ResponsiveLabel(
-            text='Отладочный режим:',
-            markup=True
-        )
-        
-        # Переключатель (1/3 ширины)
-        self.debug_switch = Switch(
-            active=debug_enabled,
-            size_hint_x=1/3
-        )
-        
-        # Пустой виджет для выравнивания (1/3 ширины)
-        empty_widget = Widget(size_hint_x=1/3)
-        
-        # Добавляем виджеты в контейнер
-        controls_layout.add_widget(switch_label)
-        controls_layout.add_widget(self.debug_switch)
-        controls_layout.add_widget(empty_widget)
-        
-        # Добавляем виджеты в секцию
-        debug_section.add_widget(debug_title)
-        debug_section.add_widget(controls_layout)
-        
-        # Блок аудио уведомлений теперь находится в отдельном модуле notifications.py
-        
-        # Добавляем секцию админ-панели
         content_container.add_widget(Widget(size_hint_y=None, height=dp(10)))  # Разделитель
-        content_container.add_widget(debug_section)
+        content_container.add_widget(admin_section)
         
         # Обновляем размеры после добавления всех виджетов
         Clock.schedule_once(self.print_sizes, 0.5)
@@ -781,7 +713,7 @@ class SettingsWindow(ModalView):
                 
             if hasattr(self, 'selected_azan_popup'):
                 self.db.save_setting('azan_popup', self.selected_azan_popup)
-                
+            
             # Сохраняем состояние отладочного режима
             if hasattr(self, 'debug_switch'):
                 debug_enabled = self.debug_switch.active
