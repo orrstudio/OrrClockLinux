@@ -498,59 +498,163 @@ class SettingsWindow(ModalView):
         content_container.add_widget(Widget(size_hint_y=None, height=dp(10)))  # Разделитель
         content_container.add_widget(popup_section)
         
-        # Секция отладки
+        # Секция админ-панели
         debug_section = GridLayout(
             cols=1,
             size_hint_y=None,
-            height=dp(100),
+            height=dp(110),  # Такая же высота, как у других блоков
             padding=[dp(20), dp(15), dp(20), dp(20)],
             spacing=dp(10),
             size_hint=(1, None)
         )
         
-        # Заголовок секции отладки
+        # Адаптивный заголовок блока
         debug_title = Label(
-            text='Admin Panel',
+            text='Панель администратора',
             color=(1, 1, 1, 1),
             font_size=sp(22),
             size_hint=(1, None),
             height=dp(30),
-            halign='left'
+            halign='left',
+            valign='middle',
+            text_size=(Window.width - dp(40), None),
+            padding=(0, dp(5)),
+            shorten=True,
+            shorten_from='right'
+        )
+        
+        def update_debug_title_size(*args):
+            debug_title.text_size = (Window.width - dp(40), None)
+            debug_title.texture_update()
+        
+        Window.bind(width=update_debug_title_size)
+        Clock.schedule_once(update_debug_title_size)
+        
+        # Контейнер для элементов управления
+        controls_layout = GridLayout(
+            cols=2,
+            size_hint_y=None,
+            height=dp(40),
+            spacing=dp(10)
+        )
+        
+        # Переключатель с меткой
+        switch_layout = GridLayout(
+            cols=2,
+            size_hint_x=0.7,
+            spacing=dp(10)
         )
         
         # Получаем текущее состояние отладочного режима из базы данных
         from utils.logger import _get_debug_state
         debug_enabled = _get_debug_state()
         
-        # Создаем переключатель отладочного режима
-        switch_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(40))
-        
-        # Текстовая метка
-        debug_label = Label(
+        switch_label = Label(
             text='Отладочный режим:',
             color=(1, 1, 1, 1),
-            size_hint=(None, 1),
-            width=dp(200),
             halign='left',
             valign='middle'
         )
         
-        # Переключатель
         self.debug_switch = Switch(
             active=debug_enabled,
-            size_hint=(None, 1),
-            width=dp(50)
+            size_hint_x=0.3
         )
         
-        # Добавляем виджеты в layout
-        switch_layout.add_widget(debug_label)
+        switch_layout.add_widget(switch_label)
         switch_layout.add_widget(self.debug_switch)
+        
+        # Добавляем виджеты в контейнер
+        controls_layout.add_widget(switch_layout)
+        controls_layout.add_widget(Widget())  # Пустой виджет для выравнивания
         
         # Добавляем виджеты в секцию
         debug_section.add_widget(debug_title)
-        debug_section.add_widget(switch_layout)
+        debug_section.add_widget(controls_layout)
         
-        # Добавляем секцию в контейнер контента
+        # Блок аудио уведомлений
+        audio_section = GridLayout(
+            cols=1,
+            size_hint_y=None,
+            height=dp(110),  # Такая же высота, как у блока азана
+            padding=[dp(20), dp(15), dp(20), dp(20)],
+            spacing=dp(10),
+            size_hint=(1, None)
+        )
+        
+        # Адаптивный заголовок блока
+        audio_title = Label(
+            text='Аудио уведомления',
+            color=(1, 1, 1, 1),
+            font_size=sp(22),
+            size_hint=(1, None),
+            height=dp(30),
+            halign='left',
+            valign='middle',
+            text_size=(Window.width - dp(40), None),
+            padding=(0, dp(5)),
+            shorten=True,
+            shorten_from='right'
+        )
+        
+        def update_audio_title_size(*args):
+            audio_title.text_size = (Window.width - dp(40), None)
+            audio_title.texture_update()
+        
+        Window.bind(width=update_audio_title_size)
+        Clock.schedule_once(update_audio_title_size)
+        
+        # Контейнер для элементов управления
+        controls_layout = GridLayout(
+            cols=2,
+            size_hint_y=None,
+            height=dp(40),
+            spacing=dp(10)
+        )
+        
+        # Переключатель с меткой
+        switch_layout = GridLayout(
+            cols=2,
+            size_hint_x=0.7,
+            spacing=dp(10)
+        )
+        
+        switch_label = Label(
+            text='Включить уведомления:',
+            color=(1, 1, 1, 1),
+            halign='left',
+            valign='middle'
+        )
+        
+        self.audio_switch = Switch(
+            active=False,
+            size_hint_x=0.3
+        )
+        
+        switch_layout.add_widget(switch_label)
+        switch_layout.add_widget(self.audio_switch)
+        
+        # Кнопка
+        self.audio_button = Button(
+            text='Настройки',
+            size_hint_x=0.3,
+            background_color=(0.3, 0.3, 0.3, 1),
+            color=(1, 1, 1, 1)
+        )
+        
+        # Добавляем элементы в контейнер
+        controls_layout.add_widget(switch_layout)
+        controls_layout.add_widget(self.audio_button)
+        
+        # Добавляем виджеты в секцию
+        audio_section.add_widget(audio_title)
+        audio_section.add_widget(controls_layout)
+        
+        # Добавляем блок аудио уведомлений перед админ-панелью
+        content_container.add_widget(Widget(size_hint_y=None, height=dp(10)))  # Разделитель
+        content_container.add_widget(audio_section)
+        
+        # Добавляем секцию админ-панели
         content_container.add_widget(Widget(size_hint_y=None, height=dp(10)))  # Разделитель
         content_container.add_widget(debug_section)
         
