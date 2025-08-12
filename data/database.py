@@ -175,7 +175,7 @@ class SettingsDatabase:
             window.left = x
             window.top = y
             from kivy.logger import Logger
-            Logger.info(f'Window: applying settings: size={width}x{height} position={x}x{y}')
+            Logger.info(f'Window: Applying Settings from DataBase: Size={width}x{height}; Position={x}x{y}')
         else:
             # Устанавливаем размеры по умолчанию, если настройки не найдены
             width, height = 715, 1000
@@ -184,7 +184,7 @@ class SettingsDatabase:
             window.left = (window.system_size[0] - width) // 2
             window.top = (window.system_size[1] - height) // 2
             from kivy.logger import Logger
-            Logger.info(f'Window: applying default settings: size={width}x{height} position={window.left}x{window.top}')
+            Logger.info(f'Window: Applying Default Settings: Size={width}x{height}; Position={window.left}x{window.top}')
             
     def apply_settings_window_settings(self, window):
         """
