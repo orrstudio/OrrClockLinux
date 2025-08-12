@@ -21,6 +21,7 @@ from .settings_blocks.base import (
 
 # Импортируем компоненты настроек
 from .settings_color import ColorButton
+from .settings_blocks.colors import create_color_section, get_color_tuple, get_color_name
 
 from kivy.uix.dropdown import DropDown
 from kivy.uix.popup import Popup
@@ -55,15 +56,7 @@ class SettingsWindow(ModalView):
         selected_color (str): Выбранный пользователем цвет
     """
     
-    # Список доступных цветов
-    colors = {
-        'lime': (0, 1, 0, 1),
-        'aqua': (0, 1, 1, 1),
-        'blue': (0, 0, 1, 1),
-        'red': (1, 0, 0, 1),
-        'yellow': (1, 1, 0, 1),
-        'white': (1, 1, 1, 1)
-    }
+    # Словарь цветов инициализируется в классе ColorSettings
 
     def __init__(self, db, main_window, apply_callback, **kwargs):
         """
@@ -166,68 +159,8 @@ class SettingsWindow(ModalView):
             size_hint=(1, 1)
         )
         
-        # Основной вертикальный контейнер для блока выбора цвета
-        color_section = GridLayout(
-            cols=1,
-            size_hint_y=None,
-            height=dp(110),  # Увеличиваем высоту для учета отступов
-            padding=[dp(20), dp(15), dp(20), dp(20)],  # Отступы: слева, сверху, справа, снизу
-            spacing=dp(10),
-            row_force_default=True,
-            row_default_height=dp(30),  # Высота строки по умолчанию
-            size_hint=(1, None)
-        )
-        
-        # Адаптивный заголовок блока выбора цвета
-        color_title = Label(
-            text='Saatın rəngi',
-            color=(1, 1, 1, 1),
-            font_size=sp(22),
-            size_hint=(1, None),
-            height=dp(30),
-            halign='left',
-            valign='middle',
-            text_size=(Window.width - dp(40), None),
-            shorten=True,
-            shorten_from='right',
-            padding=(0, dp(5))
-        )
-        
-        def update_color_title_size(*args):
-            color_title.text_size = (Window.width - dp(40), None)
-            color_title.texture_update()
-        
-        Window.bind(width=update_color_title_size)
-        Clock.schedule_once(update_color_title_size)
-        
-        # Сетка цветов (в один ряд)
-        colors_grid = GridLayout(
-            cols=6,
-            spacing=dp(5),
-            size_hint_y=None,
-            height=dp(25)  # Фиксированная высота для строки с цветами
-        )
-        
-        # Создаем кнопки цветов
-        for color_name, color_tuple in self.colors.items():
-            color_button = ColorButton(
-                color_name=color_name,
-                color_tuple=color_tuple,
-                text='',
-                size_hint=(1, 1),
-                background_normal=''
-            )
-            color_button.bind(on_release=self._on_color_button_press)
-            
-            # Сохраняем кнопку если это активный цвет
-            if color_name == self.initial_color:
-                self.active_button = color_button
-            
-            colors_grid.add_widget(color_button)
-        
-        # Собираем блок выбора цвета
-        color_section.add_widget(color_title)  # Добавляем заголовок
-        color_section.add_widget(colors_grid)  # Добавляем сетку цветов
+        # Создаем секцию выбора цвета
+        color_section = create_color_section(self)
         
         # Блок выбора азана
         azan_section = GridLayout(
@@ -651,41 +584,9 @@ class SettingsWindow(ModalView):
         if hasattr(self, 'border_line'):
             self.border_line.rectangle = (instance.x, instance.y, instance.width, instance.height)
 
-    def _on_color_button_press(self, button):
-        """
-        Обработка нажатия на цветную кнопку.
-        
-        Args:
-            button: Нажатая кнопка
-        """
-        try:
-            # Убираем рамку со старой активной кнопки
-            if hasattr(self, 'active_button') and self.active_button != button:
-                self.active_button.canvas.after.clear()
-            
-            # Добавляем рамку на новую кнопку
-            self._add_border_to_button(button)
-            
-            # Сохраняем ссылку на активную кнопку
-            self.active_button = button
-            
-            # Устанавливаем выбранный цвет из нажатой кнопки
-            self.selected_color = button.color_name.lower()
-            
-            # Инициализируем выбранные азаны, если они еще не были инициализированы
-            if not hasattr(self, 'selected_azan_spinner'):
-                self.selected_azan_spinner = self.db.get_setting('azan_spinner') or 'Azan 1'
-            if not hasattr(self, 'selected_azan_dropdown'):
-                self.selected_azan_dropdown = self.db.get_setting('azan_dropdown') or 'Azan 1'
-            if not hasattr(self, 'selected_azan_popup'):
-                self.selected_azan_popup = self.db.get_setting('azan_popup') or 'Azan 1'
-        except Exception as e:
-            logger.error(f"Error in _on_color_button_press: {e}")
-
     def on_azan_selected(self, spinner, text):
         """Обработчик выбора азана в Spinner"""
         self.selected_azan_spinner = text
-        
     def select_dropdown_item(self, text):
         """Обработчик выбора азана в DropDown"""
         self.dropdown_btn.text = text
@@ -1045,15 +946,19 @@ class SettingsWindow(ModalView):
                 # Преобразуем название цвета в нижний регистр
                 color_key = self.selected_color.lower()
                 
-                if color_key in self.colors:
-                    # Сохраняем в базу данных
-                    self.db.save_setting('color', color_key)
+                # Сохраняем в базу данных
+                self.db.save_setting('color', color_key)
+                
+                # Применяем цвет через callback
+                if hasattr(self, 'apply_callback') and self.apply_callback:
+                    # Получаем цвет из color_settings, если он доступен
+                    if hasattr(self, 'color_settings') and hasattr(self.color_settings, 'colors'):
+                        color_tuple = self.color_settings.colors.get(color_key, (0, 1, 0, 1))
+                    else:
+                        # Стандартный цвет, если color_settings не доступен
+                        color_tuple = (0, 1, 0, 1)  # Зеленый по умолчанию
                     
-                    # Применяем цвет через callback
-                    if self.apply_callback:
-                        self.apply_callback(self.colors[color_key])
-                else:
-                    print(f"Предупреждение: Неизвестный цвет: {self.selected_color}")
+                    self.apply_callback(color_tuple)
             
             # Сохраняем выбранные азаны для каждого блока
             if hasattr(self, 'selected_azan_spinner'):
@@ -1175,28 +1080,4 @@ class SettingsWindow(ModalView):
         # Вызываем оригинальный метод закрытия
         super().dismiss(*args)
     
-    @staticmethod
-    def get_color_tuple(color_name):
-        """Преобразование названия цвета в RGB"""
-        colors = {
-            'lime': (0, 1, 0, 1),
-            'aqua': (0, 1, 1, 1),
-            'blue': (0, 0, 1, 1),
-            'red': (1, 0, 0, 1),
-            'yellow': (1, 1, 0, 1),
-            'white': (1, 1, 1, 1)
-        }
-        return colors.get(color_name, (0, 1, 0, 1))  
-
-    @staticmethod
-    def get_color_name(color_tuple):
-        """Преобразование RGB в название цвета"""
-        colors = {
-            (0, 1, 0, 1): 'lime',
-            (0, 1, 1, 1): 'aqua',
-            (0, 0, 1, 1): 'blue',
-            (1, 0, 0, 1): 'red',
-            (1, 1, 0, 1): 'yellow',
-            (1, 1, 1, 1): 'white'
-        }
-        return colors.get(color_tuple, 'lime')
+    # Методы get_color_tuple и get_color_name перенесены в модуль settings_blocks.colors

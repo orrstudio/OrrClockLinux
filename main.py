@@ -14,6 +14,7 @@ from kivy.clock import Clock
 from kivy.metrics import dp  # Используется для задания размеров в пикселях, независимых от плотности экрана
 # Импорты локальных модулей приложения
 from ui.settings_window import SettingsWindow
+from ui.settings_blocks.colors import get_color_tuple
 from ui.settings_manager import SettingsManager
 from ui.clock_widget import ClockWidget
 from data.database import SettingsDatabase
@@ -276,7 +277,7 @@ class MainWindowApp(App):
         """
         initial_color = self.settings_manager.db.get_setting('color')
         if initial_color:
-            color_tuple = SettingsWindow.get_color_tuple(initial_color)
+            color_tuple = get_color_tuple(initial_color)
             self.update_title_color(color_tuple)
         
     def update_title_color(self, color):
@@ -372,7 +373,7 @@ class MainWindowApp(App):
         """
         Обновляем цвет по имени
         """
-        color_tuple = SettingsWindow.get_color_tuple(color_name)
+        color_tuple = get_color_tuple(color_name)
         self.update_title_color(color_tuple)
 
     def calculate_font_size(self, scale_factor=5):

@@ -1,4 +1,5 @@
 from ui.settings_window import SettingsWindow
+from ui.settings_blocks.colors import get_color_tuple, get_color_name
 from data.database import SettingsDatabase
 from kivy.core.window import Window  # Локальный импорт для избежания циклических зависимостей
 
@@ -20,7 +21,7 @@ class SettingsManager:
         """Применение сохраненного цвета при инициализации"""
         saved_color = self.db.get_setting('color')
         if saved_color and hasattr(self.clock_label, 'color'):
-            self.clock_label.color = SettingsWindow.get_color_tuple(saved_color)
+            self.clock_label.color = get_color_tuple(saved_color)
 
     def open_settings_window(self):
         """
@@ -67,7 +68,7 @@ class SettingsManager:
             self.clock_label.color = color_tuple
         
         # Сохраняем выбранный цвет в базу
-        color_name = SettingsWindow.get_color_name(color_tuple)
+        color_name = get_color_name(color_tuple)
         self.db.save_setting('color', color_name)
         self.initial_color = color_name
         
@@ -82,5 +83,5 @@ class SettingsManager:
         Отмена изменений настроек, возврат к первоначальному цвету
         """
         if self.initial_color and hasattr(self.clock_label, 'color'):
-            initial_color_tuple = SettingsWindow.get_color_tuple(self.initial_color)
+            initial_color_tuple = get_color_tuple(self.initial_color)
             self.clock_label.color = initial_color_tuple
