@@ -166,67 +166,9 @@ class SettingsWindow(ModalView):
         from ui.settings_blocks.azan_spinner import create_azan_spinner_section
         azan_section = create_azan_spinner_section(self)
         
-        # Блок с DropDown
-        dropdown_section = GridLayout(
-            cols=1,
-            size_hint_y=None,
-            height=dp(110),  # Такая же высота, как у остальных блоков
-            padding=[dp(20), dp(15), dp(20), dp(20)],
-            spacing=dp(10),
-            size_hint=(1, None)
-        )
-        
-        # Адаптивный заголовок блока с DropDown
-        dropdown_title = Label(
-            text='Azan (DropDown)',
-            color=(1, 1, 1, 1),
-            font_size=sp(22),
-            size_hint=(1, None),
-            height=dp(30),
-            halign='left',
-            valign='middle',
-            text_size=(Window.width - dp(40), None),
-            padding=(0, dp(5)),
-            shorten=True,
-            shorten_from='right'
-        )
-        
-        def update_dropdown_title_size(*args):
-            dropdown_title.text_size = (Window.width - dp(40), None)
-            dropdown_title.texture_update()
-        
-        Window.bind(width=update_dropdown_title_size)
-        Clock.schedule_once(update_dropdown_title_size)
-        
-        # Кнопка для вызова DropDown
-        self.dropdown_btn = Button(
-            text='Azan 1',
-            size_hint_y=None,
-            height=dp(40),
-            background_color=(0.3, 0.3, 0.3, 1),
-            color=(1, 1, 1, 1),
-            font_size=sp(18)
-        )
-        
-        # Создаем выпадающее меню
-        self.dropdown = DropDown()
-        for item in ['Azan 1', 'Azan 2', 'Azan 3']:
-            btn = Button(
-                text=item, 
-                size_hint_y=None, 
-                height=dp(40),
-                background_color=(0.25, 0.25, 0.25, 1),
-                color=(1, 1, 1, 1)
-            )
-            btn.bind(on_release=lambda btn: self.select_dropdown_item(btn.text))
-            self.dropdown.add_widget(btn)
-        
-        # Привязываем кнопку к выпадающему меню
-        self.dropdown_btn.bind(on_release=self.dropdown.open)
-        
-        # Добавляем элементы в секцию
-        dropdown_section.add_widget(dropdown_title)
-        dropdown_section.add_widget(self.dropdown_btn)
+        # Импортируем и создаем секцию выпадающего списка азана
+        from ui.settings_blocks.azan_dropdown import create_azan_dropdown_section
+        dropdown_section = create_azan_dropdown_section(self)
         
         # Блок с Popup и ListView
         popup_section = GridLayout(
@@ -542,10 +484,16 @@ class SettingsWindow(ModalView):
         """Обработчик выбора азана в Spinner"""
         self.selected_azan_spinner = text
     def select_dropdown_item(self, text):
-        """Обработчик выбора азана в DropDown"""
-        self.dropdown_btn.text = text
-        self.selected_azan_dropdown = text
-        self.dropdown.dismiss()
+        """
+        Обработчик выбора азана в выпадающем списке.
+        
+        Args:
+            text (str): Выбранное значение азана
+        """
+        if hasattr(self, 'dropdown_btn') and hasattr(self, 'dropdown'):
+            self.dropdown_btn.text = text
+            self.selected_azan_dropdown = text
+            self.dropdown.dismiss()
         
     def show_azan_popup(self, instance):
         """Показывает всплывающее окно с выбором азана"""
@@ -605,10 +553,16 @@ class SettingsWindow(ModalView):
         self.selected_azan_spinner = text
             
     def select_dropdown_item(self, text):
-        """Обработчик выбора азана в DropDown"""
-        self.dropdown_btn.text = text
-        self.selected_azan_dropdown = text
-        self.dropdown.dismiss()
+        """
+        Обработчик выбора азана в выпадающем списке.
+        
+        Args:
+            text (str): Выбранное значение азана
+        """
+        if hasattr(self, 'dropdown_btn') and hasattr(self, 'dropdown'):
+            self.dropdown_btn.text = text
+            self.selected_azan_dropdown = text
+            self.dropdown.dismiss()
         
 
 
@@ -672,10 +626,16 @@ class SettingsWindow(ModalView):
         self.selected_azan_spinner = text
             
     def select_dropdown_item(self, text):
-        """Обработчик выбора азана в DropDown"""
-        self.dropdown_btn.text = text
-        self.selected_azan_dropdown = text
-        self.dropdown.dismiss()
+        """
+        Обработчик выбора азана в выпадающем списке.
+        
+        Args:
+            text (str): Выбранное значение азана
+        """
+        if hasattr(self, 'dropdown_btn') and hasattr(self, 'dropdown'):
+            self.dropdown_btn.text = text
+            self.selected_azan_dropdown = text
+            self.dropdown.dismiss()
         
     def show_azan_popup(self, instance):
         """Показывает всплывающее окно с выбором азана"""
@@ -735,10 +695,16 @@ class SettingsWindow(ModalView):
         self.selected_azan_spinner = text
     
     def select_dropdown_item(self, text):
-        """Обработчик выбора азана в DropDown"""
-        self.dropdown_btn.text = text
-        self.selected_azan_dropdown = text
-        self.dropdown.dismiss()
+        """
+        Обработчик выбора азана в выпадающем списке.
+        
+        Args:
+            text (str): Выбранное значение азана
+        """
+        if hasattr(self, 'dropdown_btn') and hasattr(self, 'dropdown'):
+            self.dropdown_btn.text = text
+            self.selected_azan_dropdown = text
+            self.dropdown.dismiss()
     
     def print_sizes(self, *args, show_before_save=False):
         """
