@@ -10,13 +10,13 @@ Settings Window Module.
 
 import logging
 
-from kivy.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.widget import Widget
 from kivy.uix.modalview import ModalView
 from kivy.uix.button import Button
 from kivy.uix.label import Label
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.switch import Switch
 from kivy.uix.spinner import Spinner
 from kivy.uix.dropdown import DropDown
@@ -26,6 +26,26 @@ from kivy.clock import Clock
 from kivy.metrics import dp, sp
 from kivy.core.window import Window
 from kivy.graphics import Color, Rectangle, Line
+
+
+class ResponsiveLabel(Label):
+    """Метка с автоматическим обновлением размера текста."""
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.bind(
+            width=lambda *x: self.setter('text_size')(self, (self.width, None)),
+            texture_size=lambda *x: self.setter('height')(self, self.texture_size[1])
+        )
+        self.halign = 'left'
+        self.valign = 'middle'
+        self.padding = (dp(5), dp(5))
+        self.text_size = (None, None)
+        self.size_hint = (1/3, None)
+        self.height = dp(40)
+        self.color = (1, 1, 1, 1)
+        self.text_language = 'ru'
+        self.line_height = 1.2
 
 # Импортируем компоненты интерфейса
 from ui.settings_color import ColorButton
@@ -543,19 +563,8 @@ class SettingsWindow(ModalView):
         debug_enabled = _get_debug_state()
         
         # Метка (1/3 ширины) с переносом текста
-        switch_label = Label(
+        switch_label = ResponsiveLabel(
             text='Отладочный режим:',
-            color=(1, 1, 1, 1),
-            size_hint_x=1/3,
-            size_hint_y=None,
-            height=dp(40),  # Высота контейнера
-            halign='left',
-            valign='middle',
-            text_size=(Window.width/3 - dp(15), None),  # Ширина колонки с отступами
-            padding=(0, dp(10)),
-            shorten=False,
-            text_language='ru',
-            line_height=1.2,
             markup=True
         )
         
@@ -618,19 +627,8 @@ class SettingsWindow(ModalView):
         )
         
         # Метка (1/3 ширины) с переносом текста
-        switch_label = Label(
+        switch_label = ResponsiveLabel(
             text='Включить уведомления:',
-            color=(1, 1, 1, 1),
-            size_hint_x=1/3,
-            size_hint_y=None,
-            height=dp(40),  # Высота контейнера
-            halign='left',
-            valign='middle',
-            text_size=(Window.width/3 - dp(15), None),  # Ширина колонки с отступами
-            padding=(0, dp(10)),
-            shorten=False,
-            text_language='ru',
-            line_height=1.2,
             markup=True
         )
         
