@@ -204,7 +204,7 @@ class PrayerTimesBox(GridLayout):
         if not self._is_animating:
             return
             
-        logging.info('Notification] Stopping prayer list animation')
+        logging.info('Notification: Stopping prayer list animation')
         self._is_animating = False
         
         # Отменяем запланированные события
