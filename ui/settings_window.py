@@ -682,8 +682,9 @@ class SettingsWindow(ModalView):
                 tomorrow_time = prayer_data[tomorrow_str].get(eng_name, '--:--')
                 print(f"| {display_name.ljust(16)}|{str(today_time).center(8)}|{str(tomorrow_time).center(8)}|")
             
-            # Закрывающий разделитель
+            # Закрывающий разделитель и пустая строка
             print_separator()
+            print()  # Пустая строка после таблицы
                 
         except Exception as e:
             print(f"Ошибка при получении данных из базы: {e}\n")
