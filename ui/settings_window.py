@@ -171,8 +171,12 @@ class SettingsWindow(ModalView):
         dropdown_section = create_azan_dropdown_section(self)
         
         # Импортируем и создаем секцию всплывающего окна азана
-        from ui.settings_blocks.azan_popup import create_azan_popup_section
+        from .settings_blocks.azan_popup import create_azan_popup_section
         popup_section = create_azan_popup_section(self)
+        
+        # Импортируем и создаем секцию уведомлений
+        from .settings_blocks.notifications import create_notifications_section
+        notifications_section = create_notifications_section(self)
         
         # Инициализируем ссылки на виджеты для доступа из других методов
         self.color_section = color_section
@@ -191,6 +195,8 @@ class SettingsWindow(ModalView):
         content_container.add_widget(dropdown_section)
         content_container.add_widget(Widget(size_hint_y=None, height=dp(10)))  # Разделитель
         content_container.add_widget(popup_section)
+        content_container.add_widget(Widget(size_hint_y=None, height=dp(10)))  # Разделитель
+        content_container.add_widget(notifications_section)
         
         # Секция админ-панели
         debug_section = GridLayout(
@@ -260,78 +266,7 @@ class SettingsWindow(ModalView):
         debug_section.add_widget(debug_title)
         debug_section.add_widget(controls_layout)
         
-        # Блок аудио уведомлений
-        audio_section = GridLayout(
-            cols=1,
-            size_hint_y=None,
-            height=dp(110),  # Такая же высота, как у других блоков
-            padding=[dp(20), dp(15), dp(20), dp(20)],
-            spacing=dp(10),
-            size_hint=(1, None)
-        )
-        
-        # Адаптивный заголовок блока
-        audio_title = Label(
-            text='Аудио уведомления',
-            color=(1, 1, 1, 1),
-            font_size=sp(22),
-            size_hint=(1, None),
-            height=dp(30),
-            halign='left',
-            valign='middle',
-            text_size=(Window.width - dp(40), None),
-            padding=(0, dp(5)),
-            shorten=True,
-            shorten_from='right'
-        )
-        
-        def update_audio_title_size(*args):
-            audio_title.text_size = (Window.width - dp(40), None)
-            audio_title.texture_update()
-        
-        Window.bind(width=update_audio_title_size)
-        Clock.schedule_once(update_audio_title_size)
-        
-        # Контейнер для элементов управления (3 колонки по 1/3 ширины)
-        controls_layout = GridLayout(
-            cols=3,
-            size_hint_y=None,
-            height=dp(40),
-            spacing=dp(10)
-        )
-        
-        # Метка (1/3 ширины) с переносом текста
-        switch_label = ResponsiveLabel(
-            text='Включить уведомления:',
-            markup=True
-        )
-        
-        # Переключатель (1/3 ширины)
-        self.audio_switch = Switch(
-            active=False,
-            size_hint_x=1/3
-        )
-        
-        # Кнопка (1/3 ширины)
-        self.audio_button = Button(
-            text='Настройки',
-            size_hint_x=1/3,
-            background_color=(0.3, 0.3, 0.3, 1),
-            color=(1, 1, 1, 1)
-        )
-        
-        # Добавляем виджеты в контейнер
-        controls_layout.add_widget(switch_label)
-        controls_layout.add_widget(self.audio_switch)
-        controls_layout.add_widget(self.audio_button)
-        
-        # Добавляем виджеты в секцию
-        audio_section.add_widget(audio_title)
-        audio_section.add_widget(controls_layout)
-        
-        # Добавляем блок аудио уведомлений перед админ-панелью
-        content_container.add_widget(Widget(size_hint_y=None, height=dp(10)))  # Разделитель
-        content_container.add_widget(audio_section)
+        # Блок аудио уведомлений теперь находится в отдельном модуле notifications.py
         
         # Добавляем секцию админ-панели
         content_container.add_widget(Widget(size_hint_y=None, height=dp(10)))  # Разделитель
