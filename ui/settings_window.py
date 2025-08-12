@@ -537,83 +537,78 @@ class SettingsWindow(ModalView):
         Args:
             show_before_save (bool): Если True, показывает настройки перед сохранением
         """
-        # Заголовок раздела размеров и позиций окон
-        print("\n" + "="*50)
-        print("         РАЗМЕР И ПОЗИЦИЯ ОКОН ПРИЛОЖЕНИЯ")
-        print("="*50 + "\n")
+        # Вспомогательная функция для вывода разделителя
+        def print_separator():
+            print(" " + "=" * 37)
+            
+        # Вспомогательная функция для вывода заголовка
+        def print_header(title):
+            print(f" | {title.center(34)}|")
+            print(" " + "-" * 37)
+            
+        # Вспомогательная функция для вывода строки с двумя значениями
+        def print_row(label, value1, value2):
+            print(f" | {label.ljust(16)}|{str(value1).center(8)}|{str(value2).center(8)}|")
+            
+        # Вспомогательная функция для вывода строки с одним значением
+        def print_single_row(label, value):
+            print(f" | {label.ljust(16)}| {str(value).center(16)}|")
+            
+        # Основной вывод
+        print()  # Пустая строка перед началом вывода
         
         # Раздел: Главное окно
-        print("-"*50)
-        print("                  ГЛАВНОЕ ОКНО")
-        print("-"*50)
+        print_separator()
+        print_header("App Window")
         try:
-            # Получаем сохраненные настройки главного окна из базы данных
             main_settings = self.db.get_window_settings()
             if main_settings:
                 width, height, x, y = main_settings
-                print(f"Размер: {int(width)} x {int(height)}")
-                print(f"Позиция: x={int(x)}, y={int(y)}")
+                print_row("Size", int(width), int(height))
+                print_row("Position", int(x), int(y))
             else:
-                print("Данные главного окна не найдены в базе")
+                print(" | No data found" + " " * 22 + "|")
         except Exception as e:
-            print(f"Ошибка при получении данных главного окна: {e}")
-        print("-"*50)
+            print(f" | Error: {str(e)[:25]}" + " " * (36 - 9 - len(str(e)[:25])) + "|")
         
         # Раздел: Окно настроек
-        print("                 ОКНО НАСТРОЕК")
-        print("-"*50)
+        print_separator()
+        print_header("Settings Window")
         try:
-            # Получаем сохраненные настройки окна настроек из базы данных
             settings = self.db.get_settings_window_settings()
             if settings:
                 width, height, x, y = settings
-                print(f"Размер: {int(width)} x {int(height)}")
-                print(f"Позиция: x={int(x)}, y={int(y)}")
+                print_row("Size", int(width), int(height))
+                print_row("Position", int(x), int(y))
             else:
-                print("Данные окна настроек не найдены в базе")
+                print(" | No data found" + " " * 22 + "|")
         except Exception as e:
-            print(f"Ошибка при получении данных окна настроек: {e}")
-        print("-"*50 + "\n")
+            print(f" | Error: {str(e)[:25]}" + " " * (36 - 9 - len(str(e)[:25])) + "|")
         
-        # Заголовок раздела настроек приложения
-        print("="*50)
-        print("               НАСТРОЙКИ ПРИЛОЖЕНИЯ")
-        print("="*50 + "\n")
-        
-        # Раздел: Цвет часов
-        print("                    ЦВЕТ ЧАСОВ")
-        print("-"*50)
+        # Раздел: Тема
+        print_separator()
         if hasattr(self, 'selected_color'):
-            color_name = self.selected_color.capitalize()
-            print(f"{color_name}")
-        print("-"*50)
+            print_single_row("Theme", self.selected_color.capitalize())
+        else:
+            print_single_row("Theme", "Not set")
         
         # Раздел: Настройка азанов
-        print("                 НАСТРОЙКА АЗАНОВ")
-        print("-"*50)
+        print_separator()
         if hasattr(self, 'selected_azan_spinner'):
-            print(f"Spinner: {self.selected_azan_spinner}")
+            print_single_row("Spinner", self.selected_azan_spinner)
         if hasattr(self, 'selected_azan_dropdown'):
-            print(f"DropDown: {self.selected_azan_dropdown}")
+            print_single_row("DropDown", self.selected_azan_dropdown)
         if hasattr(self, 'selected_azan_popup'):
-            print(f"Popup: {self.selected_azan_popup}")
-        print("-"*50)
+            print_single_row("Popup", self.selected_azan_popup)
         
         # Раздел: Отладочный режим
-        print("\n" + "-"*50)
-        print("                ОТЛАДОЧНЫЙ РЕЖИМ")
-        print("-"*50)
+        print_separator()
         if hasattr(self, 'debug_switch'):
-            debug_state = "ВКЛЮЧЕН (Отладочные логи отображаются в консоли)" if self.debug_switch.active else "ВЫКЛЮЧЕН (Отладочные логи не отображаются в консоли)"
-            print(f"{debug_state}")
+            debug_state = "ENABLE" if self.debug_switch.active else "DISABLE"
+            print_single_row("Debug Mode", debug_state)
         else:
-            print("Отладочный режим: настройка недоступна")
-        print("-"*50)
-        
-        # Раздел: Времена молитв из базы данных
-        print("="*50)
-        print("     ИМЕЮЩИЕСЯ ВРЕМЕНА МОЛИТВ В БАЗЕ ДАННЫХ")
-        print("="*50 + "\n")
+            print_single_row("Debug Mode", "UNAVAILABLE")
+
         try:
             # Импортируем менеджер молитв
             from logic.prayer_times import prayer_times_manager
@@ -663,24 +658,35 @@ class SettingsWindow(ModalView):
             today_display = f"{today.day:02d}/{today.month:02d}"
             tomorrow_display = f"{tomorrow.day:02d}/{tomorrow.month:02d}"
             
-            # Выводим заголовок таблицы
-            separator = "-" * 26
-            print(separator)
-            print(f"Date     | {today_display} | {tomorrow_display} |")
-            print(separator)
+            # Разделитель перед таблицей молитв
+            print_separator()
+            print_header("Data from Base")
             
-            # Выводим времена молитв
-            for prayer in prayer_columns:
-                today_time = prayer_data[today_str].get(prayer, '00:00')
-                tomorrow_time = prayer_data[tomorrow_str].get(prayer, '00:00')
-                print(f"{prayer:<8} | {today_time} | {tomorrow_time} |")
+            # Заголовки дат
+            print(f" | {'Date'.ljust(16)}|{today_display.center(8)}|{tomorrow_display.center(8)}|")
+            print(" |" + "-" * 17 + "|" + "-" * 8 + "|" + "-" * 8 + "|")
             
-            print(separator + "\n")
+            # Выводим времена молитв с выравниванием
+            prayer_map = {
+                'Midnight': 'Midnight',
+                'Fajr': 'Fajr',
+                'Sunrise': 'Sunrise',
+                'Dhuhr': 'Dhuhr',
+                'Asr': 'Asr',
+                'Maghrib': 'Maghrib',
+                'Isha': 'Isha'
+            }
+            
+            for eng_name, display_name in prayer_map.items():
+                today_time = prayer_data[today_str].get(eng_name, '--:--')
+                tomorrow_time = prayer_data[tomorrow_str].get(eng_name, '--:--')
+                print(f" | {display_name.ljust(16)}|{str(today_time).center(8)}|{str(tomorrow_time).center(8)}|")
+            
+            # Закрывающий разделитель
+            print_separator()
                 
         except Exception as e:
             print(f"Ошибка при получении данных из базы: {e}\n")
-        
-        print("="*21 + " КОНЕЦ " + "="*22 + "\n")
 
     def on_accept(self, *args):
         """Сохраняет настройки при нажатии кнопки Save."""
