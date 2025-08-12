@@ -581,7 +581,7 @@ class SettingsWindow(ModalView):
                 print_row("Size", int(width), int(height))
                 print_row("Position", int(x), int(y))
             else:
-                print("| No data found" + " " * 22 + "|")
+                print("| No data found" + " " * 21 + "|")
         except Exception as e:
             print(f"| Error: {str(e)[:25]}" + " " * (36 - 9 - len(str(e)[:25])) + "|")
         
