@@ -539,20 +539,20 @@ class SettingsWindow(ModalView):
         """
         # Вспомогательная функция для вывода разделителя
         def print_separator():
-            print(" " + "=" * 37)
+            print("=" * 37)
             
         # Вспомогательная функция для вывода заголовка
         def print_header(title):
-            print(f" | {title.center(34)}|")
-            print(" " + "-" * 37)
+            print(f"| {title.center(34)}|")
+            print("" + "-" * 37)
             
         # Вспомогательная функция для вывода строки с двумя значениями
         def print_row(label, value1, value2):
-            print(f" | {label.ljust(16)}|{str(value1).center(8)}|{str(value2).center(8)}|")
+            print(f"| {label.ljust(16)}|{str(value1).center(8)}|{str(value2).center(8)}|")
             
         # Вспомогательная функция для вывода строки с одним значением
         def print_single_row(label, value):
-            print(f" | {label.ljust(16)}| {str(value).center(16)}|")
+            print(f"| {label.ljust(16)}| {str(value).center(16)}|")
             
         # Основной вывод
         print()  # Пустая строка перед началом вывода
@@ -567,9 +567,9 @@ class SettingsWindow(ModalView):
                 print_row("Size", int(width), int(height))
                 print_row("Position", int(x), int(y))
             else:
-                print(" | No data found" + " " * 22 + "|")
+                print("| No data found" + " " * 22 + "|")
         except Exception as e:
-            print(f" | Error: {str(e)[:25]}" + " " * (36 - 9 - len(str(e)[:25])) + "|")
+            print(f"| Error: {str(e)[:25]}" + " " * (36 - 9 - len(str(e)[:25])) + "|")
         
         # Раздел: Окно настроек
         print_separator()
@@ -581,9 +581,9 @@ class SettingsWindow(ModalView):
                 print_row("Size", int(width), int(height))
                 print_row("Position", int(x), int(y))
             else:
-                print(" | No data found" + " " * 22 + "|")
+                print("| No data found" + " " * 22 + "|")
         except Exception as e:
-            print(f" | Error: {str(e)[:25]}" + " " * (36 - 9 - len(str(e)[:25])) + "|")
+            print(f"| Error: {str(e)[:25]}" + " " * (36 - 9 - len(str(e)[:25])) + "|")
         
         # Раздел: Тема
         print_separator()
@@ -663,8 +663,8 @@ class SettingsWindow(ModalView):
             print_header("Data from Base")
             
             # Заголовки дат
-            print(f" | {'Date'.ljust(16)}|{today_display.center(8)}|{tomorrow_display.center(8)}|")
-            print(" |" + "-" * 17 + "|" + "-" * 8 + "|" + "-" * 8 + "|")
+            print(f"| {'Date'.ljust(16)}|{today_display.center(8)}|{tomorrow_display.center(8)}|")
+            print("|" + "-" * 17 + "|" + "-" * 8 + "|" + "-" * 8 + "|")
             
             # Выводим времена молитв с выравниванием
             prayer_map = {
@@ -680,7 +680,7 @@ class SettingsWindow(ModalView):
             for eng_name, display_name in prayer_map.items():
                 today_time = prayer_data[today_str].get(eng_name, '--:--')
                 tomorrow_time = prayer_data[tomorrow_str].get(eng_name, '--:--')
-                print(f" | {display_name.ljust(16)}|{str(today_time).center(8)}|{str(tomorrow_time).center(8)}|")
+                print(f"| {display_name.ljust(16)}|{str(today_time).center(8)}|{str(tomorrow_time).center(8)}|")
             
             # Закрывающий разделитель
             print_separator()
