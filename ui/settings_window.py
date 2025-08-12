@@ -1,24 +1,27 @@
-"""
-Settings Window Module.
-Реализует минималистичный интерфейс настроек с выбором цвета.
-
-Основные компоненты:
-- Компактный заголовок
-- Сетка из 9 цветов с выделением активного белой рамкой
-- Кнопки Save/Cancel для применения/отмены изменений
-"""
-
 import logging
 
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.scrollview import ScrollView
 from kivy.uix.widget import Widget
 from kivy.uix.modalview import ModalView
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.switch import Switch
+from kivy.uix.scrollview import ScrollView
+from kivy.uix.button import Button
 from kivy.uix.spinner import Spinner
+from kivy.uix.switch import Switch
+
+# Импортируем базовые компоненты
+from .settings_blocks.base import (
+    ResponsiveLabel,
+    SettingsCard,
+    SettingsSection,
+    CustomButton
+)
+
+# Импортируем компоненты настроек
+from .settings_color import ColorButton
+
 from kivy.uix.dropdown import DropDown
 from kivy.uix.popup import Popup
 from kivy.properties import ListProperty, StringProperty, ObjectProperty, NumericProperty
@@ -28,132 +31,17 @@ from kivy.core.window import Window
 from kivy.graphics import Color, Rectangle, Line
 
 
-class ResponsiveLabel(Label):
-    """Метка с автоматическим обновлением размера текста."""
-    
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.bind(
-            width=lambda *x: self.setter('text_size')(self, (self.width, None)),
-            texture_size=lambda *x: self.setter('height')(self, self.texture_size[1])
-        )
-        self.halign = 'left'
-        self.valign = 'middle'
-        self.padding = (dp(5), dp(5))
-        self.text_size = (None, None)
-        self.size_hint = (1/3, None)
-        self.height = dp(40)
-        self.color = (1, 1, 1, 1)
-        self.text_language = 'ru'
-        self.line_height = 1.2
-
-# Импортируем компоненты интерфейса
-from ui.settings_color import ColorButton
-
 # Импортируем базу данных и утилиты
 from data.database import SettingsDatabase
 from logic.display_utils import is_mobile_device
 
 logger = logging.getLogger(__name__)
 
-class SettingsCard(GridLayout):
-    """Карточка для группы настроек"""
-    def __init__(self, title="", **kwargs):
-        super().__init__(**kwargs)
-        self.cols = 1
-        self.row_default_height = dp(5)
-        self.size_hint_y = None
-        self.height = dp(200)  # Начальная высота
-        self.padding = [dp(10), dp(5)]
-        self.spacing = dp(10)
-        
-        # Фон карточки
-        with self.canvas.before:
-            Color(0.2, 0.2, 0.2, 1)
-            self.rect = Rectangle(pos=self.pos, size=self.size)
-        self.bind(pos=self._update_rect, size=self._update_rect)
-        
-        # Заголовок секции
-        if title:
-            title_label = Label(
-                text=title.upper(),
-                color=(1, 1, 1, 0.8),
-                font_size=sp(16),
-                size_hint_y=None,
-                height=dp(30),
-                halign='left'
-            )
-            title_label.bind(size=title_label.setter('text_size'))
-            self.add_widget(title_label)
-            
-    def _update_rect(self, instance, value):
-        """Обновляет позицию и размер фонового прямоугольника"""
-        self.rect.pos = instance.pos
-        self.rect.size = instance.size
 
-class SettingsSection(ScrollView):
-    """Секция настроек"""
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.size_hint_y = None
-        self.height = dp(500)  # Будет обновляться динамически
-        
-        # Фон секции
-        with self.canvas.before:
-            Color(0.15, 0.15, 0.15, 0.95)
-            self.rect = Rectangle(pos=self.pos, size=self.size)
-        self.bind(pos=self._update_rect, size=self._update_rect)
-        
-        # Основной layout с адаптивными отступами
-        self.layout = GridLayout(
-            cols=1,
-            orientation='vertical', 
-            spacing=0,
-            padding=0,
-            pos_hint={'center_x': 0.5, 'center_y': 0.5},
-            size_hint_y=None
-        )
-        self.layout.bind(minimum_height=self.layout.setter('height'))
-        
-        self.add_widget(self.layout)
-    
-    def _update_rect(self, instance, value):
-        self.rect.pos = instance.pos
-        self.rect.size = instance.size
 
-class CustomButton(Button):
-    def __init__(self, icon_path='', **kwargs):
-        super().__init__(**kwargs)
-        self.background_normal = ''
-        self.icon_path = icon_path
-        self.icon_size = dp(30)
-        
-        with self.canvas.before:
-            self.bg_color = Color(*self.background_color)
-            self.bg_rect = Rectangle(pos=self.pos, size=self.size)
-            
-        with self.canvas.after:
-            self.icon_color = Color(1, 1, 1, 1)
-            self.icon = Rectangle(source=self.icon_path, size=(self.icon_size, self.icon_size))
-        
-        self.bind(pos=self._update_icon, size=self._update_icon)
-        self.bind(size=self._update_background, pos=self._update_background)
-    
-    def _update_icon(self, *args):
-        if hasattr(self, 'icon'):
-            # Явно вычисляем центр
-            center_x = self.x + self.width/2
-            center_y = self.y + self.height/2
-            
-            self.icon.pos = (
-                center_x - self.icon_size/2,
-                center_y - self.icon_size/2
-            )
-            self.icon.size = (self.icon_size, self.icon_size)
-            
-    def _update_background(self, *args):
-        self.bg_rect.pos = self.pos
-        self.bg_rect.size = self.size
+
+
+
 
 class SettingsWindow(ModalView):
     """
