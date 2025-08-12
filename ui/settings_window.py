@@ -962,22 +962,11 @@ class SettingsWindow(ModalView):
         print("                ОТЛАДОЧНЫЙ РЕЖИМ")
         print("-"*50)
         if hasattr(self, 'debug_switch'):
-            debug_state = "ВКЛЮЧЕН" if self.debug_switch.active else "ВЫКЛЮЧЕН"
-            print(f"Состояние: {debug_state}")
+            debug_state = "ВКЛЮЧЕН (Отладочные логи отображаются в консоли)" if self.debug_switch.active else "ВЫКЛЮЧЕН (Отладочные логи не отображаются в консоли)"
+            print(f"{debug_state}")
         else:
             print("Отладочный режим: настройка недоступна")
         print("-"*50)
-        
-        # Раздел: Размеры блоков
-        print("                  РАЗМЕРЫ БЛОКОВ")
-        print("-"*50)
-        if hasattr(self, 'azan_section'):
-            print(f"Spinner: size={self.azan_section.size}, pos={self.azan_section.pos}")
-        if hasattr(self, 'dropdown_section'):
-            print(f"DropDown: size={self.dropdown_section.size}, pos={self.dropdown_section.pos}")
-        if hasattr(self, 'popup_section'):
-            print(f"Popup: size={self.popup_section.size}, pos={self.popup_section.pos}")
-        print("-"*50 + "\n")
         
         # Раздел: Времена молитв из базы данных
         print("="*50)
