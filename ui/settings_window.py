@@ -170,52 +170,9 @@ class SettingsWindow(ModalView):
         from ui.settings_blocks.azan_dropdown import create_azan_dropdown_section
         dropdown_section = create_azan_dropdown_section(self)
         
-        # Блок с Popup и ListView
-        popup_section = GridLayout(
-            cols=1,
-            size_hint_y=None,
-            height=dp(110),  # Такая же высота, как у остальных блоков
-            padding=[dp(20), dp(15), dp(20), dp(20)],
-            spacing=dp(10),
-            size_hint=(1, None)
-        )
-        
-        # Адаптивный заголовок блока с Popup
-        popup_title = Label(
-            text='Azan (Popup + ListView)',
-            color=(1, 1, 1, 1),
-            font_size=sp(22),
-            size_hint=(1, None),
-            height=dp(30),
-            halign='left',
-            valign='middle',
-            text_size=(Window.width - dp(40), None),
-            padding=(0, dp(5)),
-            shorten=True,
-            shorten_from='right'
-        )
-        
-        def update_popup_title_size(*args):
-            popup_title.text_size = (Window.width - dp(40), None)
-            popup_title.texture_update()
-        
-        Window.bind(width=update_popup_title_size)
-        Clock.schedule_once(update_popup_title_size)
-        
-        # Кнопка для вызова Popup
-        self.popup_btn = Button(
-            text=self.selected_azan_popup if hasattr(self, 'selected_azan_popup') else 'Azan 1',
-            size_hint_y=None,
-            height=dp(40),
-            background_color=(0.3, 0.3, 0.3, 1),
-            color=(1, 1, 1, 1),
-            font_size=sp(18)
-        )
-        self.popup_btn.bind(on_release=self.show_azan_popup)
-        
-        # Добавляем элементы в секцию
-        popup_section.add_widget(popup_title)
-        popup_section.add_widget(self.popup_btn)
+        # Импортируем и создаем секцию всплывающего окна азана
+        from ui.settings_blocks.azan_popup import create_azan_popup_section
+        popup_section = create_azan_popup_section(self)
         
         # Инициализируем ссылки на виджеты для доступа из других методов
         self.color_section = color_section
