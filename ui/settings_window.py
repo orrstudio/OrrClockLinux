@@ -530,18 +530,11 @@ class SettingsWindow(ModalView):
         Window.bind(width=update_debug_title_size)
         Clock.schedule_once(update_debug_title_size)
         
-        # Контейнер для элементов управления
+        # Контейнер для элементов управления (3 колонки по 1/3 ширины)
         controls_layout = GridLayout(
-            cols=2,
+            cols=3,
             size_hint_y=None,
             height=dp(40),
-            spacing=dp(10)
-        )
-        
-        # Переключатель с меткой
-        switch_layout = GridLayout(
-            cols=2,
-            size_hint_x=0.7,
             spacing=dp(10)
         )
         
@@ -549,24 +542,28 @@ class SettingsWindow(ModalView):
         from utils.logger import _get_debug_state
         debug_enabled = _get_debug_state()
         
+        # Метка (1/3 ширины)
         switch_label = Label(
             text='Отладочный режим:',
             color=(1, 1, 1, 1),
+            size_hint_x=1/3,
             halign='left',
             valign='middle'
         )
         
+        # Переключатель (1/3 ширины)
         self.debug_switch = Switch(
             active=debug_enabled,
-            size_hint_x=0.3
+            size_hint_x=1/3
         )
         
-        switch_layout.add_widget(switch_label)
-        switch_layout.add_widget(self.debug_switch)
+        # Пустой виджет для выравнивания (1/3 ширины)
+        empty_widget = Widget(size_hint_x=1/3)
         
         # Добавляем виджеты в контейнер
-        controls_layout.add_widget(switch_layout)
-        controls_layout.add_widget(Widget())  # Пустой виджет для выравнивания
+        controls_layout.add_widget(switch_label)
+        controls_layout.add_widget(self.debug_switch)
+        controls_layout.add_widget(empty_widget)
         
         # Добавляем виджеты в секцию
         debug_section.add_widget(debug_title)
@@ -576,7 +573,7 @@ class SettingsWindow(ModalView):
         audio_section = GridLayout(
             cols=1,
             size_hint_y=None,
-            height=dp(110),  # Такая же высота, как у блока азана
+            height=dp(110),  # Такая же высота, как у других блоков
             padding=[dp(20), dp(15), dp(20), dp(20)],
             spacing=dp(10),
             size_hint=(1, None)
@@ -604,46 +601,40 @@ class SettingsWindow(ModalView):
         Window.bind(width=update_audio_title_size)
         Clock.schedule_once(update_audio_title_size)
         
-        # Контейнер для элементов управления
+        # Контейнер для элементов управления (3 колонки по 1/3 ширины)
         controls_layout = GridLayout(
-            cols=2,
+            cols=3,
             size_hint_y=None,
             height=dp(40),
             spacing=dp(10)
         )
         
-        # Переключатель с меткой
-        switch_layout = GridLayout(
-            cols=2,
-            size_hint_x=0.7,
-            spacing=dp(10)
-        )
-        
+        # Метка (1/3 ширины)
         switch_label = Label(
             text='Включить уведомления:',
             color=(1, 1, 1, 1),
+            size_hint_x=1/3,
             halign='left',
             valign='middle'
         )
         
+        # Переключатель (1/3 ширины)
         self.audio_switch = Switch(
             active=False,
-            size_hint_x=0.3
+            size_hint_x=1/3
         )
         
-        switch_layout.add_widget(switch_label)
-        switch_layout.add_widget(self.audio_switch)
-        
-        # Кнопка
+        # Кнопка (1/3 ширины)
         self.audio_button = Button(
             text='Настройки',
-            size_hint_x=0.3,
+            size_hint_x=1/3,
             background_color=(0.3, 0.3, 0.3, 1),
             color=(1, 1, 1, 1)
         )
         
-        # Добавляем элементы в контейнер
-        controls_layout.add_widget(switch_layout)
+        # Добавляем виджеты в контейнер
+        controls_layout.add_widget(switch_label)
+        controls_layout.add_widget(self.audio_switch)
         controls_layout.add_widget(self.audio_button)
         
         # Добавляем виджеты в секцию
