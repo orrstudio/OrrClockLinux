@@ -166,7 +166,7 @@ class PrayerTimesBox(GridLayout):
             return
             
         self._is_animating = True
-        logging.info('Запуск анимации мигания активной молитвы')
+        logging.info('[Notification] Starting active prayer blink animation')
         
         # Получаем текущую активную молитву
         current_prayer = self._get_current_prayer()
@@ -204,7 +204,7 @@ class PrayerTimesBox(GridLayout):
         if not self._is_animating:
             return
             
-        logging.info('Остановка анимации списка молитв')
+        logging.info('Notification] Stopping prayer list animation')
         self._is_animating = False
         
         # Отменяем запланированные события

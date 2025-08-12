@@ -445,7 +445,9 @@ class NextPrayerTimeBox(GridLayout):
                         print(f"[ERROR] {error_msg}")
                         logging.error(error_msg)
                 
-                logging.info(f"Завершено воспроизведение уведомления: {notification_type}")
+                # Заменяем '30min' на '30 min' и т.д. для лучшей читаемости
+                pretty_notification = notification_type.replace('min', ' min') if 'min' in notification_type else notification_type
+                logging.info(f"Notification] Finished playing notification: {pretty_notification}")
                 
             except Exception as e:
                 error_msg = f"Ошибка при воспроизведении уведомления {notification_type}: {str(e)}"
