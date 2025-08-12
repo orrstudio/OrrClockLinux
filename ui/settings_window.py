@@ -162,55 +162,9 @@ class SettingsWindow(ModalView):
         # Создаем секцию выбора цвета
         color_section = create_color_section(self)
         
-        # Блок выбора азана
-        azan_section = GridLayout(
-            cols=1,
-            size_hint_y=None,
-            height=dp(110),  # Такая же высота, как у блока цветов
-            padding=[dp(20), dp(15), dp(20), dp(20)],
-            spacing=dp(10),
-            size_hint=(1, None)
-        )
-        
-        # Адаптивный заголовок блока выбора азана
-        azan_title = Label(
-            text='Azan səsi',
-            color=(1, 1, 1, 1),
-            font_size=sp(22),
-            size_hint=(1, None),
-            height=dp(30),
-            halign='left',
-            valign='middle',
-            text_size=(Window.width - dp(40), None),
-            padding=(0, dp(5)),
-            shorten=True,
-            shorten_from='right'
-        )
-        
-        def update_azan_title_size(*args):
-            azan_title.text_size = (Window.width - dp(40), None)
-            azan_title.texture_update()
-        
-        Window.bind(width=update_azan_title_size)
-        Clock.schedule_once(update_azan_title_size)
-        
-        # Выпадающий список для выбора азана
-        self.azan_spinner = Spinner(
-            text='Azan 1',
-            values=('Azan 1', 'Azan 2', 'Azan 3'),
-            size_hint_y=None,
-            height=dp(40),
-            background_color=(0.3, 0.3, 0.3, 1),
-            color=(1, 1, 1, 1),
-            font_size=sp(18)
-        )
-        
-        # Обработчик выбора значения
-        self.azan_spinner.bind(text=self.on_azan_selected)
-        
-        # Добавляем виджеты в секцию
-        azan_section.add_widget(azan_title)
-        azan_section.add_widget(self.azan_spinner)
+        # Импортируем и создаем секцию выбора азана
+        from ui.settings_blocks.azan_spinner import create_azan_spinner_section
+        azan_section = create_azan_spinner_section(self)
         
         # Блок с DropDown
         dropdown_section = GridLayout(
