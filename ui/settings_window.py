@@ -727,18 +727,18 @@ class SettingsWindow(ModalView):
                     
                     # Выводим сообщение о результате
                     status = 'включён' if debug_enabled else 'выключен'
-                    print(f"[ИНФО] Отладочный режим {status}")
+                    logging.info(f'Отладочный режим {status}')
                     
                 except Exception as e:
-                    print(f"[ОШИБКА] Не удалось обновить отладочный режим: {e}")
+                    logging.error(f'Не удалось обновить отладочный режим: {e}')
                     # Пробуем сохранить состояние напрямую в БД на случай ошибки в логгере
                     try:
                         from data.database import SettingsDatabase
                         db = SettingsDatabase()
                         db.save_setting('debug_mode', '1' if debug_enabled else '0')
-                        print("[ИНФО] Значение отладочного режима сохранено напрямую в БД")
+                        logging.info('Значение отладочного режима сохранено напрямую в БД')
                     except Exception as db_error:
-                        print(f"[КРИТИЧЕСКАЯ ОШИБКА] Не удалось сохранить состояние отладки: {db_error}")
+                        logging.error(f'Критическая ошибка: не удалось сохранить состояние отладки: {db_error}')
                 
             # Выводим обновленные настройки после сохранения
             self.print_sizes(show_before_save=False)

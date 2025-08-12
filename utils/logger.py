@@ -43,10 +43,11 @@ def _update_global_debug_state():
         new_state = _get_debug_state()
         if _DEBUG_ENABLED != new_state:
             _DEBUG_ENABLED = new_state
-            _original_print(f"[ИНФО] Глобальное состояние отладки обновлено: {'ВКЛЮЧЕН' if _DEBUG_ENABLED else 'ВЫКЛЮЧЕН'}", file=sys.stderr)
+            status = 'включён' if _DEBUG_ENABLED else 'выключен'
+            _original_print(f"[INFO   ] [Отладочный режим] {status}", file=sys.stderr)
         return _DEBUG_ENABLED
     except Exception as e:
-        _original_print(f"[ОШИБКА] Ошибка при обновлении состояния отладки: {e}", file=sys.stderr)
+        _original_print(f"[ERROR  ] Ошибка при обновлении состояния отладки: {e}", file=sys.stderr)
         return _DEBUG_ENABLED
 
 # Определяем классы для разных режимов работы логгера
@@ -120,10 +121,8 @@ class DebugLogger:
         # Меняем класс логгера в зависимости от состояния
         if enabled:
             logger = DebugLogger()
-            _original_print("[ИНФО] Отладочный режим включён", file=sys.stderr)
         else:
             logger = NoopLogger()
-            _original_print("[ИНФО] Отладочный режим выключен", file=sys.stderr)
             
         # Принудительно обновляем состояние в логгере
         _update_global_debug_state()
