@@ -542,13 +542,21 @@ class SettingsWindow(ModalView):
         from utils.logger import _get_debug_state
         debug_enabled = _get_debug_state()
         
-        # Метка (1/3 ширины)
+        # Метка (1/3 ширины) с переносом текста
         switch_label = Label(
             text='Отладочный режим:',
             color=(1, 1, 1, 1),
             size_hint_x=1/3,
+            size_hint_y=None,
+            height=dp(40),  # Высота контейнера
             halign='left',
-            valign='middle'
+            valign='middle',
+            text_size=(Window.width/3 - dp(15), None),  # Ширина колонки с отступами
+            padding=(0, dp(10)),
+            shorten=False,
+            text_language='ru',
+            line_height=1.2,
+            markup=True
         )
         
         # Переключатель (1/3 ширины)
@@ -609,13 +617,21 @@ class SettingsWindow(ModalView):
             spacing=dp(10)
         )
         
-        # Метка (1/3 ширины)
+        # Метка (1/3 ширины) с переносом текста
         switch_label = Label(
             text='Включить уведомления:',
             color=(1, 1, 1, 1),
             size_hint_x=1/3,
+            size_hint_y=None,
+            height=dp(40),  # Высота контейнера
             halign='left',
-            valign='middle'
+            valign='middle',
+            text_size=(Window.width/3 - dp(15), None),  # Ширина колонки с отступами
+            padding=(0, dp(10)),
+            shorten=False,
+            text_language='ru',
+            line_height=1.2,
+            markup=True
         )
         
         # Переключатель (1/3 ширины)
