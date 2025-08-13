@@ -128,7 +128,7 @@ def create_notifications_section(settings_window):
     
     # Адаптивный заголовок блока
     audio_title = Label(
-        text='Аудио уведомления',
+        text='Уведомления',
         color=(1, 1, 1, 1),
         font_size=sp(22),  # Используем sp для масштабирования шрифта
         size_hint=(1, None),
@@ -158,7 +158,7 @@ def create_notifications_section(settings_window):
     
     # Метка (1/3 ширины) с переносом текста
     switch_label = ResponsiveLabel(
-        text='Включить уведомления:',
+        text='Аудио уведомления:',
         markup=True
     )
     
