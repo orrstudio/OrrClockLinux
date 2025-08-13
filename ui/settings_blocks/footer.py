@@ -10,6 +10,19 @@ from kivy.metrics import dp, sp
 from ui.settings_blocks.base import CustomButton
 
 
+def _update_bottom_rect(instance, value, bottom_rect):
+    """
+    Обновляет позицию и размер фона нижней панели.
+    
+    Args:
+        instance: Виджет, к которому привязан обработчик
+        value: Новое значение позиции/размера
+        bottom_rect: Прямоугольник фона нижней панели
+    """
+    bottom_rect.pos = instance.pos
+    bottom_rect.size = instance.size
+
+
 def create_footer(dismiss_callback, accept_callback):
     """
     Создает и возвращает виджет нижней панели с кнопками.
@@ -44,13 +57,11 @@ def create_footer(dismiss_callback, accept_callback):
         Color(0.2, 0.2, 0.2, 1)
         bottom_rect = Rectangle(pos=bottom_panel.pos, size=bottom_panel.size)
     
-    # Функция для обновления фона при изменении размера/позиции
-    def update_rect(instance, value):
-        bottom_rect.pos = instance.pos
-        bottom_rect.size = instance.size
-    
-    # Привязываем обновление фона
-    bottom_panel.bind(pos=update_rect, size=update_rect)
+    # Привязываем обновление фона при изменении размера/позиции
+    bottom_panel.bind(
+        pos=lambda instance, value: _update_bottom_rect(instance, value, bottom_rect),
+        size=lambda instance, value: _update_bottom_rect(instance, value, bottom_rect)
+    )
     
     # Создаем кнопку отмены
     cancel_button = CustomButton(

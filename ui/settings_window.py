@@ -21,7 +21,7 @@ from .settings_blocks.base import (
 from .settings_color import ColorButton
 from .settings_blocks.colors import create_color_section, get_color_tuple, get_color_name, ColorSettings
 from .settings_blocks.header import create_header, _update_title_rect
-from .settings_blocks.footer import create_footer
+from .settings_blocks.footer import create_footer, _update_bottom_rect
 from .settings_blocks.utils import add_border, print_debug_info, print_sizes
 from .settings_blocks.window_settings import apply_window_settings, on_window_resize, save_window_settings
 
@@ -241,11 +241,7 @@ class SettingsWindow(ModalView):
             self.dismiss()
     
     # Метод _update_title_rect перенесен в модуль header.py
-    
-    def _update_bottom_rect(self, instance, value):
-        """Обновляет фон нижней панели."""
-        self.bottom_rect.pos = instance.pos
-        self.bottom_rect.size = instance.size
+    # Метод _update_bottom_rect перенесен в модуль footer.py
 
     def on_window_resize(self, instance, width, height):
         """
