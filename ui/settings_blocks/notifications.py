@@ -112,7 +112,10 @@ def create_notifications_section(settings_window):
 
         # 2. Переключатель (по центру)
         switch_layout = AnchorLayout(anchor_x='center', anchor_y='center')
-        switch = Switch(size_hint=(None, None), size=(dp(50), dp(30)))
+        switch = Switch(
+            size_hint=(None, None),
+            size=(dp(50), dp(30))  # Возвращаем правильную высоту
+        )
         switch_layout.add_widget(switch)
         setattr(settings_window, switch_attr, switch)
         table.add_widget(switch_layout)
