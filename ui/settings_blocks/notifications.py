@@ -1,12 +1,13 @@
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
-from kivy.uix.switch import Switch
 from kivy.uix.button import Button
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.graphics import Color, Line
 from kivy.metrics import dp
 from kivy.core.window import Window
 from kivy.properties import ListProperty
+
+from ui.components.kivymd_switch import CustomMDSwitch
 
 
 class BorderedGridLayout(GridLayout):
@@ -110,14 +111,14 @@ def create_notifications_section(settings_window):
         label.bind(size=update_text_size)
         table.add_widget(label)
 
-        # 2. Переключатель (по центру)
+        # 2. KivyMD переключатель (по центру)
         switch_layout = AnchorLayout(anchor_x='center', anchor_y='center')
-        switch = Switch(
+        switch = CustomMDSwitch(
             size_hint=(None, None),
-            size=(dp(50), dp(30))  # Возвращаем правильную высоту
+            size=(dp(64), dp(40))  # Увеличиваем размер для лучшего отображения
         )
         switch_layout.add_widget(switch)
-        setattr(settings_window, switch_attr, switch)
+        setattr(settings_window, switch_attr, switch.switch)  # Сохраняем ссылку на внутренний switch
         table.add_widget(switch_layout)
 
         # 3. Кнопка (по центру)
