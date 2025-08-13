@@ -22,6 +22,7 @@ from .settings_color import ColorButton
 from .settings_blocks.colors import create_color_section, get_color_tuple, get_color_name
 from .settings_blocks.header import create_header
 from .settings_blocks.footer import create_footer
+from .settings_blocks.utils import add_border, print_debug_info
 
 from kivy.uix.dropdown import DropDown
 from kivy.uix.popup import Popup
@@ -179,59 +180,13 @@ class SettingsWindow(ModalView):
     def _add_initial_border(self, dt):
         """Добавляет рамку к изначально активной кнопке."""
         if hasattr(self, 'active_button') and self.active_button is not None:
-            self._add_border_to_button(self.active_button)
-    
-    def _add_border_to_button(self, button):
-        """
-        Добавляет белую рамку к кнопке.
-        
-        Args:
-            button: Кнопка, к которой добавляется рамка
-        """
-        if button is None:
-            return
-            
-        button.canvas.after.clear()
-        with button.canvas.after:
-            Color(1, 1, 1, 1)
-            self.border_line = Line(rectangle=(button.x, button.y, button.width, button.height), width=1.5)
-        
-        # Привязываем обновление рамки к изменению размера и позиции кнопки
-        button.bind(pos=self._update_border, size=self._update_border)
-    
-    def _update_border(self, instance, value):
-        """Обновляет размер и позицию рамки при изменении размера кнопки"""
-        if hasattr(self, 'border_line'):
-            self.border_line.rectangle = (instance.x, instance.y, instance.width, instance.height)
-
-    def _add_border_to_button(self, button):
-        """
-        Добавляет белую рамку к кнопке.
-        
-        Args:
-            button: Кнопка, к которой добавляется рамка
-        """
-        if button is None:
-            return
-            
-        button.canvas.after.clear()
-        with button.canvas.after:
-            Color(1, 1, 1, 1)
-            self.border_line = Line(rectangle=(button.x, button.y, button.width, button.height), width=1.5)
-        
-        # Привязываем обновление рамки к изменению размера и позиции кнопки
-        button.bind(pos=self._update_border, size=self._update_border)
-    
-    def _update_border(self, instance, value):
-        """Обновляет размер и позицию рамки при изменении размера кнопки"""
-        if hasattr(self, 'border_line'):
-            self.border_line.rectangle = (instance.x, instance.y, instance.width, instance.height)
+            add_border(self.active_button)
 
     def _on_color_button_press(self, button):
         """
         Обработка нажатия на цветную кнопку.
         
-        Args:
+{{ ... }}
             button: Нажатая кнопка
         """
         try:
@@ -253,153 +208,12 @@ class SettingsWindow(ModalView):
     
     def print_sizes(self, *args, show_before_save=False):
         """
-        Выводит информацию о текущих настройках.
+        Выводит отладочную информацию о настройках приложения.
         
         Args:
             show_before_save (bool): Если True, показывает настройки перед сохранением
         """
-        # Вспомогательная функция для вывода разделителя
-        def print_separator():
-            print("=" * 37)
-            
-        # Вспомогательная функция для вывода заголовка
-        def print_header(title):
-            print(f"| {title.center(34)}|")
-            print("" + "-" * 37)
-            
-        # Вспомогательная функция для вывода строки с двумя значениями
-        def print_row(label, value1, value2):
-            print(f"| {label.ljust(16)}|{str(value1).center(8)}|{str(value2).center(8)}|")
-            
-        # Вспомогательная функция для вывода строки с одним значением
-        def print_single_row(label, value):
-            print(f"| {label.ljust(16)}| {str(value).center(16)}|")
-            
-        # Основной вывод
-        print()  # Пустая строка перед началом вывода
-        
-        # Раздел: Главное окно
-        print_separator()
-        print_header("App Window")
-        try:
-            main_settings = self.db.get_window_settings()
-            if main_settings:
-                width, height, x, y = main_settings
-                print_row("Size", int(width), int(height))
-                print_row("Position", int(x), int(y))
-            else:
-                print("| No data found" + " " * 21 + "|")
-        except Exception as e:
-            print(f"| Error: {str(e)[:25]}" + " " * (36 - 9 - len(str(e)[:25])) + "|")
-        
-        # Раздел: Окно настроек
-        print_separator()
-        print_header("Settings Window")
-        try:
-            settings = self.db.get_settings_window_settings()
-            if settings:
-                width, height, x, y = settings
-                print_row("Size", int(width), int(height))
-                print_row("Position", int(x), int(y))
-            else:
-                print("| No data found" + " " * 21 + "|")
-        except Exception as e:
-            print(f"| Error: {str(e)[:25]}" + " " * (36 - 9 - len(str(e)[:25])) + "|")
-        
-        # Раздел: Тема
-        print_separator()
-        if hasattr(self, 'selected_color'):
-            print_single_row("Theme", self.selected_color.capitalize())
-        else:
-            print_single_row("Theme", "Not set")
-        
-        # Раздел: Отладочный режим
-        print_separator()
-        if hasattr(self, 'debug_switch'):
-            debug_state = "ENABLE" if self.debug_switch.active else "DISABLE"
-            print_single_row("Debug Mode", debug_state)
-        else:
-            print_single_row("Debug Mode", "UNAVAILABLE")
-
-        try:
-            # Импортируем менеджер молитв
-            from logic.prayer_times import prayer_times_manager
-            from datetime import datetime, timedelta
-            
-            # Получаем текущую дату и дату завтра
-            today = datetime.now()
-            tomorrow = today + timedelta(days=1)
-            date_format = "%Y-%m-%d"
-            today_str = today.strftime(date_format)
-            tomorrow_str = tomorrow.strftime(date_format)
-            
-            # Получаем данные из базы для сегодня и завтра
-            cursor = prayer_times_manager.db.connection.cursor()
-            cursor.execute('''
-                SELECT * FROM prayer_times 
-                WHERE date = ? OR date = ?
-                ORDER BY date ASC
-            ''', (today_str, tomorrow_str))
-            
-            # Получаем строки с данными
-            rows = cursor.fetchall()
-            
-            # Получаем заголовки колонок
-            columns = [desc[0] for desc in cursor.description]
-            
-            # Пропускаем служебные поля
-            skip_columns = {'date', 'created_at'}
-            prayer_columns = [col for col in columns if col not in skip_columns]
-            
-            # Создаем словарь для хранения данных по датам
-            prayer_data = {
-                today_str: {col: '00:00' for col in prayer_columns},  # По умолчанию нули
-                tomorrow_str: {col: '00:00' for col in prayer_columns}  # По умолчанию нули
-            }
-            
-            # Заполняем данные из базы
-            for row in rows:
-                row_dict = dict(zip(columns, row))
-                date = row_dict['date']
-                if date in prayer_data:
-                    for col in prayer_columns:
-                        if col in row_dict and row_dict[col]:
-                            prayer_data[date][col] = row_dict[col][:5]  # Берем только часы и минуты
-            
-            # Формируем даты для заголовка
-            today_display = f"{today.day:02d}/{today.month:02d}"
-            tomorrow_display = f"{tomorrow.day:02d}/{tomorrow.month:02d}"
-            
-            # Разделитель перед таблицей молитв
-            print_separator()
-            print_header("Data from Base")
-            
-            # Заголовки дат
-            print(f"| {'Date'.ljust(16)}|{today_display.center(8)}|{tomorrow_display.center(8)}|")
-            print("|" + "-" * 17 + "|" + "-" * 8 + "|" + "-" * 8 + "|")
-            
-            # Выводим времена молитв с выравниванием
-            prayer_map = {
-                'Midnight': 'Midnight',
-                'Fajr': 'Fajr',
-                'Sunrise': 'Sunrise',
-                'Dhuhr': 'Dhuhr',
-                'Asr': 'Asr',
-                'Maghrib': 'Maghrib',
-                'Isha': 'Isha'
-            }
-            
-            for eng_name, display_name in prayer_map.items():
-                today_time = prayer_data[today_str].get(eng_name, '--:--')
-                tomorrow_time = prayer_data[tomorrow_str].get(eng_name, '--:--')
-                print(f"| {display_name.ljust(16)}|{str(today_time).center(8)}|{str(tomorrow_time).center(8)}|")
-            
-            # Закрывающий разделитель и пустая строка
-            print_separator()
-            print()  # Пустая строка после таблицы
-                
-        except Exception as e:
-            print(f"Ошибка при получении данных из базы: {e}\n")
+        print_debug_info(self.db, show_before_save)
 
     def on_accept(self, *args):
         """Сохраняет настройки при нажатии кнопки Save."""
