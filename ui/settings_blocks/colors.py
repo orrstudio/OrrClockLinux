@@ -116,9 +116,39 @@ class ColorSettings:
             # Устанавливаем выбранный цвет из нажатой кнопки
             self.settings_window.selected_color = button.color_name.lower()
             
-            # Настройки азана были удалены
         except Exception as e:
-            logger.error(f"Error in _on_color_button_press: {e}")
+            logger.error(f"Ошибка в _on_color_button_press: {e}")
+    
+    def save_color_settings(self):
+        """
+        Сохраняет настройки цвета в базу данных и применяет их.
+        
+        Returns:
+            bool: True, если настройки успешно сохранены, иначе False
+        """
+        try:
+            if not hasattr(self.settings_window, 'selected_color') or not self.settings_window.selected_color:
+                return False
+                
+            # Получаем выбранный цвет
+            color_key = self.settings_window.selected_color.lower()
+            
+            # Сохраняем в базу данных
+            if hasattr(self.settings_window, 'db'):
+                self.settings_window.db.save_setting('color', color_key)
+            
+            # Применяем цвет через callback, если он доступен
+            if hasattr(self.settings_window, 'apply_callback') and self.settings_window.apply_callback:
+                # Получаем кортеж цвета
+                color_tuple = self.colors.get(color_key, (0, 1, 0, 1))  # Зеленый по умолчанию
+                self.settings_window.apply_callback(color_tuple)
+            
+            logger.info(f"Цвет успешно сохранен: {color_key}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Ошибка при сохранении цвета: {e}")
+            return False
 
 class ColorOption(Button):
     """Кнопка выбора цвета с предпросмотром."""
@@ -251,3 +281,13 @@ def create_color_section(settings_window):
     color_section.add_widget(colors_grid)  # Добавляем сетку цветов
     
     return color_section
+
+
+# Экспортируем классы и функции для использования в других модулях
+__all__ = [
+    'ColorSettings',
+    'ColorOption',
+    'create_color_section',
+    'get_color_tuple',
+    'get_color_name'
+]

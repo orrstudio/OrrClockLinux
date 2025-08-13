@@ -19,7 +19,7 @@ from .settings_blocks.base import (
 
 # Импортируем компоненты настроек
 from .settings_color import ColorButton
-from .settings_blocks.colors import create_color_section, get_color_tuple, get_color_name
+from .settings_blocks.colors import create_color_section, get_color_tuple, get_color_name, ColorSettings
 from .settings_blocks.header import create_header
 from .settings_blocks.footer import create_footer
 from .settings_blocks.utils import add_border, print_debug_info
@@ -93,6 +93,9 @@ class SettingsWindow(ModalView):
         
         # Настройки азана были удалены
         self.active_button = None  # Инициализируем как None
+        
+        # Инициализируем настройки цветов
+        self.color_settings = ColorSettings(self)
         
         # Настройка размеров окна
         self.size_hint = (1, 1)  # Полный размер экрана
@@ -197,24 +200,17 @@ class SettingsWindow(ModalView):
     def on_accept(self, *args):
         """Сохраняет настройки при нажатии кнопки Save."""
         try:
-            # Сохраняем цвет, если выбран
-            if hasattr(self, 'selected_color') and self.selected_color:
-                # Преобразуем название цвета в нижний регистр
-                color_key = self.selected_color.lower()
-                
-                # Сохраняем в базу данных
-                self.db.save_setting('color', color_key)
-                
-                # Применяем цвет через callback
-                if hasattr(self, 'apply_callback') and self.apply_callback:
-                    # Получаем цвет из color_settings, если он доступен
-                    if hasattr(self, 'color_settings') and hasattr(self.color_settings, 'colors'):
-                        color_tuple = self.color_settings.colors.get(color_key, (0, 1, 0, 1))
-                    else:
-                        # Стандартный цвет, если color_settings не доступен
-                        color_tuple = (0, 1, 0, 1)  # Зеленый по умолчанию
-                    
-                    self.apply_callback(color_tuple)
+            # Сохраняем настройки цвета через экземпляр ColorSettings, если он доступен
+            if hasattr(self, 'color_settings') and hasattr(self.color_settings, 'save_color_settings'):
+                self.color_settings.save_color_settings()
+            else:
+                # Резервный вариант, если color_settings не доступен
+                if hasattr(self, 'selected_color') and self.selected_color:
+                    color_key = self.selected_color.lower()
+                    self.db.save_setting('color', color_key)
+                    if hasattr(self, 'apply_callback') and self.apply_callback:
+                        color_tuple = get_color_tuple(color_key)
+                        self.apply_callback(color_tuple)
             
             # Сохраняем состояние отладочного режима
             if hasattr(self, 'debug_switch'):
