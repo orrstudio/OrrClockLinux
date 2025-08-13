@@ -31,12 +31,6 @@ class BorderedGridLayout(GridLayout):
             Line(points=[col1, self.y, col1, self.top], width=1)
             Line(points=[col2, self.y, col2, self.top], width=1)
 
-            # Горизонтальные линии
-            row_h = self.height / self.rows
-            for i in range(1, self.rows):
-                y = self.y + row_h * i
-                Line(points=[self.x, y, self.right, y], width=1)
-
 
 def create_notifications_section(settings_window):
     """Создаёт секцию уведомлений с таблицей 3x3."""
