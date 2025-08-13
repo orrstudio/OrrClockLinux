@@ -10,6 +10,7 @@ from kivymd.app import MDApp
 from kivy.core.window import Window
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
+from kivy.uix.modalview import ModalView
 from kivy.clock import Clock
 from kivy.metrics import dp  # Используется для задания размеров в пикселях, независимых от плотности экрана
 # Импорты локальных модулей приложения
@@ -229,6 +230,10 @@ class MainWindowApp(MDApp):
         """
         Обработчик двойного касания
         """
+        # Пропускаем обработку, если есть активное модальное окно
+        if any(isinstance(child, ModalView) for child in window.children):
+            return False
+            
         if touch.is_double_tap:
             # Открываем окно настроек
             self.settings_manager = SettingsManager(None, self)
