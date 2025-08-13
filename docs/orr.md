@@ -20,7 +20,7 @@ deactivate
 - settings_blocks/notifications.py (уже есть)
 - settings_blocks/admin.py (уже есть)
 Вынести оставшиеся части в отдельные модули:
-- settings_blocks/header.py - заголовок окна
+- settings_blocks/header.py - заголовок окна  (уже есть)
 - settings_blocks/footer.py - нижняя панель с кнопками
 - settings_blocks/utils.py - общие утилиты и хелперы
 Оставить в основном файле только:

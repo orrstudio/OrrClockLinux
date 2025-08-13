@@ -21,6 +21,7 @@ from .settings_blocks.base import (
 from .settings_color import ColorButton
 from .settings_blocks.colors import create_color_section, get_color_tuple, get_color_name
 from .settings_blocks.header import create_header
+from .settings_blocks.footer import create_footer
 
 from kivy.uix.dropdown import DropDown
 from kivy.uix.popup import Popup
@@ -158,49 +159,11 @@ class SettingsWindow(ModalView):
         # Добавляем контейнер в ScrollView
         content_layout.add_widget(content_container)
         
-        # Нижняя панель с кнопками
-        bottom_panel = GridLayout(
-            cols=2,
-            size_hint_y=None,
-            height=dp(60),
-            spacing=dp(10),
-            padding=[dp(20), dp(5)]
+        # Создаем нижнюю панель с кнопками
+        bottom_panel, self.bottom_rect = create_footer(
+            dismiss_callback=self.dismiss,
+            accept_callback=self.on_accept
         )
-        
-        # Фон нижней панели
-        with bottom_panel.canvas.before:
-            Color(0.2, 0.2, 0.2, 1)
-            self.bottom_rect = Rectangle(pos=bottom_panel.pos, size=bottom_panel.size)
-        bottom_panel.bind(pos=self._update_bottom_rect, size=self._update_bottom_rect)
-        
-        # Стиль кнопок
-        button_style = {
-            'size_hint_x': 0.5,
-            'size_hint_y': None,
-            'height': dp(50),
-            'font_size': sp(22)
-        }
-        
-        # Кнопки управления
-        cancel_button = CustomButton(
-            icon_path='fonts/Awesome/use/x.png',
-            text="",  # Убираем текст
-            background_color=(3, 0, 0, 1),
-            **button_style
-        )
-        
-        accept_button = CustomButton(
-            icon_path='fonts/Awesome/use/ok.png',
-            text="",  # Убираем текст
-            background_color=(0, 0.7, 0, 1),
-            **button_style
-        )
-
-        cancel_button.bind(on_release=self.dismiss)
-        accept_button.bind(on_release=self.on_accept)
-        
-        bottom_panel.add_widget(cancel_button)
-        bottom_panel.add_widget(accept_button)
         
         # Собираем все вместе
         main_layout.add_widget(title_layout)
