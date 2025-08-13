@@ -8,8 +8,8 @@ class RoundedButton(Button):
     """Кнопка с закругленными углами и анимацией нажатия."""
     
     # Свойства для настройки внешнего вида
-    bg_color = ColorProperty([0.2, 0.2, 0.2, 1])
-    bg_color_press = ColorProperty([0.3, 0.3, 0.3, 1])
+    bg_color = ColorProperty([0.1, 0.4, 0.7, 1])
+    bg_color_press = ColorProperty([0.2, 0.6, 0.9, 1])
     border_radius = NumericProperty(dp(10))
     
     def __init__(self, **kwargs):
@@ -20,6 +20,11 @@ class RoundedButton(Button):
         kwargs.setdefault('background_color', (0, 0, 0, 0))  # Прозрачный фон
         
         super().__init__(**kwargs)
+        
+        # Настройки текста
+        self.color = [1, 1, 1, 1]  # Белый цвет текста
+        self.font_size = '20sp'     # Размер шрифта
+        self.bold = True           # Жирный шрифт
         
         # Привязка событий
         self.bind(
@@ -45,8 +50,13 @@ class RoundedButton(Button):
         self.canvas.before.clear()
         
         with self.canvas.before:
+            # Устанавливаем цвет фона
+            if self.state == 'down':
+                Color(*self.bg_color_press)
+            else:
+                Color(*self.bg_color)
+                
             # Рисуем фон с закругленными углами
-            Color(*self._current_color)
             RoundedRectangle(
                 pos=(self.x, self.y),
                 size=(self.width, self.height),

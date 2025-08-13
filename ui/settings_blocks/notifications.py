@@ -123,8 +123,6 @@ def create_notifications_section(settings_window):
             text="Settings",
             size_hint=(None, None),
             size=(dp(100), dp(35)),
-            bg_color=[0.2, 0.2, 0.2, 1],  # Цвет фона
-            bg_color_press=[0.3, 0.3, 0.3, 1],  # Цвет при нажатии
             border_radius=dp(10)  # Радиус скругления
         )
         button_layout.add_widget(button)
