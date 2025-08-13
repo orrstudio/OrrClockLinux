@@ -23,6 +23,7 @@ from .settings_blocks.colors import create_color_section, get_color_tuple, get_c
 from .settings_blocks.header import create_header
 from .settings_blocks.footer import create_footer
 from .settings_blocks.utils import add_border, print_debug_info
+from .settings_blocks.window_settings import apply_window_settings, on_window_resize, save_window_settings
 
 from kivy.uix.dropdown import DropDown
 from kivy.uix.popup import Popup
@@ -264,33 +265,17 @@ class SettingsWindow(ModalView):
         Обновляет размеры окна при изменении размера экрана.
         
         Args:
+            instance: Экземпляр виджета, вызвавшего событие
             width: Новая ширина окна
             height: Новая высота окна
         """
-        self.width = min(dp(400), width * 0.95)
-        self.height = min(dp(500), height * 0.95)
+        on_window_resize(self, instance, width, height)
     
     def _apply_window_settings(self, *args):
         """
         Применяет сохраненные настройки окна после его полной инициализации.
         """
-        if hasattr(self, 'db'):
-            from kivy.core.window import Window
-            
-            # Получаем текущие настройки окна из базы данных
-            settings = self.db.get_settings_window_settings()
-            if settings:
-                width, height, x, y = settings
-                
-                # Устанавливаем размеры окна
-                Window.size = (width, height)
-                
-                # Устанавливаем позицию окна
-                Window.left = x
-                Window.top = y
-                
-                # Принудительно обновляем окно
-                Window.update_viewport()
+        apply_window_settings(self)
             
     def dismiss(self, *args):
         """
@@ -301,7 +286,7 @@ class SettingsWindow(ModalView):
         # Если окно уже закрывается, выходим
         if hasattr(self, '_window') and self._window is None:
             return
-        
+            
         # Восстанавливаем исходный цвет, если настройки не были сохранены
         if not self.selected_color or args:  
             if hasattr(self.main_window, 'update_color') and self.initial_color:
@@ -309,18 +294,7 @@ class SettingsWindow(ModalView):
         
         # Сохраняем настройки окна при закрытии
         if not is_mobile_device() and hasattr(self, 'db'):
-            from kivy.core.window import Window
-            
-            # Получаем текущую позицию окна
-            x, y = Window.left, Window.top
-            
-            # Сохраняем настройки окна
-            self.db.save_settings_window_settings(
-                width=Window.width,
-                height=Window.height,
-                x=x,
-                y=y
-            )
+            save_window_settings(self)
             
         # Вызываем оригинальный метод закрытия
         super().dismiss(*args)
