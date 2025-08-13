@@ -74,9 +74,7 @@ class SettingsDatabase:
         default_settings = {
             'debug_mode': '0',  # По умолчанию отладочный режим выключен
             'color': 'lime',    # Цвет по умолчанию
-            'azan_spinner': 'Azan 1',
-            'azan_dropdown': 'Azan 1',
-            'azan_popup': 'Azan 1'
+            # Настройки азана были удалены
         }
         
         # Если запрашиваемая настройка есть в значениях по умолчанию,

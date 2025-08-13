@@ -116,13 +116,7 @@ class ColorSettings:
             # Устанавливаем выбранный цвет из нажатой кнопки
             self.settings_window.selected_color = button.color_name.lower()
             
-            # Инициализируем выбранные азаны, если они еще не были инициализированы
-            if not hasattr(self.settings_window, 'selected_azan_spinner'):
-                self.settings_window.selected_azan_spinner = self.settings_window.db.get_setting('azan_spinner') or 'Azan 1'
-            if not hasattr(self.settings_window, 'selected_azan_dropdown'):
-                self.settings_window.selected_azan_dropdown = self.settings_window.db.get_setting('azan_dropdown') or 'Azan 1'
-            if not hasattr(self.settings_window, 'selected_azan_popup'):
-                self.settings_window.selected_azan_popup = self.settings_window.db.get_setting('azan_popup') or 'Azan 1'
+            # Настройки азана были удалены
         except Exception as e:
             logger.error(f"Error in _on_color_button_press: {e}")
 
