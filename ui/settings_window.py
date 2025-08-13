@@ -20,7 +20,7 @@ from .settings_blocks.base import (
 # Импортируем компоненты настроек
 from .settings_color import ColorButton
 from .settings_blocks.colors import create_color_section, get_color_tuple, get_color_name, ColorSettings
-from .settings_blocks.header import create_header
+from .settings_blocks.header import create_header, _update_title_rect
 from .settings_blocks.footer import create_footer
 from .settings_blocks.utils import add_border, print_debug_info, print_sizes
 from .settings_blocks.window_settings import apply_window_settings, on_window_resize, save_window_settings
@@ -39,12 +39,6 @@ from data.database import SettingsDatabase
 from logic.display_utils import is_mobile_device
 
 logger = logging.getLogger(__name__)
-
-
-
-
-
-
 
 class SettingsWindow(ModalView):
     """
@@ -246,10 +240,7 @@ class SettingsWindow(ModalView):
             print(f"Ошибка при сохранении настроек: {e}")
             self.dismiss()
     
-    def _update_title_rect(self, instance, value):
-        """Обновляет фон заголовка."""
-        self.title_rect.pos = instance.pos
-        self.title_rect.size = instance.size
+    # Метод _update_title_rect перенесен в модуль header.py
     
     def _update_bottom_rect(self, instance, value):
         """Обновляет фон нижней панели."""
