@@ -179,40 +179,38 @@ def create_notifications_section(settings_window):
         row_layout = GridLayout(
             cols=3,
             size_hint_y=None,
-            height=dp(45),  # Увеличиваем высоту строки
-            spacing=dp(15),  # Увеличиваем отступы между элементами
-            padding=[0, dp(5)]
+            height=dp(25),  # Фиксированная высота строки
+            spacing=dp(5),  # 5% отступа между колонками
+            padding=[dp(5), dp(5)]  # Отступы слева/справа и сверху/снизу
         )
         
-        # Метка с названием (увеличиваем ширину для текста)
+        # Метка с названием (30% ширины)
         label = Label(
             text=label_text,
-            markup=True,
-            size_hint_x=0.7,  # Увеличиваем ширину метки
+            size_hint_x=0.3,  # 30% ширины для метки
+            size_hint_min_x=dp(100),  # Минимальная ширина метки
+            font_size='18sp',  # Увеличиваем размер шрифта
             halign='left',
             valign='middle',
-            text_size=(dp(200), None),  # Фиксированная ширина для текста
-            shorten=True,  # Включаем обрезку длинного текста
-            shorten_from='right',  # Обрезаем справа
-            padding=(0, dp(5))
+            text_size=(Window.width * 0.25, None),  # Фиксированная ширина текстового блока
+            padding_x=dp(5)
         )
         
-        # Переключатель
+        # Переключатель (30% ширины)
         switch = Switch(
             active=switch_active,
-            size_hint_x=0.15  # Уменьшаем ширину переключателя
+            pos_hint={'center_y': 0.5}  # Выравнивание по вертикали
         )
         
-        # Кнопка настроек
+        # Кнопка настроек (30% ширины)
         button = Button(
             text='Settings',
-            size_hint_x=0.15,  # Уменьшаем ширину кнопки
-            size_hint_y=0.8,   # Уменьшаем высоту кнопки
+            size_hint_x=0.2,  # Ширина кнопки
             background_color=(0.2, 0.5, 0.8, 1) if button_handler else (0.3, 0.3, 0.3, 0.5),
             color=(1, 1, 1, 1),
             disabled=button_handler is None,
-            font_size='12sp',  # Уменьшаем размер шрифта
-            padding=[dp(5), 0]  # Добавляем отступы внутри кнопки
+            font_size='18sp',
+
         )
         
         # Сохраняем ссылки в settings_window
