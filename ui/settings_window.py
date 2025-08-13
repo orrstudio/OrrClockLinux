@@ -20,6 +20,7 @@ from .settings_blocks.base import (
 # Импортируем компоненты настроек
 from .settings_color import ColorButton
 from .settings_blocks.colors import create_color_section, get_color_tuple, get_color_name
+from .settings_blocks.header import create_header
 
 from kivy.uix.dropdown import DropDown
 from kivy.uix.popup import Popup
@@ -104,30 +105,8 @@ class SettingsWindow(ModalView):
             size_hint=(1, 1)
         )
         
-        # Заголовок
-        title_layout = GridLayout(
-            cols=1,
-            size_hint_y=None,
-            height=dp(30),
-            padding=[dp(20), 0]
-        )
-        
-        # Фон заголовка
-        with title_layout.canvas.before:
-            Color(0.2, 0.2, 0.2, 1)
-            self.title_rect = Rectangle(pos=title_layout.pos, size=title_layout.size)
-        title_layout.bind(pos=self._update_title_rect, size=self._update_title_rect)
-        
-        # Текст заголовка
-        title_label = Label(
-            text='SETTINGS',
-            color=(1, 1, 1, 1),
-            font_size=sp(16),
-            bold=True,
-            halign='center',
-            valign='center'
-        )
-        title_layout.add_widget(title_label)
+        # Создаем заголовок
+        title_layout, self.title_rect = create_header()
         
         # Основной контейнер для всех секций
         content_container = GridLayout(
