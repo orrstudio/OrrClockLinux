@@ -25,7 +25,7 @@ class CustomSwitch(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.size_hint = (None, None)
-        self.size = (64, 36)
+        self.size = (60, 30)
         
         # Инициализация графики
         self._track = None
@@ -112,17 +112,39 @@ class CustomMDSwitch(MDAnchorLayout):
     active = BooleanProperty(False)
     """Состояние переключателя (включен/выключен)."""
     
-    def __init__(self, **kwargs):
+    def __init__(self, width=64, height=36, thumb_padding=4, 
+                 thumb_color_active=None, thumb_color_inactive=None, **kwargs):
+        """
+        Инициализация кастомного переключателя.
+        
+        Аргументы:
+            width: Ширина переключателя в пикселях
+            height: Высота переключателя в пикселях
+            thumb_padding: Отступ ползунка от краев
+            thumb_color_active: Цвет ползунка во включенном состоянии [R,G,B,A]
+            thumb_color_inactive: Цвет ползунка в выключенном состоянии [R,G,B,A]
+            **kwargs: Дополнительные аргументы для родительского класса
+        """
         super().__init__(**kwargs)
         self.anchor_x = 'center'
         self.anchor_y = 'center'
         
+        # Устанавливаем размеры
+        self.size_hint = (None, None)
+        self.size = (width, height)
+        
+        # Цвета ползунка в разных состояниях
+        self.thumb_color_active = thumb_color_active or [0, 1, 0, 1]      # ярко-зеленый при включении
+        self.thumb_color_inactive = thumb_color_inactive or [1, 0, 0, 1]  # ярко-красный при выключении
+        
         # Создаем и настраиваем переключатель
         self.switch = CustomSwitch(
             active=self.active,
-            thumb_color=[1, 1, 1, 1],
-            track_color_active=[0, 0.5, 0, 1],  # зеленый
-            track_color_inactive=[0.5, 0, 0, 1]  # красный
+            thumb_color=self.thumb_color_inactive,  # Начальный цвет ползунка
+            track_color_active=[0.15, 0.3, 0.15, 1],  # тёмно-зелёный трек при включении
+            track_color_inactive=[0.2, 0.1, 0.1, 1],  # тёмно-красный трек при выключении
+            size=(width, height),
+            thumb_padding=thumb_padding
         )
         
         # Привязываем изменение состояния
@@ -132,6 +154,12 @@ class CustomMDSwitch(MDAnchorLayout):
     def _on_switch_active(self, instance, value):
         """Обработчик изменения состояния переключателя."""
         self.active = value
+        # Меняем цвет ползунка в зависимости от состояния
+        if hasattr(self, 'switch') and hasattr(self.switch, '_thumb_color'):
+            self.switch._thumb_color.rgba = (
+                self.thumb_color_active if value 
+                else self.thumb_color_inactive
+            )
     
     def on_active(self, instance, value):
         """Обновление состояния при изменении свойства active."""
