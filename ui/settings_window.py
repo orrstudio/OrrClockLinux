@@ -22,7 +22,7 @@ from .settings_color import ColorButton
 from .settings_blocks.colors import create_color_section, get_color_tuple, get_color_name, ColorSettings
 from .settings_blocks.header import create_header
 from .settings_blocks.footer import create_footer
-from .settings_blocks.utils import add_border, print_debug_info
+from .settings_blocks.utils import add_border, print_debug_info, print_sizes
 from .settings_blocks.window_settings import apply_window_settings, on_window_resize, save_window_settings
 
 from kivy.uix.dropdown import DropDown
@@ -195,7 +195,7 @@ class SettingsWindow(ModalView):
         Args:
             show_before_save (bool): Если True, показывает настройки перед сохранением
         """
-        print_debug_info(self.db, show_before_save)
+        return print_sizes(self.db, show_before_save)
 
     def on_accept(self, *args):
         """Сохраняет настройки при нажатии кнопки Save."""

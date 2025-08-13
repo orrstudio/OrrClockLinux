@@ -53,6 +53,17 @@ def add_border(widget, border_color=(1, 1, 1, 1), border_width=1.5):
     
     return update_border
 
+def print_sizes(db, show_before_save=False):
+    """
+    Выводит отладочную информацию о настройках приложения.
+    
+    Args:
+        db: Объект базы данных настроек
+        show_before_save (bool): Если True, показывает настройки перед сохранением
+    """
+    return print_debug_info(db, show_before_save)
+
+
 def print_debug_info(db, show_before_save=False):
     """
     Выводит отладочную информацию о настройках приложения.
@@ -188,3 +199,11 @@ def print_debug_info(db, show_before_save=False):
         logger.error(f"Ошибка при выводе отладочной информации: {e}")
         
     return True
+
+
+# Экспортируемые функции
+__all__ = [
+    'add_border',
+    'print_debug_info',
+    'print_sizes'
+]
