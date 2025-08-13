@@ -98,9 +98,16 @@ def create_notifications_section(settings_window):
             halign='left',
             valign='middle',
             font_size='22sp',
-            bold=True,
+            bold=False,
+            size_hint_x=0.8
         )
-        label.bind(size=lambda inst, val: setattr(inst, 'text_size', (val[0] - dp(10), None)))
+
+        def update_text_size(inst, val):
+            padding = dp(30)  # ваш желаемый отступ слева
+            inst.text_size = (val[0] - padding, None)  # уменьшаем ширину на padding
+            inst.canvas.ask_update()
+
+        label.bind(size=update_text_size)
         table.add_widget(label)
 
         # 2. Переключатель (по центру)
