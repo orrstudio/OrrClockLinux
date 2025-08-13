@@ -2,40 +2,23 @@ import logging
 
 from kivy.uix.widget import Widget
 from kivy.uix.modalview import ModalView
-from kivy.uix.button import Button
-from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
-from kivy.uix.spinner import Spinner
-from kivy.uix.switch import Switch
 
 # Импортируем базовые компоненты
-from .settings_blocks.base import (
-    ResponsiveLabel,
-    SettingsCard,
-    SettingsSection,
-    CustomButton
-)
+from .settings_blocks.base import CustomButton
 
 # Импортируем компоненты настроек
-from .settings_color import ColorButton
-from .settings_blocks.colors import create_color_section, get_color_tuple, get_color_name, ColorSettings
-from .settings_blocks.header import create_header, _update_title_rect
-from .settings_blocks.footer import create_footer, _update_bottom_rect
-from .settings_blocks.utils import add_border, print_debug_info, print_sizes
+from .settings_blocks.colors import create_color_section, get_color_tuple, ColorSettings
+from .settings_blocks.header import create_header
+from .settings_blocks.footer import create_footer
+from .settings_blocks.utils import add_border, print_sizes
 from .settings_blocks.window_settings import apply_window_settings, on_window_resize, save_window_settings
 
-from kivy.uix.dropdown import DropDown
-from kivy.uix.popup import Popup
-from kivy.properties import ListProperty, StringProperty, ObjectProperty, NumericProperty
 from kivy.clock import Clock
-from kivy.metrics import dp, sp
-from kivy.core.window import Window
-from kivy.graphics import Color, Rectangle, Line
+from kivy.metrics import dp
 
-
-# Импортируем базу данных и утилиты
-from data.database import SettingsDatabase
+# Импортируем утилиты
 from logic.display_utils import is_mobile_device
 
 logger = logging.getLogger(__name__)
@@ -44,15 +27,20 @@ class SettingsWindow(ModalView):
     """
     Окно настроек приложения.
     
+    Основной класс, отвечающий за отображение и управление настройками приложения.
+    Использует модульную структуру для организации кода.
+    
     Attributes:
-        db (SettingsDatabase): База данных настроек
+        db: База данных настроек
         main_window: Ссылка на главное окно приложения
         apply_callback: Функция обратного вызова для применения настроек
         initial_color (str): Начальный цвет из настроек
         selected_color (str): Выбранный пользователем цвет
+        color_section: Ссылка на секцию выбора цвета
+        title_rect: Прямоугольник фона заголовка
+        bottom_rect: Прямоугольник фона нижней панели
+        active_button: Текущая активная кнопка
     """
-    
-    # Словарь цветов инициализируется в классе ColorSettings
 
     def __init__(self, db, main_window, apply_callback, **kwargs):
         """
@@ -180,14 +168,15 @@ class SettingsWindow(ModalView):
         if hasattr(self, 'active_button') and self.active_button is not None:
             add_border(self.active_button)
 
-    # Обработчик _on_color_button_press перенесен в класс ColorSettings в модуле settings_blocks.colors
-    
     def print_sizes(self, *args, show_before_save=False):
         """
         Выводит отладочную информацию о настройках приложения.
         
         Args:
             show_before_save (bool): Если True, показывает настройки перед сохранением
+            
+        Returns:
+            Результат выполнения функции print_sizes из модуля utils
         """
         return print_sizes(self.db, show_before_save)
 
