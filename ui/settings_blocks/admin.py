@@ -78,7 +78,7 @@ def create_admin_section(settings_window):
     
     # Адаптивный заголовок блока
     admin_title = Label(
-        text='Панель администратора',
+        text='Admin Panel',
         color=(1, 1, 1, 1),
         font_size=sp(22),
         size_hint=(1, None),
@@ -111,7 +111,7 @@ def create_admin_section(settings_window):
     
     # Метка (1/3 ширины) с переносом текста
     switch_label = ResponsiveLabel(
-        text='Отладочный режим:',
+        text='Debug mode:',
         markup=True
     )
     

@@ -147,16 +147,20 @@ class SettingsWindow(ModalView):
         content_container = GridLayout(
             cols=1,
             size_hint_y=None,
-            spacing=0,
-            padding=0
+            spacing=dp(15),  # Отступ между секциями
+            padding=[dp(10), dp(10), dp(10), dp(10)]  # Отступы по краям
         )
+        # Автоматическая подстройка высоты контейнера
         content_container.bind(minimum_height=content_container.setter('height'))
         
         # Контент (ScrollView)
         content_layout = ScrollView(
             do_scroll_x=False,
             do_scroll_y=True,
-            size_hint=(1, 1)
+            size_hint=(1, 1),
+            bar_width=dp(10),  # Ширина полосы прокрутки
+            bar_color=(0.5, 0.5, 0.5, 0.5),  # Цвет полосы прокрутки
+            bar_inactive_color=(0.5, 0.5, 0.5, 0.2)  # Цвет неактивной полосы прокрутки
         )
         
         # Создаем секцию выбора цвета

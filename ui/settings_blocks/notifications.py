@@ -44,7 +44,7 @@ def save_notification_settings(settings_window, enabled):
     """Сохраняет настройки уведомлений в базу данных."""
     try:
         settings_window.db.save_setting('notifications_enabled', str(enabled).lower())
-        logger.info(f'Настройки уведомлений сохранены: {enabled}')
+        logger.info(f'Settings: Voice notifications switch state: {enabled}')
     except Exception as e:
         logger.error(f'Ошибка при сохранении настроек уведомлений: {e}')
 
@@ -56,9 +56,9 @@ def on_notification_switch(switch_instance, value, settings_window):
         
         # Здесь можно добавить дополнительную логику при включении/выключении уведомлений
         if value:
-            logger.info('Уведомления включены')
+            logger.info('Voice notifications enabled')
         else:
-            logger.info('Уведомления выключены')
+            logger.info('Voice notifications disabled')
     except Exception as e:
         logger.error(f'Ошибка при обработке изменения состояния уведомлений: {e}')
 
@@ -116,19 +116,36 @@ def create_notifications_section(settings_window):
     Returns:
         GridLayout: Секция с настройками уведомлений
     """
-    # Блок аудио уведомлений
+    # Блок уведомлений
     audio_section = GridLayout(
         cols=1,
         size_hint_y=None,
-        height=dp(110),  # Такая же высота, как у других блоков
-        padding=[dp(20), dp(15), dp(20), dp(20)],
+        height=dp(180),  # Увеличиваем высоту для трех строк уведомлений
+        padding=[dp(15), dp(15), dp(15), dp(15)],
         spacing=dp(10),
         size_hint=(1, None)
     )
     
+    # Добавляем фон для всей секции
+    with audio_section.canvas.before:
+        from kivy.graphics import Color, RoundedRectangle
+        Color(0.15, 0.15, 0.15, 1)  # Темно-серый фон
+        audio_section.rect = RoundedRectangle(
+            size=audio_section.size,
+            pos=audio_section.pos,
+            radius=[(10, 10), (10, 10), (10, 10), (10, 10)]
+        )
+    
+    # Обновляем размер и позицию фона при изменении размера секции
+    def update_rect(instance, value):
+        instance.rect.pos = instance.pos
+        instance.rect.size = instance.size
+    
+    audio_section.bind(pos=update_rect, size=update_rect)
+    
     # Адаптивный заголовок блока
     audio_title = Label(
-        text='Уведомления',
+        text='Notifications',
         color=(1, 1, 1, 1),
         font_size=sp(22),  # Используем sp для масштабирования шрифта
         size_hint=(1, None),
@@ -148,49 +165,99 @@ def create_notifications_section(settings_window):
     Window.bind(width=update_audio_title_size)
     Clock.schedule_once(update_audio_title_size)
     
-    # Контейнер для элементов управления (3 колонки по 1/3 ширины)
-    controls_layout = GridLayout(
-        cols=3,
+    # Контейнер для всех строк уведомлений
+    notifications_container = BoxLayout(
+        orientation='vertical',
         size_hint_y=None,
-        height=dp(40),
+        height=dp(120),  # Высота под 3 строки с отступами
         spacing=dp(10)
     )
     
-    # Метка (1/3 ширины) с переносом текста
-    switch_label = ResponsiveLabel(
-        text='Аудио уведомления:',
-        markup=True
+    # Функция для создания строки уведомления
+    def create_notification_row(label_text, switch_active, switch_prop, button_prop, switch_handler=None, button_handler=None):
+        # Контейнер для элементов управления (3 колонки по 1/3 ширины)
+        row_layout = GridLayout(
+            cols=3,
+            size_hint_y=None,
+            height=dp(40),
+            spacing=dp(10),
+            padding=[0, dp(5)]
+        )
+        
+        # Метка с названием
+        label = ResponsiveLabel(
+            text=label_text,
+            markup=True,
+            size_hint_x=0.5,
+            halign='left',
+            valign='middle'
+        )
+        
+        # Переключатель
+        switch = Switch(
+            active=switch_active,
+            size_hint_x=0.25
+        )
+        
+        # Кнопка настроек
+        button = Button(
+            text='Настройки',
+            size_hint_x=0.25,
+            background_color=(0.2, 0.5, 0.8, 1) if button_handler else (0.3, 0.3, 0.3, 0.5),
+            color=(1, 1, 1, 1),
+            disabled=button_handler is None
+        )
+        
+        # Сохраняем ссылки в settings_window
+        setattr(settings_window, switch_prop, switch)
+        setattr(settings_window, button_prop, button)
+        
+        # Привязываем обработчики, если они предоставлены
+        if switch_handler:
+            switch.bind(active=switch_handler)
+        if button_handler:
+            button.bind(on_release=button_handler)
+        
+        # Добавляем виджеты в строку
+        row_layout.add_widget(label)
+        row_layout.add_widget(switch)
+        row_layout.add_widget(button)
+        
+        return row_layout
+    
+    # Создаем строки уведомлений
+    audio_row = create_notification_row(
+        'Аудио уведомления:',
+        load_notification_settings(settings_window),
+        'audio_switch',
+        'audio_button',
+        lambda instance, value: on_notification_switch(instance, value, settings_window),
+        show_notification_settings
     )
     
-    # Загружаем текущее состояние уведомлений
-    notifications_enabled = load_notification_settings(settings_window)
-    
-    # Переключатель (1/3 ширины)
-    settings_window.audio_switch = Switch(
-        active=notifications_enabled,
-        size_hint_x=1/3
+    visual_row = create_notification_row(
+        'Визуальные уведомления:',
+        False,
+        'visual_switch',
+        'visual_button'
     )
     
-    # Кнопка (1/3 ширины)
-    settings_window.audio_button = Button(
-        text='Настройки',
-        size_hint_x=1/3,
-        background_color=(0.3, 0.3, 0.3, 1),
-        color=(1, 1, 1, 1)
+    # Создаем строку для уведомлений Азан
+    azan_row = create_notification_row(
+        'Уведомление Азан:',
+        False,  # По умолчанию выключены
+        'azan_switch',
+        'azan_button'
     )
     
-    # Привязываем обработчики событий
-    settings_window.audio_switch.bind(active=lambda instance, value: on_notification_switch(instance, value, settings_window))
-    settings_window.audio_button.bind(on_release=show_notification_settings)
-    
-    # Добавляем виджеты в контейнер
-    controls_layout.add_widget(switch_label)
-    controls_layout.add_widget(settings_window.audio_switch)
-    controls_layout.add_widget(settings_window.audio_button)
-    
-    # Добавляем виджеты в секцию
+    # Добавляем все виджеты в секцию
     audio_section.add_widget(audio_title)
-    audio_section.add_widget(controls_layout)
+    audio_section.add_widget(audio_row)
+    audio_section.add_widget(visual_row)
+    audio_section.add_widget(azan_row)
+    
+    # Увеличиваем высоту секции в зависимости от количества строк
+    audio_section.height = dp(180)  # Базовая высота + высота строк
     
     # Сохраняем ссылку на секцию для доступа из других методов
     settings_window.notifications_section = audio_section
