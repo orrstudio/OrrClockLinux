@@ -1,6 +1,5 @@
 import logging
 
-from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.widget import Widget
 from kivy.uix.modalview import ModalView
 from kivy.uix.button import Button
