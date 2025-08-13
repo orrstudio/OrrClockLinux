@@ -182,29 +182,7 @@ class SettingsWindow(ModalView):
         if hasattr(self, 'active_button') and self.active_button is not None:
             add_border(self.active_button)
 
-    def _on_color_button_press(self, button):
-        """
-        Обработка нажатия на цветную кнопку.
-        
-{{ ... }}
-            button: Нажатая кнопка
-        """
-        try:
-            # Убираем рамку со старой активной кнопки
-            if hasattr(self, 'active_button') and self.active_button != button:
-                self.active_button.canvas.after.clear()
-            
-            # Добавляем рамку на новую кнопку
-            self._add_border_to_button(button)
-            
-            # Сохраняем ссылку на активную кнопку
-            self.active_button = button
-            
-            # Устанавливаем выбранный цвет из нажатой кнопки
-            self.selected_color = button.color_name.lower()
-                
-        except Exception as e:
-            print(f"Ошибка при обработке нажатия на кнопку: {e}")
+    # Обработчик _on_color_button_press перенесен в класс ColorSettings в модуле settings_blocks.colors
     
     def print_sizes(self, *args, show_before_save=False):
         """
