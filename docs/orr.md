@@ -7,6 +7,9 @@
 - Не создавай новое тогда как есть рабочее решение чего либо!!!
 
 rm data/settings.db
+rm -rf venv
+python3 -m venv venv
 source venv/bin/activate
-deactivate
+pip3 install -r requirements.txt
 python3 main.py
+deactivate

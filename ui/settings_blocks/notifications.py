@@ -1,6 +1,5 @@
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
-from kivy.uix.button import Button
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.graphics import Color, Line
 from kivy.metrics import dp
@@ -8,6 +7,10 @@ from kivy.core.window import Window
 from kivy.properties import ListProperty
 
 from ui.components.custom_switch import CustomMDSwitch
+from ui.components.custom_button import RoundedButton
+
+
+
 
 class BorderedGridLayout(GridLayout):
     """GridLayout с границами и адаптивными линиями."""
@@ -114,13 +117,15 @@ def create_notifications_section(settings_window):
         setattr(settings_window, switch_attr, switch.switch)  # Сохраняем ссылку на внутренний switch
         table.add_widget(switch_layout)
 
-        # 3. Кнопка (по центру)
+        # 3. Кнопка с закругленными углами (по центру)
         button_layout = AnchorLayout(anchor_x='center', anchor_y='center')
-        button = Button(
+        button = RoundedButton(
             text="Settings",
             size_hint=(None, None),
             size=(dp(100), dp(35)),
-            background_color=(0.2, 0.2, 0.2, 1)
+            bg_color=[0.2, 0.2, 0.2, 1],  # Цвет фона
+            bg_color_press=[0.3, 0.3, 0.3, 1],  # Цвет при нажатии
+            border_radius=dp(10)  # Радиус скругления
         )
         button_layout.add_widget(button)
         setattr(settings_window, button_attr, button)
