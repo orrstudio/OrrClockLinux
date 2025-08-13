@@ -29,6 +29,7 @@ class CustomMDSwitch(MDAnchorLayout):
     
     def _on_switch_active(self, instance, value):
         """Обработчик изменения состояния переключателя."""
+        # Просто передаем новое значение в активное состояние
         self.active = value
     
     def on_active(self, instance, value):

@@ -7,8 +7,8 @@ from kivy.metrics import dp
 from kivy.core.window import Window
 from kivy.properties import ListProperty
 
-from ui.components.kivymd_switch import CustomMDSwitch
-
+#from ui.components.kivymd_switch import CustomMDSwitch
+from ui.components.custom_switch import CustomMDSwitch
 
 class BorderedGridLayout(GridLayout):
     """GridLayout с границами и адаптивными линиями."""
