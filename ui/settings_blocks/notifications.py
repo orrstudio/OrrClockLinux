@@ -56,9 +56,9 @@ def on_notification_switch(switch_instance, value, settings_window):
         
         # Здесь можно добавить дополнительную логику при включении/выключении уведомлений
         if value:
-            logger.info('Voice notifications enabled')
+            logger.info('Settings: Voice notifications enabled')
         else:
-            logger.info('Voice notifications disabled')
+            logger.info('Settings: Voice notifications disabled')
     except Exception as e:
         logger.error(f'Ошибка при обработке изменения состояния уведомлений: {e}')
 
@@ -68,7 +68,7 @@ def show_notification_settings(instance):
     
     # Заголовок
     title_label = Label(
-        text='Настройки уведомлений',
+        text='Notifications settings',
         size_hint_y=None,
         height=dp(40),
         font_size=sp(20),
@@ -83,7 +83,7 @@ def show_notification_settings(instance):
     
     # Кнопка закрытия
     close_btn = Button(
-        text='Закрыть',
+        text='Close',
         size_hint_y=None,
         height=dp(50),
         background_color=(0.3, 0.3, 0.3, 1)
@@ -120,10 +120,11 @@ def create_notifications_section(settings_window):
     audio_section = GridLayout(
         cols=1,
         size_hint_y=None,
-        height=dp(180),  # Увеличиваем высоту для трех строк уведомлений
-        padding=[dp(15), dp(15), dp(15), dp(15)],
-        spacing=dp(10),
-        size_hint=(1, None)
+        height=dp(200),  # Увеличиваем высоту для лучшего отображения
+        padding=[dp(20), dp(15), dp(20), dp(15)],  # Увеличиваем горизонтальные отступы
+        spacing=dp(15),  # Увеличиваем отступ между элементами
+        size_hint=(0.95, None),  # Уменьшаем ширину блока для отступов по бокам
+        pos_hint={'center_x': 0.5}  # Центрируем блок
     )
     
     # Добавляем фон для всей секции
@@ -143,16 +144,15 @@ def create_notifications_section(settings_window):
     
     audio_section.bind(pos=update_rect, size=update_rect)
     
-    # Адаптивный заголовок блока
+    # Заголовок блока
     audio_title = Label(
         text='Notifications',
-        color=(1, 1, 1, 1),
-        font_size=sp(22),  # Используем sp для масштабирования шрифта
-        size_hint=(1, None),
-        height=dp(30),
+        font_size='14sp',
+        size_hint_y=None,
+        height=dp(35),
+        color=(0.8, 0.8, 0.8, 1),
+        bold=True,
         halign='left',
-        valign='middle',
-        text_size=(Window.width - dp(40), None),
         padding=(0, dp(5)),
         shorten=True,
         shorten_from='right'
@@ -175,37 +175,44 @@ def create_notifications_section(settings_window):
     
     # Функция для создания строки уведомления
     def create_notification_row(label_text, switch_active, switch_prop, button_prop, switch_handler=None, button_handler=None):
-        # Контейнер для элементов управления (3 колонки по 1/3 ширины)
+        # Контейнер для элементов управления
         row_layout = GridLayout(
             cols=3,
             size_hint_y=None,
-            height=dp(40),
-            spacing=dp(10),
+            height=dp(45),  # Увеличиваем высоту строки
+            spacing=dp(15),  # Увеличиваем отступы между элементами
             padding=[0, dp(5)]
         )
         
-        # Метка с названием
-        label = ResponsiveLabel(
+        # Метка с названием (увеличиваем ширину для текста)
+        label = Label(
             text=label_text,
             markup=True,
-            size_hint_x=0.5,
+            size_hint_x=0.7,  # Увеличиваем ширину метки
             halign='left',
-            valign='middle'
+            valign='middle',
+            text_size=(dp(200), None),  # Фиксированная ширина для текста
+            shorten=True,  # Включаем обрезку длинного текста
+            shorten_from='right',  # Обрезаем справа
+            padding=(0, dp(5))
         )
         
         # Переключатель
         switch = Switch(
             active=switch_active,
-            size_hint_x=0.25
+            size_hint_x=0.15  # Уменьшаем ширину переключателя
         )
         
         # Кнопка настроек
         button = Button(
-            text='Настройки',
-            size_hint_x=0.25,
+            text='Settings',
+            size_hint_x=0.15,  # Уменьшаем ширину кнопки
+            size_hint_y=0.8,   # Уменьшаем высоту кнопки
             background_color=(0.2, 0.5, 0.8, 1) if button_handler else (0.3, 0.3, 0.3, 0.5),
             color=(1, 1, 1, 1),
-            disabled=button_handler is None
+            disabled=button_handler is None,
+            font_size='12sp',  # Уменьшаем размер шрифта
+            padding=[dp(5), 0]  # Добавляем отступы внутри кнопки
         )
         
         # Сохраняем ссылки в settings_window
@@ -227,7 +234,7 @@ def create_notifications_section(settings_window):
     
     # Создаем строки уведомлений
     audio_row = create_notification_row(
-        'Аудио уведомления:',
+        'Voice:',
         load_notification_settings(settings_window),
         'audio_switch',
         'audio_button',
@@ -236,7 +243,7 @@ def create_notifications_section(settings_window):
     )
     
     visual_row = create_notification_row(
-        'Визуальные уведомления:',
+        'Visual:',
         False,
         'visual_switch',
         'visual_button'
@@ -244,7 +251,7 @@ def create_notifications_section(settings_window):
     
     # Создаем строку для уведомлений Азан
     azan_row = create_notification_row(
-        'Уведомление Азан:',
+        'Adhan:',
         False,  # По умолчанию выключены
         'azan_switch',
         'azan_button'
