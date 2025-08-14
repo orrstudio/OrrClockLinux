@@ -206,18 +206,20 @@ class SettingsWindow(ModalView):
                     # Метод set_debug сам сохранит состояние в БД и обновит логгер
                     logger.set_debug(debug_enabled)
                     
-                    # Выводим сообщение о результате
-                    status = 'включён' if debug_enabled else 'выключен'
-                    logging.info(f'Отладочный режим {status}')
+                    # Выводим сообщение о результате через Kivy Logger
+                    from kivy.logger import Logger
+                    status = 'ENABLED' if debug_enabled else 'DISABLED'
+                    Logger.info(f'Logger: Debug Mode {status}')
                     
                 except Exception as e:
-                    logging.error(f'Не удалось обновить отладочный режим: {e}')
+                    from kivy.logger import Logger
+                    Logger.error(f'Logger: Failed to update debug mode: {e}')
                     # Пробуем сохранить состояние напрямую в БД на случай ошибки в логгере
                     try:
                         from data.database import SettingsDatabase
                         db = SettingsDatabase()
                         db.save_setting('debug_mode', '1' if debug_enabled else '0')
-                        logging.info('Значение отладочного режима сохранено напрямую в БД')
+                        Logger.info('Logger: Debug mode value saved directly to database')
                     except Exception as db_error:
                         logging.error(f'Критическая ошибка: не удалось сохранить состояние отладки: {db_error}')
                 

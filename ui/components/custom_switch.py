@@ -1,5 +1,5 @@
-from kivymd.uix.anchorlayout import MDAnchorLayout
 from kivy.properties import BooleanProperty, ColorProperty, NumericProperty
+from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.widget import Widget
 from kivy.graphics import Color, RoundedRectangle
 from kivy.animation import Animation
@@ -106,7 +106,7 @@ class CustomSwitch(Widget):
         return super().on_touch_down(touch)
 
 
-class CustomMDSwitch(MDAnchorLayout):
+class CustomMDSwitch(AnchorLayout):
     """Адаптер для CustomSwitch с настройками по умолчанию."""
     
     active = BooleanProperty(False)

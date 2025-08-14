@@ -3,10 +3,10 @@ import kivy
 from datetime import datetime
 import math
 from kivy.animation import Animation
+from kivy.app import App
 kivy.require('2.2.1')
 
 # Импорты базовых классов Kivy
-from kivymd.app import MDApp
 from kivy.core.window import Window
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
@@ -31,7 +31,7 @@ from logic.midnight_update_manager import MidnightUpdateManager
 from logic.prayer_times import prayer_times_manager
 from utils.logger import logger
 
-class MainWindowApp(MDApp):
+class MainWindowApp(App):
     def on_new_day(self):
         """
         Метод вызывается в полночь для пересчёта и обновления всех данных, зависящих от даты.
