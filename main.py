@@ -2,10 +2,32 @@ import os
 import kivy
 from datetime import datetime
 import math
-from kivy.animation import Animation
-from kivy.logger import Logger
+import logging
+from kivy.logger import Logger, LOG_LEVELS
 from kivy.app import App
+from kivy.config import Config
+
+# Configure Kivy logger
+Config.set('kivy', 'log_level', 'debug')
+Config.set('kivy', 'log_enable', 1)
+Config.set('kivy', 'log_dir', 'logs')
+Config.set('kivy', 'log_name', 'orrclock_%y-%m-%d_%_.txt')
+Config.set('kivy', 'log_maxfiles', 10)
+
+# Configure root logger
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='[%(levelname)-8s] %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler('orrclock.log')
+    ]
+)
+
 kivy.require('2.2.1')
+
+# Set Kivy logger level to debug
+Logger.setLevel(logging.DEBUG)
 
 # Импорты базовых классов Kivy
 from kivy.core.window import Window
@@ -52,7 +74,7 @@ class MainWindowApp(App):
         # Пересоздаём/обновляем UI для нового дня
         if hasattr(self, 'layout'):
             self.on_window_resize(Window, Window.width, Window.height)
-            print(f"[DEBUG] on_new_day: self.prayer_times_box = {getattr(self, 'prayer_times_box', None)}, type = {type(getattr(self, 'prayer_times_box', None))}")
+            Logger.debug(f'on_new_day: self.prayer_times_box = {getattr(self, "prayer_times_box", None)}, type = {type(getattr(self, "prayer_times_box", None))}')
             if hasattr(self, 'prayer_times_box') and self.prayer_times_box:
                 Logger.debug('on_new_day: calling refresh_prayer_times() on self.prayer_times_box (after update_prayer_times and layout recreation)')
                 self.prayer_times_box.refresh_prayer_times()
@@ -222,7 +244,7 @@ class MainWindowApp(App):
                 Logger.debug('No active playback to stop')
                 
         except Exception as e:
-            print(f"[ERROR] Ошибка при обработке клика: {e}")
+            Logger.error(f'Error processing click: {e}')
         
         # Продолжаем обработку события (False = не перехватывать событие)
         return False
@@ -307,7 +329,7 @@ class MainWindowApp(App):
         
         # Устанавливаем начальную прозрачность
         self.title_label.opacity = 1.0
-        print(f"[DEBUG] Начальная прозрачность: {self.title_label.opacity}")
+        Logger.debug(f'Initial opacity: {self.title_label.opacity}')
         
         # Флаг для отслеживания состояния мигания
         self._blinking = True
@@ -370,7 +392,7 @@ class MainWindowApp(App):
             Logger.debug('Restored original clock color')
             
         self.title_label.opacity = 1
-        print(f"[DEBUG] Восстановлена прозрачность: {self.title_label.opacity}")
+        Logger.debug(f'Opacity restored: {self.title_label.opacity}')
         
         # Принудительно обновляем отображение
         self.title_label.canvas.ask_update()

@@ -59,13 +59,13 @@ class NextPrayerTimeBox(GridLayout):
                     try:
                         player.terminate()
                     except Exception as e:
-                        print(f"[DEBUG] Ошибка при завершении плеера: {e}")
+                        Logger.debug(f'Error terminating player: {e}')
                     
                     # Освобождаем ресурсы
                     try:
                         del player
                     except Exception as e:
-                        print(f"[DEBUG] Ошибка при освобождении ресурсов плеера: {e}")
+                        Logger.debug(f'Error releasing player resources: {e}')
                     
                     # Принудительный сбор мусора
                     import gc
@@ -74,7 +74,7 @@ class NextPrayerTimeBox(GridLayout):
                     Logger.debug('Sound playback stopped')
                     return True
                 except Exception as e:
-                    print(f"[ERROR] Критическая ошибка при остановке воспроизведения: {e}")
+                    Logger.error(f'Critical error while stopping playback: {e}')
                     cls._current_player = None
                     return False
             return False
@@ -281,10 +281,10 @@ class NextPrayerTimeBox(GridLayout):
             bool: True, если воспроизведение успешно запущено, иначе False
         """
         if not os.path.exists(sound_file):
-            print(f"[ERROR] Файл не найден: {sound_file}")
+            Logger.error(f'File not found: {sound_file}')
             return False
             
-        print(f"[DEBUG] Запуск воспроизведения файла: {sound_file}")
+        Logger.debug(f'Starting playback of file: {sound_file}')
         player = None
         
         try:
@@ -311,13 +311,13 @@ class NextPrayerTimeBox(GridLayout):
                     @player.event_callback('end-file')
                     def on_end(event):
                         # Этот колбэк будет вызван при завершении воспроизведения
-                        print(f"[DEBUG] Воспроизведение завершено: {sound_file}")
+                        Logger.debug(f'Playback completed: {sound_file}')
                         
                     # Сохраняем ссылку на текущий плеер
                     NextPrayerTimeBox._current_player = player
                     
                 except Exception as e:
-                    print(f"[ERROR] Ошибка при создании MPV-плеера: {e}")
+                    Logger.error(f'Error creating MPV player: {e}')
                     if player:
                         try:
                             player.terminate()
@@ -326,7 +326,7 @@ class NextPrayerTimeBox(GridLayout):
                     return False
             
             # Воспроизводим звук
-            print(f"[DEBUG] Запуск воспроизведения: {sound_file}")
+            Logger.debug(f'Starting playback: {sound_file}')
             player.play(sound_file)
             
             # Ждем завершения воспроизведения с таймаутом
@@ -335,7 +335,7 @@ class NextPrayerTimeBox(GridLayout):
                 # (таймаут в секундах, None означает бесконечно)
                 player.wait_for_playback(timeout=None)
             except Exception as e:
-                print(f"[DEBUG] Ошибка при ожидании завершения воспроизведения: {e}")
+                Logger.debug(f'Error while waiting for playback to complete: {e}')
             
             # Даем время на корректное завершение
             import time
@@ -344,8 +344,8 @@ class NextPrayerTimeBox(GridLayout):
             return True
             
         except Exception as e:
-            error_msg = f"Критическая ошибка при воспроизведении звука {sound_file}: {str(e)}"
-            print(f"[ERROR] {error_msg}")
+            error_msg = f"Critical error while playing sound {sound_file}: {str(e)}"
+            Logger.error(error_msg)
             import traceback
             traceback.print_exc()
             return False
@@ -383,7 +383,7 @@ class NextPrayerTimeBox(GridLayout):
                         gc.collect()
                         
                     except Exception as e:
-                        print(f"[DEBUG] Ошибка при освобождении ресурсов плеера: {e}")
+                        Logger.debug(f'Error releasing player resources: {e}')
     
     def _play_notification_sound(self, notification_type='15min'):
         """
@@ -401,7 +401,7 @@ class NextPrayerTimeBox(GridLayout):
             
             NextPrayerTimeBox._last_sound_time = current_time
             
-        print(f"[DEBUG] Запуск воспроизведения уведомления: {notification_type}")
+        Logger.debug(f'Starting notification playback: {notification_type}')
         
         # Запускаем в отдельном потоке, чтобы не блокировать интерфейс
         def play_sounds():
@@ -418,14 +418,14 @@ class NextPrayerTimeBox(GridLayout):
                     if os.path.exists(sound_file):
                         self._play_sound_file(sound_file)
                     else:
-                        print(f"[ERROR] Файл уведомления не найден: {sound_file}")
+                        Logger.error(f'Notification file not found: {sound_file}')
                     
                     # Воспроизводим азан
                     if os.path.exists(adhan_file):
                         Logger.debug('Playing adhan after prayer change')
                         self._play_sound_file(adhan_file, is_adhan=True)
                     else:
-                        print(f"[ERROR] Файл азана не найден: {adhan_file}")
+                        Logger.error(f'Adhan file not found: {adhan_file}')
                     
                 else:  # Для других типов уведомлений
                     if notification_type == '30min':
@@ -437,13 +437,13 @@ class NextPrayerTimeBox(GridLayout):
                     else:  # По умолчанию 15-минутное уведомление
                         sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-15dakikakaldi.mp3')
                     
-                    print(f"[DEBUG] Проверяем файл: {sound_file}")
+                    Logger.debug(f'Checking file: {sound_file}')
                     
                     if os.path.exists(sound_file):
                         self._play_sound_file(sound_file)
                     else:
-                        error_msg = f"Файл уведомления не найден: {sound_file}"
-                        print(f"[ERROR] {error_msg}")
+                        error_msg = f"Notification file not found: {sound_file}"
+                        Logger.error(error_msg)
                         logging.error(error_msg)
                 
                 # Заменяем '30min' на '30 min' и т.д. для лучшей читаемости
@@ -451,8 +451,8 @@ class NextPrayerTimeBox(GridLayout):
                 logging.info(f"Notification: Playing notification: {pretty_notification}")
                 
             except Exception as e:
-                error_msg = f"Ошибка при воспроизведении уведомления {notification_type}: {str(e)}"
-                print(f"[ERROR] {error_msg}")
+                error_msg = f"Error playing notification {notification_type}: {str(e)}"
+                Logger.error(error_msg)
                 logging.error(error_msg, exc_info=True)
         
         # Запускаем поток с воспроизведением звуков
@@ -468,7 +468,7 @@ class NextPrayerTimeBox(GridLayout):
             Logger.debug('Animation already running, skipping restart')
             return
             
-        print(f"[DEBUG] Запуск мигания времени следующего намаза")
+        Logger.debug('Starting next prayer time blinking animation')
         self._is_time_blinking = True
         self._blink_opacity = 1.0
         
@@ -663,7 +663,7 @@ class NextPrayerTimeBox(GridLayout):
             # Если время намаза уже прошло сегодня, берем намаз на следующий день
             if prayer_dt <= current_dt:
                 prayer_dt += timedelta(days=1)
-                print(f"[DEBUG] Время намаза {next_prayer_time_str} перенесено на следующий день")
+                Logger.debug(f'Prayer time {next_prayer_time_str} moved to the next day')
             
             # Вычисляем разницу во времени
             time_diff = prayer_dt - current_dt
@@ -671,17 +671,17 @@ class NextPrayerTimeBox(GridLayout):
             # Преобразуем разницу в минуты
             minutes = int(time_diff.total_seconds() / 60)
             
-            print(f"[DEBUG] Проверка 60 минут: текущее время={current_time}, намаз={prayer_dt.time()}, осталось минут={minutes}")
+            Logger.debug(f'60-minute check: current_time={current_time}, prayer_time={prayer_dt.time()}, minutes_left={minutes}')
             
             if minutes == 60:
-                print(f"[DEBUG] Найдено 60 минут до намаза {prayer_dt.time()}")
+                Logger.debug(f'Found 60 minutes before prayer {prayer_dt.time()}')
                 return True
             else:
-                print(f"[DEBUG] До намаза {prayer_dt.time()} осталось {minutes} минут (не 60)")
+                Logger.debug(f'Time until prayer {prayer_dt.time()}: {minutes} minutes (not 60)')
                 return False
                 
         except Exception as e:
-            print(f"[ERROR] Ошибка при проверке 60 минут до намаза: {e}")
+            Logger.error(f'Error checking 60 minutes before prayer: {e}')
             import traceback
             traceback.print_exc()
             return False
@@ -702,7 +702,7 @@ class NextPrayerTimeBox(GridLayout):
             # Если время намаза уже прошло сегодня, берем намаз на следующий день
             if prayer_dt < current_dt:
                 prayer_dt += timedelta(days=1)
-                print(f"[DEBUG] Время намаза {next_prayer_time_str} перенесено на следующий день")
+                Logger.debug(f'Prayer time {next_prayer_time_str} moved to the next day')
             
             # Вычисляем разницу во времени
             time_diff = prayer_dt - current_dt
@@ -710,12 +710,12 @@ class NextPrayerTimeBox(GridLayout):
             # Преобразуем разницу в минуты
             minutes = int(time_diff.total_seconds() / 60)
             
-            print(f"[DEBUG] Расчет времени до намаза: текущее={current_time}, намаз={next_prayer_time_str}, минут до намаза={minutes}")
+            Logger.debug(f'Calculating time until prayer: current={current_time}, prayer={next_prayer_time_str}, minutes_until={minutes}')
             
             return minutes
                 
         except Exception as e:
-            print(f"[ERROR] Ошибка при вычислении времени до намаза: {e}")
+            Logger.error(f'Error calculating time until prayer: {e}')
             import traceback
             traceback.print_exc()
             return 0
@@ -737,11 +737,11 @@ class NextPrayerTimeBox(GridLayout):
         if hasattr(self, '_last_notification_minutes') and self._last_notification_minutes == minutes:
             return False, minutes
             
-        print(f"[DEBUG] Проверка времени до намаза: {minutes} минут")
+        Logger.debug(f'Checking time until prayer: {minutes} minutes')
         
         # Проверяем все временные интервалы
         if minutes in [15, 30, 45, 60]:
-            print(f"[DEBUG] Обнаружено {minutes} минут до намаза")
+            Logger.debug(f'Found {minutes} minutes until prayer')
             self._last_notification_minutes = minutes
             return True, minutes
             
@@ -862,7 +862,7 @@ class NextPrayerTimeBox(GridLayout):
             minutes_left (int): Количество минут до намаза (15, 30, 45, 60)
             next_prayer_time_str (str): Время следующего намаза в формате 'ЧЧ:ММ'
         """
-        print(f"[DEBUG] Обработка уведомления за {minutes_left} минут до намаза {next_prayer_time_str}")
+        Logger.debug(f'Processing notification {minutes_left} minutes before prayer {next_prayer_time_str}')
         
         # Останавливаем все текущие анимации
         self._stop_all_animations()
@@ -1015,7 +1015,7 @@ class NextPrayerTimeBox(GridLayout):
             debug_info += f"Осталось: {time_until_str}"
             if self._is_time_blinking:
                 debug_info += " [МИГАНИЕ АКТИВНО]"
-            print(debug_info)
+            Logger.debug(debug_info)
             
     def on_parent(self, widget, parent):
         # Отписываемся от таймера при удалении виджета

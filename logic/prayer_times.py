@@ -90,11 +90,11 @@ class PrayerTimesManager:
                 # Данные есть в базе и они актуальны
                 current_times = {k: result[i+1] for i, k in enumerate(self.prayer_times)}
                 prayer_times_data[date_str] = current_times
-                print(f"[DEBUG] prayer_times: данные за {date_str} найдены в базе")
+                Logger.debug(f'prayer_times: data for {date_str} found in database')
             else:
                 # Нужно запросить данные из API
                 need_api_call = True
-                print(f"[DEBUG] prayer_times: данные за {date_str} не найдены в базе или устарели")
+                Logger.debug(f'prayer_times: data for {date_str} not found in database or outdated')
                 break
         
         # Если данные за оба дня есть в базе, возвращаем их
@@ -119,20 +119,20 @@ class PrayerTimesManager:
             }
             api_date_str = date.strftime('%d-%m-%Y')
             url = f"{self.api_url}/{api_date_str}"
-            print(f"[DEBUG] prayer_times: API url={url} params={params}")
+            Logger.debug(f'prayer_times: API url={url} params={params}')
             try:
                 response = requests.get(url, params=params)
-                print(f"[DEBUG] prayer_times: API {date_str} params={params} status_code={response.status_code}")
+                Logger.debug(f'prayer_times: API {date_str} params={params} status_code={response.status_code}')
                 if response.status_code == 200:
                     data = response.json()
-                    print(f"[DEBUG] prayer_times: API parsed response: {data}")
+                    Logger.debug(f'prayer_times: API parsed response: {data}')
                     if data['code'] == 200:
                         times = data['data']['timings']
                         current_times = {prayer: times[prayer] for prayer in self.prayer_times}
-                        print(f"[DEBUG] prayer_times: API {date_str} current_times={current_times}")
+                        Logger.debug(f'prayer_times: API {date_str} current_times={current_times}')
                         prayer_times_data[date_str] = current_times
             except Exception as e:
-                print(f"Error fetching prayer times for {date}: {str(e)}")
+                Logger.error(f'Error fetching prayer times for {date}: {str(e)}')
                 continue
                 
         return prayer_times_data
@@ -196,18 +196,18 @@ class PrayerTimesManager:
 
     def start_auto_update(self):
         if not hasattr(self, '_auto_update_event') or self._auto_update_event is None:
-            print('[DEBUG] prayer_times: старт автообновления')
+            Logger.debug('prayer_times: starting auto-update')
             from kivy.clock import Clock
             self._auto_update_event = Clock.schedule_interval(self._auto_update_callback, 15)
 
     def stop_auto_update(self):
         if hasattr(self, '_auto_update_event') and self._auto_update_event:
-            print('[DEBUG] prayer_times: стоп автообновления')
+            Logger.debug('prayer_times: stopping auto-update')
             self._auto_update_event.cancel()
             self._auto_update_event = None
 
     def _auto_update_callback(self, dt):
-        print('[DEBUG] prayer_times: автообновление из API...')
+        Logger.debug('prayer_times: auto-updating from API...')
         self.update_prayer_times()
         # 3. Если и API не дал — возвращаем нули
         return {prayer: '00:00' for prayer in self.prayer_times}
@@ -237,7 +237,7 @@ class PrayerTimesManager:
                     self._notify_update()
                     return prayer_times
         except Exception as e:
-            print(f"Error fetching prayer times from API for {date_str}: {str(e)}")
+            Logger.error(f'Error fetching prayer times from API for {date_str}: {str(e)}')
         return None
 
     def _get_days_with_data(self, days_ahead=7):
@@ -265,7 +265,7 @@ class PrayerTimesManager:
             try:
                 self.update_prayer_times()
             except Exception as e:
-                print(f"Error loading month data: {str(e)}")
+                Logger.error(f'Error loading month data: {str(e)}')
 
         # Вызываем обновление через Clock.schedule_once
         Clock.schedule_once(_load_month, 0)

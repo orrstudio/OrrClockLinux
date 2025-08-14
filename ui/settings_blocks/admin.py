@@ -41,13 +41,13 @@ def save_debug_state(settings_window, enabled):
         logger.info(f'Debug Mode: {status}')
         
     except Exception as e:
-        Logger.error(f'Logger: Не удалось обновить отладочный режим: {e}')
+        Logger.error(f'Logger: Failed to update debug mode: {e}')
         # Пробуем сохранить состояние напрямую в БД на случай ошибки в логгере
         try:
             from data.database import SettingsDatabase
             db = SettingsDatabase()
             db.save_setting('debug_mode', '1' if enabled else '0')
-            Logger.info('Logger: Значение отладочного режима сохранено напрямую в БД')
+            Logger.info('Logger: Debug mode value saved directly to the database')
         except Exception as db_error:
             logger.error(f'Критическая ошибка: не удалось сохранить состояние отладки: {db_error}')
 

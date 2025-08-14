@@ -46,5 +46,6 @@ class MidnightUpdateManager:
             try:
                 callback()
             except Exception as e:
-                print(f"Ошибка в midnight callback: {e}")
+                from kivy.logger import Logger
+                Logger.error(f'Error in midnight callback: {e}')
         self.schedule_next_midnight()

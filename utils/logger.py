@@ -190,7 +190,7 @@ class NoopLogger:
             
         except Exception as e:
             from kivy.logger import Logger
-            Logger.error(f"Logger: Не удалось обновить отладочный режим: {e}")
+            Logger.error(f"Logger: Failed to update debug mode: {e}")
 
 # Создаем глобальный экземпляр логгера
 logger = DebugLogger() if _get_debug_state() else NoopLogger()
