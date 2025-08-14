@@ -983,7 +983,7 @@ class NextPrayerTimeBox(GridLayout):
             if hasattr(self, 'previous_next_prayer'):
                 if self.previous_next_prayer != current_next_prayer:
                     if self.debug_mode:
-                        logger.debug(f"Время намаза изменилось с {self.previous_next_prayer} на {current_next_prayer}")
+                        logger.debug(f"Prayer time changed from {self.previous_next_prayer} to {current_next_prayer}")
                     # Если изменилось время намаза, запускаем анимацию и воспроизводим азан
                     self.animate_icons()
                     self._play_notification_sound('prayer_change')
@@ -993,13 +993,13 @@ class NextPrayerTimeBox(GridLayout):
             
             if self.debug_mode:
                 # Логируем отладочную информацию
-                logger.debug(f"[DEBUG] Текущее время: {current_time.strftime('%H:%M:%S')}, "
-                           f"Следующий намаз: {next_prayer_time_str}, "
-                           f"Осталось: {time_until_str}" + 
-                           (" [МИГАНИЕ АКТИВНО]" if self._is_time_blinking else ""))
+                logger.debug(f"Next prayer time: {current_time.strftime('%H:%M:%S')}, "
+                           f"Next prayer time: {next_prayer_time_str}, "
+                           f"Time until prayer: {time_until_str}" + 
+                           (" [BLINKING]" if self._is_time_blinking else ""))
             
         except Exception as e:
-            logger.error(f"[ERROR] Ошибка при обновлении времени намаза: {e}")
+            logger.error(f"Error updating prayer time: {e}")
             import traceback
             traceback.print_exc()
         finally:
@@ -1010,11 +1010,11 @@ class NextPrayerTimeBox(GridLayout):
             self._update_event = Clock.schedule_once(lambda dt: self.update_time(), 1.0)
             
             # Для отладки выводим в консоль информацию о смене времени
-            debug_info = f"[DEBUG] Текущее время: {current_time.strftime('%H:%M:%S')}, "
-            debug_info += f"Следующий намаз: {next_prayer_time_str}, "
-            debug_info += f"Осталось: {time_until_str}"
+            debug_info = f"Current time: {current_time.strftime('%H:%M:%S')}, "
+            debug_info += f"Next prayer time: {next_prayer_time_str}, "
+            debug_info += f"Time until prayer: {time_until_str}"
             if self._is_time_blinking:
-                debug_info += " [МИГАНИЕ АКТИВНО]"
+                debug_info += " [BLINKING]"
             Logger.debug(debug_info)
             
     def on_parent(self, widget, parent):

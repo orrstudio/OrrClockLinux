@@ -55,11 +55,12 @@ def create_portrait_widgets(self, portrait_layout):
     
     # Создаем реактивный layout с временами молитв
     self.prayer_times_box = PrayerTimesBox(base_font_size=base_font_size)
-    logger.debug(f"[DEBUG] create_portrait_widgets: создан self.prayer_times_box = {self.prayer_times_box}, id = {id(self.prayer_times_box)}, type = {type(self.prayer_times_box)}")
+    from kivy.logger import Logger
+    Logger.debug(f'Created prayer_times_box: {type(self.prayer_times_box).__name__} (id: {id(self.prayer_times_box)})')
     
     # Связываем NextPrayerTimeBox с PrayerTimesBox для синхронизации анимаций
     next_time_widget.prayer_times_box = self.prayer_times_box
-    logger.debug("[DEBUG] Связан NextPrayerTimeBox с PrayerTimesBox для синхронизации анимаций")
+    Logger.debug('Linked NextPrayerTimeBox with PrayerTimesBox for animation synchronization')
     
     # Добавляем виджет в layout
     portrait_layout.add_widget(self.prayer_times_box)

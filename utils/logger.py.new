@@ -7,11 +7,6 @@ import sys
 import builtins
 from typing import Any
 
-# Сохраняем оригинальный print
-_original_print = builtins.print
-_original_stdout = sys.stdout
-_original_stderr = sys.stderr
-
 def _get_debug_state() -> bool:
     """
     Получает текущее состояние отладочного режима из базы данных.
@@ -26,7 +21,7 @@ def _get_debug_state() -> bool:
         return debug_mode == '1'
     except Exception as e:
         from kivy.logger import Logger
-        Logger.error(f'Ошибка получения настройки отладки: {e}')
+        Logger.error(f'Error getting debug setting: {e}')
         return False
 
 # Глобальная переменная для хранения состояния отладки
@@ -44,7 +39,7 @@ def _update_global_debug_state():
         new_state = _get_debug_state()
         if _DEBUG_ENABLED != new_state:
             _DEBUG_ENABLED = new_state
-            status = 'ENABLED' if _DEBUG_ENABLED else 'DISABLED'
+            status = 'Enabled' if _DEBUG_ENABLED else 'Disabled'
             from kivy.logger import Logger
             Logger.info(f'Debug Mode {status}')
         return _DEBUG_ENABLED
@@ -53,7 +48,6 @@ def _update_global_debug_state():
         Logger.error(f'Error updating debug state: {e}')
         return _DEBUG_ENABLED
 
-# Определяем классы для разных режимов работы логгера
 class DebugLogger:
     """Класс логгера с включенным отладочным выводом."""
     
@@ -72,17 +66,20 @@ class DebugLogger:
     @classmethod
     def info(cls, message: str, *args: Any, **kwargs: Any) -> None:
         """Выводит информационное сообщение."""
-        _original_print(f"[INFO] {message}", *args, **kwargs, file=_original_stdout)
+        from kivy.logger import Logger
+        Logger.info(message)
     
     @classmethod
     def warning(cls, message: str, *args: Any, **kwargs: Any) -> None:
         """Выводит предупреждающее сообщение."""
-        _original_print(f"[WARNING] {message}", *args, **kwargs, file=_original_stderr)
+        from kivy.logger import Logger
+        Logger.warning(message)
     
     @classmethod
     def error(cls, message: str, *args: Any, **kwargs: Any) -> None:
         """Выводит сообщение об ошибке."""
-        _original_print(f"[ERROR] {message}", *args, **kwargs, file=_original_stderr)
+        from kivy.logger import Logger
+        Logger.error(message)
     
     @classmethod
     def save_debug_state(cls, enabled: bool) -> bool:
@@ -134,7 +131,7 @@ class DebugLogger:
                 logger = NoopLogger()
                 
             from kivy.logger import Logger
-            Logger.info(f"Debug Mode {'Enabled' if enabled else 'Disabled'}")
+            Logger.info(f"Debug mode {'enabled' if enabled else 'disabled'}")
             
         except Exception as e:
             from kivy.logger import Logger
@@ -155,17 +152,20 @@ class NoopLogger:
     @classmethod
     def info(cls, message: str, *args: Any, **kwargs: Any) -> None:
         """Выводит информационное сообщение."""
-        _original_print(f"[INFO] {message}", *args, **kwargs, file=_original_stdout)
+        from kivy.logger import Logger
+        Logger.info(message)
     
     @classmethod
     def warning(cls, message: str, *args: Any, **kwargs: Any) -> None:
         """Выводит предупреждающее сообщение."""
-        _original_print(f"[WARNING] {message}", *args, **kwargs, file=_original_stderr)
+        from kivy.logger import Logger
+        Logger.warning(message)
     
     @classmethod
     def error(cls, message: str, *args: Any, **kwargs: Any) -> None:
         """Выводит сообщение об ошибке."""
-        _original_print(f"[ERROR] {message}", *args, **kwargs, file=_original_stderr)
+        from kivy.logger import Logger
+        Logger.error(message)
     
     @classmethod
     def set_debug(cls, enabled: bool) -> None:
@@ -235,7 +235,7 @@ logger = DebugLogger() if _get_debug_state() else NoopLogger()
 # Перехватываем стандартный print
 class PrintInterceptor:
     def __init__(self):
-        self.original_print = _original_print
+        self.original_print = builtins.print
     
     def __call__(self, *args: Any, **kwargs: Any) -> None:
         # Если это отладочное сообщение и отладка выключена, полностью подавляем вывод

@@ -233,7 +233,7 @@ class MainWindowApp(App):
             from ui.next_prayer_time_box import NextPrayerTimeBox
             
             # Логируем попытку остановки воспроизведения
-            Logger.debug('Processing click - stopping sound playback')
+            Logger.debug('Processing click: stopping sound playback')
             
             # Останавливаем воспроизведение звука
             stopped = NextPrayerTimeBox.stop_playback()

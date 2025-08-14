@@ -36,19 +36,19 @@ class PrayerTimesManager:
             self._listeners.remove(callback)
 
     def _notify_update(self):
-        """Уведомляет всех подписчиков об обновлении времени намаза."""
-        logger.debug(f"prayer_times: вызван _notify_update (кол-во callback: {len(self._listeners)})")
+        """Notifies all subscribers about prayer time updates."""
+        Logger.debug(f'Notifying {len(self._listeners)} subscribers about prayer time update')
         
         for callback in self._listeners:
             try:
                 callback()
             except Exception as e:
-                logger.error(f"PrayerTimesManager: ошибка в callback: {e}")
+                Logger.error(f'PrayerTimesManager: Error in callback: {e}')
 
 
     def _setup_database(self):
-        """Создает таблицу для хранения времён молитв"""
-        logger.debug("prayer_times: создание таблицы, если её нет")
+        """Creates a table for storing prayer times"""
+        Logger.debug("Creating prayer times table if it doesn't exist")
         self.db.cursor.execute('''
             CREATE TABLE IF NOT EXISTS prayer_times (
                 date TEXT PRIMARY KEY,
