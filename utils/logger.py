@@ -72,17 +72,19 @@ class DebugLogger:
     @classmethod
     def info(cls, message: str, *args: Any, **kwargs: Any) -> None:
         """Выводит информационное сообщение."""
-        _original_print(f"[INFO] {message}", *args, **kwargs, file=_original_stdout)
+        from kivy.logger import Logger
+        Logger.info(message)
     
     @classmethod
     def warning(cls, message: str, *args: Any, **kwargs: Any) -> None:
         """Выводит предупреждающее сообщение."""
-        _original_print(f"[WARNING] {message}", *args, **kwargs, file=_original_stderr)
-    
+        from kivy.logger import Logger
+        Logger.warning(message)
     @classmethod
     def error(cls, message: str, *args: Any, **kwargs: Any) -> None:
         """Выводит сообщение об ошибке."""
-        _original_print(f"[ERROR] {message}", *args, **kwargs, file=_original_stderr)
+        from kivy.logger import Logger
+        Logger.error(message)
     
     @classmethod
     def save_debug_state(cls, enabled: bool) -> bool:
@@ -155,17 +157,20 @@ class NoopLogger:
     @classmethod
     def info(cls, message: str, *args: Any, **kwargs: Any) -> None:
         """Выводит информационное сообщение."""
-        _original_print(f"[INFO] {message}", *args, **kwargs, file=_original_stdout)
+        from kivy.logger import Logger
+        Logger.info(message)
     
     @classmethod
     def warning(cls, message: str, *args: Any, **kwargs: Any) -> None:
         """Выводит предупреждающее сообщение."""
-        _original_print(f"[WARNING] {message}", *args, **kwargs, file=_original_stderr)
+        from kivy.logger import Logger
+        Logger.warning(message)
     
     @classmethod
     def error(cls, message: str, *args: Any, **kwargs: Any) -> None:
         """Выводит сообщение об ошибке."""
-        _original_print(f"[ERROR] {message}", *args, **kwargs, file=_original_stderr)
+        from kivy.logger import Logger
+        Logger.error(message)
     
     @classmethod
     def set_debug(cls, enabled: bool) -> None:
@@ -194,12 +199,9 @@ class NoopLogger:
                 if not isinstance(logger, DebugLogger):
                     logger = DebugLogger()
                     from kivy.logger import Logger
-                    Logger.info("Logger: Debug Mode ENABLED")
             else:
                 if not isinstance(logger, NoopLogger):
                     logger = NoopLogger()
-                    from kivy.logger import Logger
-                    Logger.info("Logger: Debug Mode DISABLED")
                     
             # Принудительно обновляем глобальное состояние
             _update_global_debug_state()
