@@ -1,4 +1,5 @@
 import logging
+from kivy.logger import Logger
 
 from kivy.uix.widget import Widget
 from kivy.uix.modalview import ModalView
@@ -221,14 +222,14 @@ class SettingsWindow(ModalView):
                         db.save_setting('debug_mode', '1' if debug_enabled else '0')
                         Logger.info('Logger: Debug mode value saved directly to database')
                     except Exception as db_error:
-                        logging.error(f'Критическая ошибка: не удалось сохранить состояние отладки: {db_error}')
+                        logging.error(f'Critical error: failed to save debug state: {db_error}')
                 
             # Выводим обновленные настройки после сохранения
             self.print_sizes(show_before_save=False)
             
             self.dismiss()
         except Exception as e:
-            print(f"Ошибка при сохранении настроек: {e}")
+            Logger.error(f'Error saving settings: {e}')
             self.dismiss()
     
     # Метод _update_title_rect перенесен в модуль header.py

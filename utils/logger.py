@@ -25,7 +25,7 @@ def _get_debug_state() -> bool:
         debug_mode = db.get_setting('debug_mode', '0')
         return debug_mode == '1'
     except Exception as e:
-        _original_print(f"[ERROR] Ошибка при получении настройки отладки: {e}", file=sys.stderr)
+        _original_print(f"[ERROR] Error getting debug setting: {e}", file=sys.stderr)
         return False
 
 # Глобальная переменная для хранения состояния отладки
@@ -47,7 +47,7 @@ def _update_global_debug_state():
             _original_print(f"[INFO   ] [Debug Mode] {status}", file=sys.stderr)
         return _DEBUG_ENABLED
     except Exception as e:
-        _original_print(f"[ERROR  ] Ошибка при обновлении состояния отладки: {e}", file=sys.stderr)
+        _original_print(f"[ERROR] Error updating debug state: {e}", file=sys.stderr)
         return _DEBUG_ENABLED
 
 # Определяем классы для разных режимов работы логгера
@@ -97,7 +97,7 @@ class DebugLogger:
             db.save_setting('debug_mode', '1' if enabled else '0')
             return True
         except Exception as e:
-            _original_print(f"[ОШИБКА] Не удалось сохранить состояние отладки: {e}", file=sys.stderr)
+            _original_print(f"[ERROR] Failed to save debug state: {e}", file=sys.stderr)
             return False
     
     @classmethod
@@ -112,7 +112,7 @@ class DebugLogger:
         
         # Сохраняем новое состояние в БД
         if not cls.save_debug_state(enabled):
-            _original_print("[ОШИБКА] Не удалось сохранить состояние отладки в базу данных", file=sys.stderr)
+            _original_print("[ERROR] Failed to save debug state to database", file=sys.stderr)
             return
         
         # Обновляем глобальное состояние

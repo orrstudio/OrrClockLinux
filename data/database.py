@@ -93,7 +93,7 @@ class SettingsDatabase:
             return result[0] if result is not None else default_value
             
         except Exception as e:
-            print(f"Ошибка при получении настройки {key}: {e}")
+            print(f"Error getting setting {key}: {e}")
             return default_value
     
     def save_setting(self, key, value):
@@ -117,7 +117,7 @@ class SettingsDatabase:
             ''', (width, height, x, y))
             self.connection.commit()
         except Exception as e:
-            print(f"Ошибка при сохранении настроек главного окна: {e}")
+            print(f"Error saving main window settings: {e}")
             
     def save_settings_window_settings(self, width, height, x, y):
         """
@@ -132,7 +132,7 @@ class SettingsDatabase:
             ''', (width, height, x, y))
             self.connection.commit()
         except Exception as e:
-            print(f"Ошибка при сохранении настроек окна настроек: {e}")
+            print(f"Error saving settings window settings: {e}")
 
     def get_window_settings(self):
         """
@@ -157,7 +157,7 @@ class SettingsDatabase:
             if settings:
                 return settings
         except Exception as e:
-            print(f"Ошибка при загрузке настроек окна настроек: {e}")
+            print(f"Error loading settings window settings: {e}")
         return None
 
     def apply_window_settings(self, window):
