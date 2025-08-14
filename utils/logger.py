@@ -43,8 +43,8 @@ def _update_global_debug_state():
         new_state = _get_debug_state()
         if _DEBUG_ENABLED != new_state:
             _DEBUG_ENABLED = new_state
-            status = 'включён' if _DEBUG_ENABLED else 'выключен'
-            _original_print(f"[INFO   ] [Отладочный режим] {status}", file=sys.stderr)
+            status = 'Enabled' if _DEBUG_ENABLED else 'Disabled'
+            _original_print(f"[INFO   ] [Debug Mode] {status}", file=sys.stderr)
         return _DEBUG_ENABLED
     except Exception as e:
         _original_print(f"[ERROR  ] Ошибка при обновлении состояния отладки: {e}", file=sys.stderr)
@@ -177,17 +177,20 @@ class NoopLogger:
             if enabled:
                 if not isinstance(logger, DebugLogger):
                     logger = DebugLogger()
-                    _original_print("[ИНФО] Отладочный режим включен", file=sys.stderr)
+                    from kivy.logger import Logger
+                    Logger.info("Logger: Debug Mode ENABLED")
             else:
                 if not isinstance(logger, NoopLogger):
                     logger = NoopLogger()
-                    _original_print("[ИНФО] Отладочный режим выключен", file=sys.stderr)
+                    from kivy.logger import Logger
+                    Logger.info("Logger: Debug Mode DISABLED")
                     
             # Принудительно обновляем глобальное состояние
             _update_global_debug_state()
             
         except Exception as e:
-            _original_print(f"[ОШИБКА] Не удалось обновить отладочный режим: {e}", file=sys.stderr)
+            from kivy.logger import Logger
+            Logger.error(f"Logger: Не удалось обновить отладочный режим: {e}")
 
 # Создаем глобальный экземпляр логгера
 logger = DebugLogger() if _get_debug_state() else NoopLogger()

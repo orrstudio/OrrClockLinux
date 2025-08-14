@@ -30,31 +30,32 @@ def save_debug_state(settings_window, enabled):
     """Сохраняет состояние отладочного режима в базу данных."""
     try:
         from utils.logger import logger as app_logger
+        from kivy.logger import Logger
         
         # Устанавливаем новое состояние отладки
         # Метод set_debug сам сохранит состояние в БД и обновит логгер
         app_logger.set_debug(enabled)
         
         # Выводим сообщение о результате
-        status = 'включён' if enabled else 'выключен'
-        logger.info(f'Отладочный режим {status}')
+        status = 'Enabled' if enabled else 'Disabled'
+        logger.info(f'Debug Mode: {status}')
         
     except Exception as e:
-        logger.error(f'Не удалось обновить отладочный режим: {e}')
+        Logger.error(f'Logger: Не удалось обновить отладочный режим: {e}')
         # Пробуем сохранить состояние напрямую в БД на случай ошибки в логгере
         try:
             from data.database import SettingsDatabase
             db = SettingsDatabase()
             db.save_setting('debug_mode', '1' if enabled else '0')
-            logger.info('Значение отладочного режима сохранено напрямую в БД')
+            Logger.info('Logger: Значение отладочного режима сохранено напрямую в БД')
         except Exception as db_error:
             logger.error(f'Критическая ошибка: не удалось сохранить состояние отладки: {db_error}')
 
 def on_debug_switch(switch_instance, value, settings_window):
     """Обработчик изменения состояния переключателя отладочного режима."""
     # Только логируем изменение состояния, без сохранения
-    status = 'включён' if value else 'выключен'
-    logger.info(f'Отладочный режим изменен на: {status} (будет сохранено при нажатии кнопки "Сохранить")')
+    status = 'Enabled' if value else 'Disabled'
+    logger.info(f'Debug Mode: {status}')
 
 def create_admin_section(settings_window):
     """

@@ -143,11 +143,11 @@ class ColorSettings:
                 color_tuple = self.colors.get(color_key, (0, 1, 0, 1))  # Зеленый по умолчанию
                 self.settings_window.apply_callback(color_tuple)
             
-            logger.info(f"Цвет успешно сохранен: {color_key}")
+            logger.info(f"Theme Color: {color_key}")
             return True
             
         except Exception as e:
-            logger.error(f"Ошибка при сохранении цвета: {e}")
+            logger.error(f"Error saving color: {e}")
             return False
 
 class ColorOption(Button):
