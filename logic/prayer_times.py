@@ -2,8 +2,9 @@ import requests
 import json
 import sys
 from datetime import datetime, timedelta
-from data.database import SettingsDatabase
+from kivy.logger import Logger
 from kivy.clock import Clock
+from data.database import SettingsDatabase
 from utils.logger import logger
 
 class PrayerTimesManager:
@@ -62,7 +63,7 @@ class PrayerTimesManager:
             )
         ''')
         self.db.connection.commit()
-        print("[DEBUG] prayer_times: таблица создана или уже существует")
+        Logger.debug('prayer_times: table created or already exists')
         # Сразу инициируем обновление времён после создания базы
         self.update_prayer_times()
         # Если после первого обновления в базе только нули — запустить автообновление
@@ -98,11 +99,11 @@ class PrayerTimesManager:
         
         # Если данные за оба дня есть в базе, возвращаем их
         if not need_api_call:
-            print("[DEBUG] prayer_times: данные за два дня найдены в базе, пропускаем запрос к API")
+            Logger.debug('prayer_times: data for two days found in database, skipping API request')
             return prayer_times_data
             
         # Если данных нет или они устарели, запрашиваем из API
-        print("[DEBUG] prayer_times: запрашиваем данные из API")
+        Logger.debug('prayer_times: requesting data from API')
         for offset in range(2):  # 0 = сегодня, 1 = завтра
             date = today + timedelta(days=offset)
             date_str = date.strftime('%Y-%m-%d')
@@ -137,7 +138,7 @@ class PrayerTimesManager:
         return prayer_times_data
 
     def update_prayer_times(self):
-        print("[DEBUG] prayer_times: вызван update_prayer_times")
+        Logger.debug('prayer_times: update_prayer_times called')
         """Обновляет времена молитв в базе данных только на сегодня и завтра"""
         prayer_times_data = self._get_prayer_times_for_two_days()
         updated = False
@@ -162,7 +163,7 @@ class PrayerTimesManager:
                 updated = True
         self.db.connection.commit()
         if updated:
-            print("[DEBUG] prayer_times: вызван _notify_update из update_prayer_times")
+            Logger.debug('prayer_times: _notify_update called from update_prayer_times')
             self._notify_update()
         # Проверяем, появились ли валидные данные — если да, останавливаем автообновление
         today_times = self.get_prayer_times()
@@ -170,7 +171,7 @@ class PrayerTimesManager:
             self.stop_auto_update()
 
     def get_prayer_times(self, date=None):
-        print("[DEBUG] prayer_times: вызван get_prayer_times")
+        Logger.debug('prayer_times: get_prayer_times called')
         """
         Получает времена молитв для указанной даты или текущей.
         1. Сначала ищет в базе

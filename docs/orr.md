@@ -14,5 +14,3 @@ pip3 install -r requirements.txt
 python3 main.py
 deactivate
 
-
-В план добавлена новая задача: заменить все print() на Kivy Logger не только в settings_window.py а везде где они есть по проекту.

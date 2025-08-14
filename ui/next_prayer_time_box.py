@@ -12,6 +12,7 @@ from kivy.properties import ObjectProperty, StringProperty, NumericProperty, Lis
 from kivy.animation import Animation
 from datetime import datetime, timedelta
 from kivy.core.text import LabelBase
+from kivy.logger import Logger
 from logic.prayer_times import prayer_times_manager
 from logic.prayer_time_calculator import prayer_time_calculator
 from utils.logger import logger  # Импорт логгера
@@ -70,7 +71,7 @@ class NextPrayerTimeBox(GridLayout):
                     import gc
                     gc.collect()
                     
-                    print("[DEBUG] Воспроизведение звука остановлено")
+                    Logger.debug('Sound playback stopped')
                     return True
                 except Exception as e:
                     print(f"[ERROR] Критическая ошибка при остановке воспроизведения: {e}")
@@ -238,12 +239,12 @@ class NextPrayerTimeBox(GridLayout):
         
         # Останавливаем анимацию часов, если доступно приложение
         if self.app and hasattr(self.app, 'stop_clock_animation'):
-            print("[DEBUG] Остановка анимации часов")
+            Logger.debug('Stopping clock animation')
             self.app.stop_clock_animation()
             
         # Останавливаем анимацию списка молитв, если есть ссылка
         if hasattr(self, 'prayer_times_box') and self.prayer_times_box:
-            print("[DEBUG] Остановка анимации списка молитв")
+            Logger.debug('Stopping prayer list animation')
             self.prayer_times_box.stop_animation()
             
         # Отменяем запланированные события
@@ -395,7 +396,7 @@ class NextPrayerTimeBox(GridLayout):
             current_time = time.time()
             # Проверяем, что с момента последнего воспроизведения прошло больше 30 секунд
             if current_time - NextPrayerTimeBox._last_sound_time < 30:
-                print("[DEBUG] Пропускаем воспроизведение звука: не прошло 30 секунд с последнего воспроизведения")
+                Logger.debug('Skipping sound playback: 30 seconds have not passed since last playback')
                 return
             
             NextPrayerTimeBox._last_sound_time = current_time
@@ -421,7 +422,7 @@ class NextPrayerTimeBox(GridLayout):
                     
                     # Воспроизводим азан
                     if os.path.exists(adhan_file):
-                        print("[DEBUG] Воспроизведение азана после смены намаза")
+                        Logger.debug('Playing adhan after prayer change')
                         self._play_sound_file(adhan_file, is_adhan=True)
                     else:
                         print(f"[ERROR] Файл азана не найден: {adhan_file}")
@@ -464,7 +465,7 @@ class NextPrayerTimeBox(GridLayout):
     def _start_time_blink(self):
         """Запуск анимации мигания времени следующего намаза"""
         if self._is_time_blinking:
-            print("[DEBUG] Анимация уже запущена, пропускаем повторный запуск")
+            Logger.debug('Animation already running, skipping restart')
             return
             
         print(f"[DEBUG] Запуск мигания времени следующего намаза")
@@ -472,7 +473,7 @@ class NextPrayerTimeBox(GridLayout):
         self._blink_opacity = 1.0
         
         # Воспроизводим звуковое уведомление для 15-минутного предупреждения
-        print("[DEBUG] Запуск воспроизведения звукового уведомления за 15 минут")
+        Logger.debug('Starting 15-minute sound notification')
         self._play_notification_sound(notification_type='15min')
         
         # Запускаем обновление анимации каждые 500 мс
@@ -483,7 +484,7 @@ class NextPrayerTimeBox(GridLayout):
         if not self._is_time_blinking:
             return
             
-        print("[DEBUG] Остановка мигания времени следующего намаза")
+        Logger.debug('Stopping next prayer time blinking')
         self._is_time_blinking = False
         
         # Отменяем запланированное обновление
@@ -506,16 +507,16 @@ class NextPrayerTimeBox(GridLayout):
     def _start_60min_warning(self):
         """Запуск анимации предупреждения за 60 минут"""
         if self._is_60min_warning:
-            print("[DEBUG] Анимация за 60 минут уже запущена, пропускаем повторный запуск")
+            Logger.debug('60-minute animation already running, skipping restart')
             return
             
-        print("[DEBUG] Запуск анимации предупреждения за 60 минут")
+        Logger.debug('Starting 60-minute warning animation')
         self._is_60min_warning = True
         self._60min_blink_opacity = 1.0
         self._60min_blink_direction = -1
         
         # Воспроизводим звуковое уведомление для 60-минутного предупреждения
-        print("[DEBUG] Запуск воспроизведения звукового уведомления за 60 минут")
+        Logger.debug('Starting 60-minute sound notification')
         self._play_notification_sound(notification_type='60min')
         
         # Запускаем обновление анимации каждые 100 мс
@@ -537,7 +538,7 @@ class NextPrayerTimeBox(GridLayout):
         if not self._is_60min_warning:
             return
             
-        print("[DEBUG] Остановка анимации предупреждения за 60 минут")
+        Logger.debug('Stopping 60-minute warning animation')
         self._is_60min_warning = False
         
         # Отменяем запланированное обновление
@@ -552,16 +553,16 @@ class NextPrayerTimeBox(GridLayout):
     def _start_45min_warning(self):
         """Запуск анимации предупреждения за 45 минут"""
         if self._is_45min_warning:
-            print("[DEBUG] Анимация за 45 минут уже запущена, пропускаем повторный запуск")
+            Logger.debug('45-minute animation already running, skipping restart')
             return
             
-        print("[DEBUG] Запуск анимации предупреждения за 45 минут")
+        Logger.debug('Starting 45-minute warning animation')
         self._is_45min_warning = True
         self._45min_blink_opacity = 1.0
         self._45min_blink_direction = -1
         
         # Воспроизводим звуковое уведомление для 45-минутного предупреждения
-        print("[DEBUG] Запуск воспроизведения звукового уведомления за 45 минут")
+        Logger.debug('Starting 45-minute sound notification')
         self._play_notification_sound(notification_type='45min')
         
         # Запускаем обновление анимации каждые 100 мс
@@ -583,7 +584,7 @@ class NextPrayerTimeBox(GridLayout):
         if not self._is_45min_warning:
             return
             
-        print("[DEBUG] Остановка анимации предупреждения за 45 минут")
+        Logger.debug('Stopping 45-minute warning animation')
         self._is_45min_warning = False
         
         # Отменяем запланированное обновление
@@ -600,7 +601,7 @@ class NextPrayerTimeBox(GridLayout):
         if self._is_30min_warning:
             return
             
-        print("[DEBUG] Запуск анимации предупреждения за 30 минут")
+        Logger.debug('Starting 30-minute warning animation')
         self._is_30min_warning = True
         self._30min_blink_opacity = 1.0
         self._30min_blink_direction = -1  # Начинаем с уменьшения прозрачности
@@ -609,7 +610,7 @@ class NextPrayerTimeBox(GridLayout):
         self._30min_blink_event = Clock.schedule_interval(self._update_30min_blink, 0.1)
         
         # Воспроизводим звуковое уведомление
-        print("[DEBUG] Запуск воспроизведения звукового уведомления за 30 минут")
+        Logger.debug('Starting 30-minute sound notification')
         self._play_notification_sound(notification_type='30min')
         
         # Останавливаем анимацию через 1 минуту
@@ -620,7 +621,7 @@ class NextPrayerTimeBox(GridLayout):
         if not self._is_30min_warning:
             return
             
-        print("[DEBUG] Остановка анимации предупреждения за 30 минут")
+        Logger.debug('Stopping 30-minute warning animation')
         self._is_30min_warning = False
         
         # Отменяем запланированное обновление
@@ -749,10 +750,10 @@ class NextPrayerTimeBox(GridLayout):
     def _start_yellow_text_blink(self):
         """Запуск анимации мигания желтого текста следующего намаза"""
         if hasattr(self, '_is_yellow_text_blinking') and self._is_yellow_text_blinking:
-            print("[DEBUG] Анимация мигания желтого текста уже запущена")
+            Logger.debug('Yellow text blink animation already running')
             return
             
-        print("[DEBUG] Запуск мигания желтого текста следующего намаза")
+        Logger.debug('Starting next prayer yellow text blinking')
         self._is_yellow_text_blinking = True
         self._yellow_text_blink_opacity = 1.0
         
@@ -790,7 +791,7 @@ class NextPrayerTimeBox(GridLayout):
         if not hasattr(self, '_is_yellow_text_blinking') or not self._is_yellow_text_blinking:
             return
             
-        print("[DEBUG] Остановка мигания желтого текста следующего намаза")
+        Logger.debug('Stopping next prayer yellow text blinking')
         self._is_yellow_text_blinking = False
         
         # Отменяем запланированное обновление
@@ -847,10 +848,10 @@ class NextPrayerTimeBox(GridLayout):
             self._stop_60min_warning()
             
         if self._is_45min_warning:
-            print("[DEBUG] Остановка 45-минутного предупреждения")
+            Logger.debug('Stopping 45-minute warning')
             self._stop_45min_warning()
             
-            print("[DEBUG] Остановка 60-минутного предупреждения")
+            Logger.debug('Stopping 60-minute warning')
             self._stop_60min_warning()
     
     def _handle_prayer_notification(self, minutes_left, next_prayer_time_str):
@@ -868,14 +869,14 @@ class NextPrayerTimeBox(GridLayout):
         
         # Запускаем соответствующую анимацию и звуковое уведомление
         if minutes_left == 15:
-            print("[DEBUG] Запуск анимации мигания времени (15 минут)")
+            Logger.debug('Starting time blink animation (15 minutes)')
             self._start_time_blink()  # Мигание красных цифр
             self._start_yellow_text_blink()  # Мигание желтого текста
             self._play_notification_sound('15min')
             # Устанавливаем таймер на остановку анимации желтого текста через 1 минуту
             Clock.schedule_once(lambda dt: self._stop_yellow_text_blink() if hasattr(self, '_stop_yellow_text_blink') else None, 60)
         elif minutes_left == 30:
-            print("[DEBUG] Запуск 30-минутного предупреждения")
+            Logger.debug('Starting 30-minute warning')
             self._start_30min_warning()
             self._start_yellow_text_blink()  # Мигание желтого текста
             self._play_notification_sound('30min')
@@ -883,7 +884,7 @@ class NextPrayerTimeBox(GridLayout):
             Clock.schedule_once(lambda dt: self._stop_30min_warning() if hasattr(self, '_stop_30min_warning') else None, 60)
             Clock.schedule_once(lambda dt: self._stop_yellow_text_blink() if hasattr(self, '_stop_yellow_text_blink') else None, 60)
         elif minutes_left == 45:
-            print("[DEBUG] Запуск 45-минутного предупреждения")
+            Logger.debug('Starting 45-minute warning')
             self._start_45min_warning()
             self._start_yellow_text_blink()  # Мигание желтого текста
             self._play_notification_sound('45min')
@@ -891,7 +892,7 @@ class NextPrayerTimeBox(GridLayout):
             Clock.schedule_once(lambda dt: self._stop_45min_warning() if hasattr(self, '_stop_45min_warning') else None, 60)
             Clock.schedule_once(lambda dt: self._stop_yellow_text_blink() if hasattr(self, '_stop_yellow_text_blink') else None, 60)
         elif minutes_left == 60:
-            print("[DEBUG] Запуск 60-минутного предупреждения")
+            Logger.debug('Starting 60-minute warning')
             self._start_60min_warning()
             self._start_yellow_text_blink()  # Мигание желтого текста
             self._play_notification_sound('60min')
@@ -929,23 +930,23 @@ class NextPrayerTimeBox(GridLayout):
                 
                 # Останавливаем анимации, если они активны, но условия для них больше не выполняются
                 if self._is_time_blinking and current_minutes != 15:
-                    print("[DEBUG] Остановка анимации мигания времени (условия не выполняются)")
+                    Logger.debug('Stopping time blink animation (conditions not met)')
                     self._stop_time_blink()
                     
                 if hasattr(self, '_is_yellow_text_blinking') and self._is_yellow_text_blinking and current_minutes not in [15, 30, 45, 60]:
-                    print("[DEBUG] Остановка мигания желтого текста (условия не выполняются)")
+                    Logger.debug('Stopping yellow text blink (conditions not met)')
                     self._stop_yellow_text_blink()
                     
                 if self._is_30min_warning and current_minutes != 30:
-                    print("[DEBUG] Остановка 30-минутного предупреждения (условия не выполняются)")
+                    Logger.debug('Stopping 30-minute warning (conditions not met)')
                     self._stop_30min_warning()
                     
                 if self._is_45min_warning and current_minutes != 45:
-                    print("[DEBUG] Остановка 45-минутного предупреждения (условия не выполняются)")
+                    Logger.debug('Stopping 45-minute warning (conditions not met)')
                     self._stop_45min_warning()
                     
                 if self._is_60min_warning and current_minutes != 60:
-                    print("[DEBUG] Остановка 60-минутного предупреждения (условия не выполняются)")
+                    Logger.debug('Stopping 60-minute warning (conditions not met)')
                     self._stop_60min_warning()
             
             # Продолжаем с оставшейся частью метода

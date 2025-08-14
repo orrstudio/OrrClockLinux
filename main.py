@@ -3,6 +3,7 @@ import kivy
 from datetime import datetime
 import math
 from kivy.animation import Animation
+from kivy.logger import Logger
 from kivy.app import App
 kivy.require('2.2.1')
 
@@ -53,7 +54,7 @@ class MainWindowApp(App):
             self.on_window_resize(Window, Window.width, Window.height)
             print(f"[DEBUG] on_new_day: self.prayer_times_box = {getattr(self, 'prayer_times_box', None)}, type = {type(getattr(self, 'prayer_times_box', None))}")
             if hasattr(self, 'prayer_times_box') and self.prayer_times_box:
-                print("[DEBUG] on_new_day: вызываю refresh_prayer_times() у self.prayer_times_box (после update_prayer_times и пересоздания layout)")
+                Logger.debug('on_new_day: calling refresh_prayer_times() on self.prayer_times_box (after update_prayer_times and layout recreation)')
                 self.prayer_times_box.refresh_prayer_times()
         
         # Обновляем заголовок (время)
@@ -210,15 +211,15 @@ class MainWindowApp(App):
             from ui.next_prayer_time_box import NextPrayerTimeBox
             
             # Логируем попытку остановки воспроизведения
-            print("[DEBUG] Обработка клика - остановка воспроизведения звука")
+            Logger.debug('Processing click - stopping sound playback')
             
             # Останавливаем воспроизведение звука
             stopped = NextPrayerTimeBox.stop_playback()
             
             if stopped:
-                print("[DEBUG] Воспроизведение звука успешно остановлено")
+                Logger.debug('Sound playback stopped successfully')
             else:
-                print("[DEBUG] Нет активного воспроизведения для остановки")
+                Logger.debug('No active playback to stop')
                 
         except Exception as e:
             print(f"[ERROR] Ошибка при обработке клика: {e}")
@@ -294,7 +295,7 @@ class MainWindowApp(App):
         Запускаем анимацию мигания часов.
         Мигание происходит мгновенным переключением прозрачности каждые 0.5 секунд.
         """
-        print("[DEBUG] Запуск анимации мигания часов")
+        Logger.debug('Starting clock blink animation')
         
         # Останавливаем предыдущую анимацию, если она есть
         self.stop_clock_animation()
@@ -302,7 +303,7 @@ class MainWindowApp(App):
         # Сохраняем исходный цвет
         if not hasattr(self, '_original_clock_color'):
             self._original_clock_color = self.title_label.color.copy()
-            print("[DEBUG] Сохранен исходный цвет часов:", self._original_clock_color)
+            Logger.debug(f'Saved original clock color: {self._original_clock_color}')
         
         # Устанавливаем начальную прозрачность
         self.title_label.opacity = 1.0
@@ -326,12 +327,12 @@ class MainWindowApp(App):
         
         # Запускаем первое мигание
         self._blink_event = Clock.schedule_once(blink_clock, 0.5)
-        print("[DEBUG] Запущено мгновенное мигание")
+        Logger.debug('Instant blink started')
         
         # Останавливаем анимацию через 1 минуту
         def stop_blinking(dt):
             if hasattr(self, '_blinking') and self._blinking:
-                print("[DEBUG] Остановка мигания по таймеру")
+                Logger.debug('Stopping blink animation by timer')
                 self._blinking = False
                 if hasattr(self, '_blink_event'):
                     self._blink_event.cancel()
@@ -340,11 +341,11 @@ class MainWindowApp(App):
         if hasattr(self, '_stop_clock_event'):
             self._stop_clock_event.cancel()
         self._stop_clock_event = Clock.schedule_once(stop_blinking, 60)
-        print("[DEBUG] Запланирована остановка анимации через 60 секунд")
+        Logger.debug('Scheduled animation stop in 60 seconds')
         
     def stop_clock_animation(self, *args):
         """Останавливаем анимацию и восстанавливаем исходное состояние"""
-        print("[DEBUG] Остановка анимации часов")
+        Logger.debug('Stopping clock animation')
         
         # Отменяем все анимации прозрачности
         Animation.cancel_all(self.title_label, 'opacity')
@@ -352,21 +353,21 @@ class MainWindowApp(App):
         # Останавливаем мигание, если оно активно
         if hasattr(self, '_blinking'):
             self._blinking = False
-            print("[DEBUG] Флаг _blinking установлен в False")
+            Logger.debug('_blinking flag set to False')
             
         # Отменяем запланированные события
         if hasattr(self, '_blink_event'):
             self._blink_event.cancel()
-            print("[DEBUG] Отменено событие _blink_event")
+            Logger.debug('Cancelled _blink_event')
             
         if hasattr(self, '_stop_clock_event'):
             self._stop_clock_event.cancel()
-            print("[DEBUG] Отменено событие _stop_clock_event")
+            Logger.debug('Cancelled _stop_clock_event')
         
         # Восстанавливаем исходную прозрачность и цвет
         if hasattr(self, '_original_clock_color'):
             self.title_label.color = self._original_clock_color
-            print("[DEBUG] Восстановлен исходный цвет часов")
+            Logger.debug('Restored original clock color')
             
         self.title_label.opacity = 1
         print(f"[DEBUG] Восстановлена прозрачность: {self.title_label.opacity}")
@@ -419,11 +420,11 @@ class MainWindowApp(App):
         # Отменяем запланированные события
         if hasattr(self, '_blink_event'):
             self._blink_event.cancel()
-            print("[DEBUG] Отменено событие _blink_event")
+            Logger.debug('Cancelled _blink_event')
                 
         if hasattr(self, '_stop_clock_event'):
             self._stop_clock_event.cancel()
-            print("[DEBUG] Отменено событие _stop_clock_event")
+            Logger.debug('Cancelled _stop_clock_event')
             
         # Получаем текущую ориентацию
         current_orientation = self.get_current_orientation()
