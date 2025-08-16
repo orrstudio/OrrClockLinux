@@ -1,0 +1,62 @@
+[INFO   ] Logger: Record log in /home/orr/GitHub/OrrClockLinux/logs/logs_25-08-17_02:43:59_0.txt
+[INFO   ] === START ========================
+[INFO   ] Started: 2025-08-17 02:43:59
+[INFO   ] Window: Provider: sdl2
+[INFO   ] GL: Using the "OpenGL" graphics system
+[INFO   ] GL: Backend used <sdl2>
+[INFO   ] GL: OpenGL version <b'4.6.0 NVIDIA 575.64.05'>
+[INFO   ] GL: OpenGL vendor <b'NVIDIA Corporation'>
+[INFO   ] GL: OpenGL renderer <b'NVIDIA GeForce GTX 1650/PCIe/SSE2'>
+[INFO   ] GL: OpenGL parsed version: 4, 6
+[INFO   ] GL: Shading version <b'4.60 NVIDIA'>
+[INFO   ] GL: Texture max size <32768>
+[INFO   ] GL: Texture max units <32>
+[DEBUG  ] Shader: Fragment compiled successfully
+[DEBUG  ] Shader: Vertex compiled successfully
+[DEBUG  ] ImageSDL2: Load </home/orr/GitHub/OrrClockLinux/venv/lib/python3.10/site-packages/kivy/data/glsl/default.png>
+[INFO   ] Window: auto add sdl2 input provider
+[INFO   ] Window: virtual keyboard not allowed, single mode, not docked
+[INFO   ] Text: Provider: sdl2
+[INFO   ] DataBase: Size: 715x1000; Position: 2051x317
+[INFO   ] Window: Current orientation: portrait
+[INFO   ] Base: Start application main loop
+[INFO   ] GL: NPOT texture support is available
+[INFO   ] Window: Size: Width:800 X Height:600; Position: Left:2550 X Top:465
+[INFO   ] Notification: Current orientation: landscape
+[INFO   ] Window: Size: Width:715 X Height:1000; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] WindowSDL: Window is now on display 1
+[INFO   ] Notification: Processing click for stopping sound playback
+[INFO   ] Notification: No active playback to stop
+[INFO   ] Window: Size: Width:715 X Height:1000; Position: Left:2051 X Top:317
+[INFO   ] Base: Leaving application in progress...
+[WARNING] stderr: Traceback (most recent call last):
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/main.py", line 566, in <module>
+[WARNING] stderr:     MainWindowApp().run()
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/venv/lib/python3.10/site-packages/kivy/app.py", line 956, in run
+[WARNING] stderr:     runTouchApp()
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/venv/lib/python3.10/site-packages/kivy/base.py", line 574, in runTouchApp
+[WARNING] stderr:     EventLoop.mainloop()
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/venv/lib/python3.10/site-packages/kivy/base.py", line 339, in mainloop
+[WARNING] stderr:     self.idle()
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/venv/lib/python3.10/site-packages/kivy/base.py", line 383, in idle
+[WARNING] stderr:     self.dispatch_input()
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/venv/lib/python3.10/site-packages/kivy/base.py", line 334, in dispatch_input
+[WARNING] stderr:     post_dispatch_input(*pop(0))
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/venv/lib/python3.10/site-packages/kivy/base.py", line 263, in post_dispatch_input
+[WARNING] stderr:     listener.dispatch('on_motion', etype, me)
+[WARNING] stderr:   File "kivy/_event.pyx", line 731, in kivy._event.EventDispatcher.dispatch
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/venv/lib/python3.10/site-packages/kivy/core/window/__init__.py", line 1709, in on_motion
+[WARNING] stderr:     self.dispatch('on_touch_down', me)
+[WARNING] stderr:   File "kivy/_event.pyx", line 727, in kivy._event.EventDispatcher.dispatch
+[WARNING] stderr:   File "kivy/_event.pyx", line 1307, in kivy._event.EventObservers.dispatch
+[WARNING] stderr:   File "kivy/_event.pyx", line 1231, in kivy._event.EventObservers._dispatch
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/main.py", line 289, in on_window_touch_down_double_tap
+[WARNING] stderr:     self.settings_manager.open_settings_window()
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/ui/settings_manager.py", line 35, in open_settings_window
+[WARNING] stderr:     settings_window = SettingsWindow(
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/ui/settings_window.py", line 70, in __init__
+[WARNING] stderr:     logger.info(f'Window: Settings Window: Size: {self.settings_window_size}; Position: {self.settings_window_pos}')
+[WARNING] stderr: AttributeError: 'SettingsWindow' object has no attribute 'settings_window_size'. Did you mean: 'main_window_size'?
+[INFO   ] Shutdown: 2025-08-17 02:44:00
+[INFO   ] === END ==========================

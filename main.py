@@ -1,5 +1,7 @@
 import os
 import kivy
+kivy.require('2.2.1')
+from kivy.animation import Animation
 from datetime import datetime
 import math
 import logging
@@ -7,24 +9,45 @@ from kivy.logger import Logger, LOG_LEVELS
 from kivy.app import App
 from kivy.config import Config
 
-# Configure Kivy logger
-Config.set('kivy', 'log_level', 'debug')
-Config.set('kivy', 'log_enable', 1)
-Config.set('kivy', 'log_dir', 'logs')
-Config.set('kivy', 'log_name', 'orrclock_%y-%m-%d_%_.txt')
-Config.set('kivy', 'log_maxfiles', 10)
+import sys
+import atexit
 
-# Configure root logger
+# Настройка корневого логгера
 logging.basicConfig(
     level=logging.DEBUG,
-    format='[%(levelname)-8s] %(message)s',
+    format='[%(asctime)s] [%(levelname)-8s] %(message)s',
     handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler('orrclock.log')
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler('orrclock.log', encoding='utf-8')
     ]
 )
 
-kivy.require('2.2.1')
+def cleanup():
+    logging.info(f'Shutdown: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
+    logging.info("=== END " + "=" * 26)
+    logging.shutdown()
+
+atexit.register(cleanup)
+
+# Настройка Kivy логирования
+from kivy.config import Config
+
+# Получаем путь к корневой директории приложения
+app_dir = os.path.dirname(os.path.abspath(__file__))
+logs_dir = os.path.join(app_dir, 'logs')
+
+# Создаем директорию для логов, если она не существует
+os.makedirs(logs_dir, exist_ok=True)
+
+Config.set('kivy', 'log_level', 'debug')
+Config.set('kivy', 'log_enable', 1)
+Config.set('kivy', 'log_dir', logs_dir)  # Указываем полный путь к папке logs
+Config.set('kivy', 'log_name', 'logs_%y-%m-%d_%H:%M:%S_%_.txt')
+Config.set('kivy', 'log_maxfiles', 20)
+
+# Стартовое сообщение
+logging.info("=== START " + "=" * 24)
+logging.info(f'Started: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
 
 # Set Kivy logger level to debug
 Logger.setLevel(logging.DEBUG)
@@ -62,14 +85,15 @@ class MainWindowApp(App):
         - Обновляет все связанные с датой элементы UI
         - Запускает все необходимые проверки для нового дня
         """
-        logger.info("Начало обработки нового дня")
+        logger.info(f'New Day: Start processing')
         
-        # Принудительно обновляем дату хиджры (пересчёт и кэширование)
+        # Обновляем дату хиджры (пересчёт и кэширование)
         hijri_date_manager.get_hijri_date()
+        logger.info(f"New Day: Hijri date updated: {hijri_date_manager.get_hijri_date()}")
 
-        # Принудительно обновляем времена молитв (запрос к API и обновление базы)
-        logger.debug("on_new_day: вызываю update_prayer_times() ДО пересоздания layout")
+        # Обновляем времена молитв (запрос к API и обновление базы)
         prayer_times_manager.update_prayer_times()
+        logger.info(f"New Day: API request: {prayer_times_manager.get_prayer_times()}")
 
         # Пересоздаём/обновляем UI для нового дня
         if hasattr(self, 'layout'):
@@ -158,6 +182,7 @@ class MainWindowApp(App):
 
         # Определение ориентации и создание соответствующей таблицы молитв
         current_orientation = self.get_current_orientation()
+        logger.info(f"Window: Current orientation: {current_orientation}")
         
         if current_orientation == 'portrait':
             portrait_layout = GridLayout(
@@ -215,6 +240,7 @@ class MainWindowApp(App):
                 x=Window.left,
                 y=Window.top
             )
+            logger.info(f"Window MAIN: Size: Width:{Window.width} X Height:{Window.height}; Position: Left:{Window.left} X Top:{Window.top}")
     
     def restore_main_window_state(self):
         """
@@ -233,18 +259,18 @@ class MainWindowApp(App):
             from ui.next_prayer_time_box import NextPrayerTimeBox
             
             # Логируем попытку остановки воспроизведения
-            Logger.debug('Processing click: stopping sound playback')
+            Logger.info(f'Notification: Processing click for stopping sound playback')
             
             # Останавливаем воспроизведение звука
             stopped = NextPrayerTimeBox.stop_playback()
             
             if stopped:
-                Logger.debug('Sound playback stopped successfully')
+                Logger.info(f'Notification: Sound playback stopped successfully')
             else:
-                Logger.debug('No active playback to stop')
+                Logger.info(f'Notification: No active playback to stop')
                 
         except Exception as e:
-            Logger.error(f'Error processing click: {e}')
+            Logger.error(f'Notification: Error processing click: {e}')
         
         # Продолжаем обработку события (False = не перехватывать событие)
         return False
@@ -261,6 +287,7 @@ class MainWindowApp(App):
             # Открываем окно настроек
             self.settings_manager = SettingsManager(None, self)
             self.settings_manager.open_settings_window()
+            Logger.info(f'Notification: Settings window opened successfully')
         return False
 
     def update_title_font_size(self, instance, width):
@@ -317,7 +344,7 @@ class MainWindowApp(App):
         Запускаем анимацию мигания часов.
         Мигание происходит мгновенным переключением прозрачности каждые 0.5 секунд.
         """
-        Logger.debug('Starting clock blink animation')
+        Logger.info(f'Notification: Starting clock blink animation')
         
         # Останавливаем предыдущую анимацию, если она есть
         self.stop_clock_animation()
@@ -325,11 +352,11 @@ class MainWindowApp(App):
         # Сохраняем исходный цвет
         if not hasattr(self, '_original_clock_color'):
             self._original_clock_color = self.title_label.color.copy()
-            Logger.debug(f'Saved original clock color: {self._original_clock_color}')
+            Logger.info(f'Notification: Saved original clock color: {self._original_clock_color}')
         
         # Устанавливаем начальную прозрачность
         self.title_label.opacity = 1.0
-        Logger.debug(f'Initial opacity: {self.title_label.opacity}')
+        Logger.info(f'Notification: Initial opacity: {self.title_label.opacity}')
         
         # Флаг для отслеживания состояния мигания
         self._blinking = True
@@ -349,12 +376,12 @@ class MainWindowApp(App):
         
         # Запускаем первое мигание
         self._blink_event = Clock.schedule_once(blink_clock, 0.5)
-        Logger.debug('Instant blink started')
+        Logger.info(f'Notification: Instant blink started')
         
         # Останавливаем анимацию через 1 минуту
         def stop_blinking(dt):
             if hasattr(self, '_blinking') and self._blinking:
-                Logger.debug('Stopping blink animation by timer')
+                Logger.info(f'Notification: Stopping blink animation by timer')
                 self._blinking = False
                 if hasattr(self, '_blink_event'):
                     self._blink_event.cancel()
@@ -363,11 +390,11 @@ class MainWindowApp(App):
         if hasattr(self, '_stop_clock_event'):
             self._stop_clock_event.cancel()
         self._stop_clock_event = Clock.schedule_once(stop_blinking, 60)
-        Logger.debug('Scheduled animation stop in 60 seconds')
+        Logger.info(f'Notification: Scheduled animation stop in 60 seconds')
         
     def stop_clock_animation(self, *args):
         """Останавливаем анимацию и восстанавливаем исходное состояние"""
-        Logger.debug('Stopping clock animation')
+        Logger.info(f'Notification: Stopping clock animation')
         
         # Отменяем все анимации прозрачности
         Animation.cancel_all(self.title_label, 'opacity')
@@ -375,24 +402,24 @@ class MainWindowApp(App):
         # Останавливаем мигание, если оно активно
         if hasattr(self, '_blinking'):
             self._blinking = False
-            Logger.debug('_blinking flag set to False')
+            Logger.info(f'Notification: _blinking flag set to False')
             
         # Отменяем запланированные события
         if hasattr(self, '_blink_event'):
             self._blink_event.cancel()
-            Logger.debug('Cancelled _blink_event')
+            Logger.info(f'Notification: Cancelled _blink_event')
             
         if hasattr(self, '_stop_clock_event'):
             self._stop_clock_event.cancel()
-            Logger.debug('Cancelled _stop_clock_event')
+            Logger.info(f'Notification: Cancelled _stop_clock_event')
         
         # Восстанавливаем исходную прозрачность и цвет
         if hasattr(self, '_original_clock_color'):
             self.title_label.color = self._original_clock_color
-            Logger.debug('Restored original clock color')
+            Logger.info(f'Notification: Restored original clock color')
             
         self.title_label.opacity = 1
-        Logger.debug(f'Opacity restored: {self.title_label.opacity}')
+        Logger.info(f'Notification: Opacity restored: {self.title_label.opacity}')
         
         # Принудительно обновляем отображение
         self.title_label.canvas.ask_update()
@@ -437,19 +464,20 @@ class MainWindowApp(App):
         from kivy.core.window import Window
         from kivy.logger import Logger
         pos = Window.left, Window.top
-        Logger.info(f'Window: Size: {int(width)}x{int(height)}; Position: {int(pos[0])}x{int(pos[1])}')
+        logger.info(f"Window MAIN: Size: Width:{Window.width} X Height:{Window.height}; Position: Left:{Window.left} X Top:{Window.top}")
         
         # Отменяем запланированные события
         if hasattr(self, '_blink_event'):
             self._blink_event.cancel()
-            Logger.debug('Cancelled _blink_event')
+            Logger.info(f'Notification: Cancelled _blink_event')
                 
         if hasattr(self, '_stop_clock_event'):
             self._stop_clock_event.cancel()
-            Logger.debug('Cancelled _stop_clock_event')
+            Logger.info(f'Notification: Cancelled _stop_clock_event')
             
         # Получаем текущую ориентацию
         current_orientation = self.get_current_orientation()
+        Logger.info(f'Notification: Current orientation: {current_orientation}')
         
         # Удаляем старые виджеты, если они есть
         if hasattr(self, 'layout'):
@@ -479,6 +507,7 @@ class MainWindowApp(App):
         # Получаем размеры блока
         width = block.width
         height = block.height
+        Logger.info(f'Notification: Block size: Width:{width} X Height:{height}')
         
         # Определяем ориентацию с некоторым допуском
         tolerance = 0.1  # 10% погрешности
@@ -530,6 +559,8 @@ class MainWindowApp(App):
             x=Window.left,
             y=Window.top
         )
+        logger.info(f"Window MAIN: Size: Width:{Window.width} X Height:{Window.height}; Position: Left:{Window.left} X Top:{Window.top}")
+        Logger.info(f'Notification: Window settings saved successfully')
 
 if __name__ == "__main__":
     MainWindowApp().run()

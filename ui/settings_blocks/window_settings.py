@@ -3,6 +3,7 @@
 """
 from kivy.metrics import dp
 from kivy.core.window import Window
+from kivy.logger import Logger
 
 
 def apply_window_settings(settings_window):
@@ -27,6 +28,9 @@ def apply_window_settings(settings_window):
             
             # Принудительно обновляем окно
             Window.update_viewport()
+            
+            # Логируем настройки окна с префиксом STNGS
+            Logger.info(f'Window STNGS: Size: Width:{width} X Height:{height}; Position: Left:{x} X Top:{y}')
 
 
 def on_window_resize(settings_window, instance, width, height):

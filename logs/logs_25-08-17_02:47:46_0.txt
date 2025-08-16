@@ -1,0 +1,132 @@
+[INFO   ] Logger: Record log in /home/orr/GitHub/OrrClockLinux/logs/logs_25-08-17_02:47:46_0.txt
+[INFO   ] === START ========================
+[INFO   ] Started: 2025-08-17 02:47:46
+[INFO   ] Window: Provider: sdl2
+[INFO   ] GL: Using the "OpenGL" graphics system
+[INFO   ] GL: Backend used <sdl2>
+[INFO   ] GL: OpenGL version <b'4.6.0 NVIDIA 575.64.05'>
+[INFO   ] GL: OpenGL vendor <b'NVIDIA Corporation'>
+[INFO   ] GL: OpenGL renderer <b'NVIDIA GeForce GTX 1650/PCIe/SSE2'>
+[INFO   ] GL: OpenGL parsed version: 4, 6
+[INFO   ] GL: Shading version <b'4.60 NVIDIA'>
+[INFO   ] GL: Texture max size <32768>
+[INFO   ] GL: Texture max units <32>
+[DEBUG  ] Shader: Fragment compiled successfully
+[DEBUG  ] Shader: Vertex compiled successfully
+[DEBUG  ] ImageSDL2: Load </home/orr/GitHub/OrrClockLinux/venv/lib/python3.10/site-packages/kivy/data/glsl/default.png>
+[INFO   ] Window: auto add sdl2 input provider
+[INFO   ] Window: virtual keyboard not allowed, single mode, not docked
+[INFO   ] Text: Provider: sdl2
+[INFO   ] DataBase: Size: 513x761; Position: 2051x317
+[INFO   ] Window: Current orientation: portrait
+[INFO   ] Base: Start application main loop
+[INFO   ] GL: NPOT texture support is available
+[INFO   ] Window: Size: Width:800 X Height:600; Position: Left:2550 X Top:465
+[INFO   ] Notification: Current orientation: landscape
+[INFO   ] Window: Size: Width:513 X Height:761; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] WindowSDL: Window is now on display 1
+[INFO   ] Notification: Processing click for stopping sound playback
+[INFO   ] Notification: No active playback to stop
+[INFO   ] Notification: Processing click for stopping sound playback
+[INFO   ] Notification: No active playback to stop
+[INFO   ] Notification: Processing click for stopping sound playback
+[INFO   ] Notification: No active playback to stop
+[INFO   ] Window: Size: Width:513 X Height:761; Position: Left:2051 X Top:317
+[INFO   ] Notification: Settings window opened successfully
+[INFO   ] Notification: Processing click for stopping sound playback
+[INFO   ] Notification: No active playback to stop
+[INFO   ] Notification: Processing click for stopping sound playback
+[INFO   ] Notification: No active playback to stop
+[INFO   ] DataBase: Size: 513x761; Position: 2051x317
+[INFO   ] Window: Size: Width:513 X Height:762; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] Window: Size: Width:516 X Height:767; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] Window: Size: Width:518 X Height:771; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] Window: Size: Width:525 X Height:784; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] Window: Size: Width:536 X Height:801; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] Window: Size: Width:555 X Height:834; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] Window: Size: Width:569 X Height:856; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] Window: Size: Width:583 X Height:878; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] Window: Size: Width:599 X Height:899; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] Window: Size: Width:630 X Height:932; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] Window: Size: Width:651 X Height:953; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] Window: Size: Width:657 X Height:960; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] Window: Size: Width:672 X Height:978; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] Window: Size: Width:681 X Height:992; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] Window: Size: Width:688 X Height:1002; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] Window: Size: Width:692 X Height:1008; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] Window: Size: Width:698 X Height:1017; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] Notification: Processing click for stopping sound playback
+[INFO   ] Notification: No active playback to stop
+[INFO   ] Notification: Processing click for stopping sound playback
+[INFO   ] Notification: No active playback to stop
+[INFO   ] Window: Size: Width:698 X Height:1017; Position: Left:2051 X Top:317
+[INFO   ] Notification: Settings window opened successfully
+[INFO   ] Notification: Processing click for stopping sound playback
+[INFO   ] Notification: No active playback to stop
+[INFO   ] Window: Size: Width:513 X Height:761; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] Notification: Processing click for stopping sound playback
+[INFO   ] Notification: No active playback to stop
+[INFO   ] Theme Color: lime
+[INFO   ] Logger: Debug Mode DISABLED
+[INFO   ] Window: Size: Width:698 X Height:1017; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] DataBase: Size: 698x1017; Position: 2051x317
+[INFO   ] Notification: Processing click for stopping sound playback
+[INFO   ] Notification: No active playback to stop
+[INFO   ] Notification: Processing click for stopping sound playback
+[INFO   ] Notification: No active playback to stop
+[INFO   ] Window: Size: Width:698 X Height:1017; Position: Left:2051 X Top:317
+[INFO   ] Notification: Settings window opened successfully
+[INFO   ] Notification: Processing click for stopping sound playback
+[INFO   ] Notification: No active playback to stop
+[INFO   ] Window: Size: Width:513 X Height:761; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] Notification: Processing click for stopping sound playback
+[INFO   ] Notification: No active playback to stop
+[INFO   ] Theme Color: lime
+[INFO   ] Logger: Debug Mode DISABLED
+[INFO   ] Window: Size: Width:698 X Height:1017; Position: Left:2051 X Top:317
+[INFO   ] Notification: Current orientation: portrait
+[INFO   ] DataBase: Size: 698x1017; Position: 2051x317
+[INFO   ] Base: Leaving application in progress...
+[WARNING] stderr: Traceback (most recent call last):
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/main.py", line 566, in <module>
+[WARNING] stderr:     MainWindowApp().run()
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/venv/lib/python3.10/site-packages/kivy/app.py", line 956, in run
+[WARNING] stderr:     runTouchApp()
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/venv/lib/python3.10/site-packages/kivy/base.py", line 574, in runTouchApp
+[WARNING] stderr:     EventLoop.mainloop()
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/venv/lib/python3.10/site-packages/kivy/base.py", line 339, in mainloop
+[WARNING] stderr:     self.idle()
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/venv/lib/python3.10/site-packages/kivy/base.py", line 379, in idle
+[WARNING] stderr:     Clock.tick()
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/venv/lib/python3.10/site-packages/kivy/clock.py", line 733, in tick
+[WARNING] stderr:     self.post_idle(ts, self.idle())
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/venv/lib/python3.10/site-packages/kivy/clock.py", line 689, in idle
+[WARNING] stderr:     usleep(1000000 * sleeptime)
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/venv/lib/python3.10/site-packages/kivy/clock.py", line 965, in usleep
+[WARNING] stderr:     _usleep(microseconds, self._sleep_obj)
+[WARNING] stderr:   File "/home/orr/GitHub/OrrClockLinux/venv/lib/python3.10/site-packages/kivy/clock.py", line 556, in _usleep
+[WARNING] stderr:     _libc_usleep(int(microseconds))
+[WARNING] stderr: KeyboardInterrupt
+[INFO   ] Shutdown: 2025-08-17 02:55:36
+[INFO   ] === END ==========================
