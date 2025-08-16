@@ -9,18 +9,7 @@ from kivy.logger import Logger, LOG_LEVELS
 from kivy.app import App
 from kivy.config import Config
 
-import sys
 import atexit
-
-# Настройка корневого логгера
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='[%(asctime)s] [%(levelname)-8s] %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler('orrclock.log', encoding='utf-8')
-    ]
-)
 
 def cleanup():
     logging.info(f'Shutdown: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
@@ -43,7 +32,8 @@ Config.set('kivy', 'log_level', 'debug')
 Config.set('kivy', 'log_enable', 1)
 Config.set('kivy', 'log_dir', logs_dir)  # Указываем полный путь к папке logs
 Config.set('kivy', 'log_name', 'logs_%y-%m-%d_%H:%M:%S_%_.txt')
-Config.set('kivy', 'log_maxfiles', 20)
+Config.set('kivy', 'log_maxfiles', 10)
+Config.set('kivy', 'log_maxsize', 1024 * 1024 * 5)
 
 # Стартовое сообщение
 logging.info("=== START " + "=" * 24)

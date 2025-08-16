@@ -1,1 +1,0 @@
-[INFO   ] Logger: Record log in /home/orr/GitHub/OrrClockLinux/logs/kivy_25-08-17_2.txt
