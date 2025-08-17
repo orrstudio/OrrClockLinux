@@ -360,6 +360,96 @@ def create_color_section(settings_window):
     color_section.add_widget(color_title)  # Добавляем заголовок
     color_section.add_widget(colors_grid)  # Добавляем сетку цветов
     
+    # Добавляем разделитель перед блоком темы фона (но после всех кнопок цветов)
+    from kivy.uix.widget import Widget
+    separator = Widget(size_hint_y=None, height=1)
+    with separator.canvas:
+        Color(0.5, 0.5, 0.5, 0.5)  # Серый полупрозрачный цвет
+        separator.rect = Line(points=[0, 0, Window.width, 0])
+    
+    def update_separator(instance, value):
+        separator.rect.points = [0, 0, value, 0]
+    
+    Window.bind(width=update_separator)
+    
+    # Добавляем отступ перед разделителем, чтобы он не прилипал к кнопкам
+    color_section.add_widget(Widget(size_hint_y=None, height=dp(220)))
+    
+    # Добавляем заголовок Background
+    background_title = Label(
+        text='Background',
+        color=(1, 1, 1, 1),
+        font_size=Window.width * 0.04,  # Адаптивный размер шрифта
+        size_hint=(1, None),
+        height=dp(30),
+        halign='left',
+        valign='middle',
+        text_size=(Window.width - dp(40), None),
+        shorten=True,
+        shorten_from='right',
+        padding=(dp(25), dp(5))  # Отступы: слева, сверху
+    )
+    color_section.add_widget(background_title)
+    
+    # Создаем блок для переключателя темы фона
+    background_theme_layout = GridLayout(
+        cols=2,
+        spacing=dp(10),  # Отступы между кнопками
+        size_hint_y=None,
+        height=dp(30),
+        row_force_default=False,
+        row_default_height=dp(100),  # Примерная высота строки
+        padding=[0, dp(5), 0, dp(5)]  # Отступы сверху и снизу
+    )
+    
+    # Добавляем метку "Light" для переключателя темы фона
+    background_label = Label(
+        text='Light',
+        color=(1, 1, 1, 1),
+        font_size=dp(16),
+        size_hint=(1, 1),
+        halign='left',
+        valign='middle',
+        text_size=(None, None),
+        padding=(dp(15), dp(5)),  # Такие же отступы, как у кнопок темы
+        bold=False
+    )
+    
+    # Контейнер для переключателя с выравниванием по правому краю
+    switch_container = GridLayout(
+        cols=1,
+        size_hint=(None, 1),
+        width=dp(60),  # Фиксированная ширина для переключателя
+        padding=(0, 0, dp(15), 0)  # Отступ справа как у кнопок темы
+    )
+    
+    # Добавляем кастомный переключатель
+    from ui.components.custom_switch import CustomMDSwitch
+    background_switch = CustomMDSwitch(
+        width=dp(64),  # Ширина как в уведомлениях
+        height=dp(36),  # Высота как в уведомлениях
+        thumb_padding=dp(4),  # Отступ ползунка
+        thumb_color_active=[0, 1, 0, 1],  # Ярко-зеленый при включении
+        thumb_color_inactive=[1, 0, 0, 1]  # Ярко-красный при выключении
+    )
+    
+    # Добавляем переключатель в контейнер
+    switch_container.add_widget(background_switch)
+    
+    # Добавляем виджеты в основной layout
+    background_theme_layout.add_widget(background_label)
+    background_theme_layout.add_widget(switch_container)
+    
+    # Добавляем блок темы фона в конец секции
+    color_section.add_widget(background_theme_layout)
+    
+    # Привязываем обновление размера шрифта метки при изменении размера окна
+    def update_background_label_size(instance, value):
+        background_label.font_size = Window.width * 0.04
+    
+    Window.bind(width=update_background_label_size)
+    Clock.schedule_once(lambda dt: update_background_label_size(None, None))
+    
     return color_section
 
 
