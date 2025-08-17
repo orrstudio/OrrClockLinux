@@ -389,6 +389,14 @@ def create_color_section(settings_window):
         shorten_from='right',
         padding=(dp(25), dp(5))  # Отступы: слева, сверху
     )
+    
+    def update_background_title_size(*args):
+        background_title.text_size = (Window.width - dp(40), None)
+        background_title.texture_update()
+    
+    Window.bind(width=update_background_title_size)
+    Clock.schedule_once(update_background_title_size)
+    
     color_section.add_widget(background_title)
     
     # Создаем блок для переключателя темы фона
