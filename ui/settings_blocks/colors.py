@@ -160,20 +160,32 @@ class ColorOption(Button):
         super().__init__(**kwargs)
         self.background_normal = ''
         self.background_color = self.color_value
+        self.size_hint = (1, None)
         self.size_hint_y = None
-        self.height = dp(40)
+        self.height = 0  # Будет установлено при обновлении размера
         self.border = (2, 2, 2, 2)
+        self.padding = [0, 0]
         self.bind(color_value=self.update_color)
         self.bind(is_selected=self.update_border)
-        self.bind(pos=self._update_border_pos, size=self._update_border_pos)
+        self.bind(pos=self._update_border_pos, size=self._update_border_size)
+        self.bind(width=self._update_size)
+        
+    def _update_size(self, instance, width):
+        # Устанавливаем высоту равной половине ширины
+        self.height = width * 0.5
         
     def update_color(self, instance, value):
         self.background_color = value
         
     def _update_border_pos(self, *args):
-        # Обновляем позицию рамки при изменении позиции или размера кнопки
+        # Обновляем позицию рамки при изменении позиции кнопки
         if hasattr(self, '_border'):
             self._border.rectangle = (self.x, self.y, self.width, self.height)
+            
+    def _update_border_size(self, *args):
+        # Обновляем размер рамки при изменении размера кнопки
+        if hasattr(self, '_border'):
+            self._update_border_pos()
         
     def update_border(self, instance, value):
         self.background_color = self.color_value
@@ -181,10 +193,18 @@ class ColorOption(Button):
         
         if value:  # Если кнопка выбрана
             with self.canvas.before:
-                from kivy.graphics import Color, Line
-                # Рисуем белую рамку
-                Color(1, 1, 1, 1)
-                self._border = Line(rectangle=(self.x, self.y, self.width, self.height), width=1.5)
+                Color(1, 1, 1, 1)  # Белый цвет рамки
+                # Рисуем рамку с отступом в 2 пикселя от края
+                border_width = 2
+                self._border = Line(
+                    rectangle=(
+                        self.x + border_width/2, 
+                        self.y + border_width/2, 
+                        self.width - border_width, 
+                        self.height - border_width
+                    ), 
+                    width=border_width
+                )
 
 
 def create_color_section(settings_window):
@@ -210,17 +230,16 @@ def create_color_section(settings_window):
     color_section = GridLayout(
         cols=1,
         size_hint_y=None,
-        height=dp(110),  # Увеличиваем высоту для учета отступов
+        height=dp(350),  # Увеличиваем высоту для размещения 3 строк с кнопками
         padding=[dp(20), dp(15), dp(20), dp(20)],  # Отступы: слева, сверху, справа, снизу
         spacing=dp(10),
-        row_force_default=True,
-        row_default_height=dp(30),  # Высота строки по умолчанию
+        row_force_default=False,
         size_hint=(1, None)
     )
     
     # Адаптивный заголовок блока выбора цвета
     color_title = Label(
-        text='Application theme',
+        text='Application theme',  # Добавлены пробелы для отступа слева
         color=(1, 1, 1, 1),
         font_size=Window.width * 0.04,  # Адаптивный размер шрифта
         size_hint=(1, None),
@@ -230,7 +249,7 @@ def create_color_section(settings_window):
         text_size=(Window.width - dp(40), None),
         shorten=True,
         shorten_from='right',
-        padding=(0, dp(5))
+        padding=(dp(25), dp(5))  # Отступы: слева, сверху
     )
     
     def update_color_title_size(*args):
@@ -243,12 +262,15 @@ def create_color_section(settings_window):
     # Создаем экземпляр настроек цветов
     color_settings = ColorSettings(settings_window)
     
-    # Сетка цветов (в один ряд)
+    # Сетка цветов (2 колонки, 3 строки)
     colors_grid = GridLayout(
-        cols=6,
-        spacing=dp(5),
+        cols=2,  # Две колонки
+        spacing=dp(10),  # Отступы между кнопками
         size_hint_y=None,
-        height=dp(25)  # Фиксированная высота для строки с цветами
+        height=dp(300),  # Примерная высота, будет пересчитана
+        row_force_default=False,
+        row_default_height=dp(100),  # Примерная высота строки
+        padding=[0, dp(5), 0, dp(5)]  # Отступы сверху и снизу
     )
     
     # Создаем кнопки цветов
