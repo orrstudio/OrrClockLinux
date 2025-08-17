@@ -12,6 +12,7 @@ from kivy.metrics import dp
 from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.graphics import Color, Line
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -165,7 +166,7 @@ class ColorOption(Button):
         self.height = 0  # Будет установлено при обновлении размера
         self.border = (0, 0, 0, 0)  # Убираем стандартную границу
         self.padding = [0, 0]
-        self.text = '08:29'  # Устанавливаем фиксированный текст
+        self._update_time()  # Устанавливаем текущее время
         self.font_name = 'fonts/DSEG-Classic/DSEG7Classic-Bold.ttf'  # Шрифт как у часов
         self.font_size = 24  # Начальный размер шрифта в пикселях
         self.color = self.color_value  # Цвет текста будет соответствовать выбранному цвету
@@ -181,8 +182,18 @@ class ColorOption(Button):
         self.bind(width=self._update_size)
         self.bind(height=self._update_size)
         self.bind(texture_size=self._adjust_font_size)
+        
+        # Запускаем таймер для обновления времени каждую секунду
+        self._clock_event = Clock.schedule_interval(lambda dt: self._update_time(), 1)
         # Инициализируем размер шрифта после загрузки всех свойств
         Clock.schedule_once(lambda dt: self._adjust_font_size())
+        
+    def _update_time(self):
+        """Обновляет отображаемое время на текущее."""
+        current_time = datetime.now().strftime('%H:%M')
+        if self.text != current_time:  # Обновляем только если время изменилось
+            self.text = current_time
+        return True
         
     def _adjust_font_size(self, *args):
         # Пропускаем, если размеры еще не установлены
