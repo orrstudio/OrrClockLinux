@@ -220,7 +220,7 @@ def create_color_section(settings_window):
     
     # Адаптивный заголовок блока выбора цвета
     color_title = Label(
-        text='Saatın rəngi',
+        text='Application theme',
         color=(1, 1, 1, 1),
         font_size=Window.width * 0.04,  # Адаптивный размер шрифта
         size_hint=(1, None),
