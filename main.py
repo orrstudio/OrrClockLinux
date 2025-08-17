@@ -419,9 +419,30 @@ class MainWindowApp(App):
     def update_color(self, color_name):
         """
         Обновляем цвет по имени
+        
+        Args:
+            color_name (str): Название темы (lime, aqua, blue, red, yellow, white)
         """
-        color_tuple = get_color_tuple(color_name)
-        self.update_title_color(color_tuple)
+       
+        try:
+            # Получаем цвет в формате кортежа
+            color_tuple = get_color_tuple(color_name)
+            
+            # Обновляем цвет заголовка
+            self.update_title_color(color_tuple)
+            
+            # Обновляем цвета в PrayerTimesBox, если он существует
+            if hasattr(self, 'prayer_times_box') and self.prayer_times_box is not None:
+                Logger.debug(f'Updating colors in PrayerTimesBox to {color_name}')
+                self.prayer_times_box.update_colors(color_name)
+                
+                # Принудительно обновляем отображение
+                self.prayer_times_box.refresh_prayer_times()
+                
+            Logger.info(f'Successfully updated theme to {color_name}')
+            
+        except Exception as e:
+            Logger.error(f'Error updating theme to {color_name}: {str(e)}')
 
     def calculate_font_size(self, scale_factor=5):
         """
@@ -454,7 +475,6 @@ class MainWindowApp(App):
         """
         # Логируем размеры и положение окна
         from kivy.core.window import Window
-        from kivy.logger import Logger
         pos = Window.left, Window.top
         logger.info(f"Window MAIN: Size: Width:{Window.width} X Height:{Window.height}; Position: Left:{Window.left} X Top:{Window.top}")
         

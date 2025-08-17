@@ -3,9 +3,9 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.animation import Animation
 from kivy.clock import Clock
 from logic.prayer_times import prayer_times_manager
-from logic.prayer_time_calculator import prayer_time_calculator
-from datetime import datetime
-from utils.logger import logger  # Импорт логгера
+from datetime import datetime, time
+from .theme_color_schemes import get_theme_scheme, COLORS as THEME_COLORS
+from utils.logger import logger  # Импорт кастомного логгера
 
 class PrayerTimesBox(GridLayout):
     """
@@ -16,6 +16,10 @@ class PrayerTimesBox(GridLayout):
         super().__init__(cols=2, size_hint_x=1, size_hint_y=None, height=base_font_size * 4.0, padding=(base_font_size * 0.15, 0), **kwargs)
         self.base_font_size = base_font_size
         self._update_event = None  # Для хранения ссылки на событие обновления
+        
+        # Инициализация цветовой схемы по умолчанию
+        self.current_scheme = get_theme_scheme('lime')  # Текущая цветовая схема
+        
         # Маппинг между азербайджанскими названиями и ключами API
         self.prayer_mapping = {
             'Təhəccüd ---': 'Midnight',
@@ -84,6 +88,34 @@ class PrayerTimesBox(GridLayout):
         # Возвращаем True, если до намаза осталось от 0 до 15 минут
         return 0 <= time_diff <= 900  # 900 секунд = 15 минут
     
+    def update_colors(self, scheme_name='lime'):
+        """
+        Обновляет цвета элементов в соответствии с выбранной темой
+        
+        Args:
+            scheme_name: Имя темы (по умолчанию 'lime')
+        """
+        try:
+            from kivy.logger import Logger
+            Logger.debug(f'Updating colors to theme: {scheme_name}')
+            
+            # Получаем новую цветовую схему
+            new_scheme = get_theme_scheme(scheme_name)
+            if not new_scheme:
+                Logger.error(f'Invalid theme scheme: {scheme_name}')
+                return
+                
+            self.current_scheme = new_scheme
+            Logger.debug(f'New color scheme: {self.current_scheme}')
+            
+            # Принудительно обновляем цвета с помощью refresh_prayer_times
+            self.refresh_prayer_times()
+            Logger.info(f'Successfully updated colors to theme: {scheme_name}')
+            
+        except Exception as e:
+            from kivy.logger import Logger
+            Logger.error(f'Error updating colors: {str(e)}')
+
     def refresh_prayer_times(self):
         prayer_times_data = prayer_times_manager.get_prayer_times()
         current_time = datetime.now().time()
@@ -125,26 +157,21 @@ class PrayerTimesBox(GridLayout):
             next_prayer = prayer_times_list[0][0]
             next_prayer_time = prayer_times_list[0][1]
         
-        # Проверка на 15 минут до намаза теперь обрабатывается в NextPrayerTimeBox
-        
         # Обновляем текст и цвет для всех меток
         for api_key, labels in self.prayer_labels.items():
             # Обновляем текст времени молитвы
             labels['time_label'].text = prayer_times_data.get(api_key, '00:00')
             
-            # Устанавливаем цвета
-            is_active = api_key == current_prayer
-            is_next = api_key == next_prayer
-            
-            if is_active:
-                # Аквамариновый для активной молитвы
-                color = (0, 1, 1, 1)
-            elif is_next:
-                # Жёлтый для следующей молитвы
-                color = (1, 1, 0, 1)
+            # Устанавливаем цвета из текущей схемы
+            if api_key == current_prayer:
+                # Активное время
+                color = self.current_scheme['active_time']
+            elif api_key == next_prayer:
+                # Следующая молитва
+                color = self.current_scheme['next_time']
             else:
-                # Темно-желтый для неактивных молитв
-                color = (0.6, 0.5, 0.0, 1)
+                # Обычное время молитвы
+                color = self.current_scheme['prayer_times']
             
             # Применяем цвет к времени и названию молитвы
             labels['time_label'].color = color
