@@ -398,7 +398,7 @@ def create_color_section(settings_window):
         size_hint_y=None,
         height=dp(30),
         row_force_default=False,
-        row_default_height=dp(100),  # Примерная высота строки
+        row_default_height=dp(40),  # Примерная высота строки
         padding=[0, dp(5), 0, dp(5)]  # Отступы сверху и снизу
     )
     
@@ -408,9 +408,10 @@ def create_color_section(settings_window):
         color=(1, 1, 1, 1),
         font_size=dp(16),
         size_hint=(1, 1),
+        height=dp(30),  # Высота как у переключателя
+        text_size=(None, None),
         halign='left',
         valign='middle',
-        text_size=(None, None),
         padding=(dp(15), dp(5)),  # Такие же отступы, как у кнопок темы
         bold=False
     )
