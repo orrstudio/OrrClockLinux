@@ -60,23 +60,37 @@ class SettingsManager:
         Args:
             color_tuple: Кортеж цвета (r, g, b, a)
         """
-        if hasattr(self.clock_label, 'apply_settings'):
-            # Вызываем apply_settings у часов
-            self.clock_label.apply_settings(color_tuple)
-        elif hasattr(self.clock_label, 'color'):
-            # Резервный вариант - напрямую устанавливаем цвет
-            self.clock_label.color = color_tuple
+        from kivy.logger import Logger
         
-        # Сохраняем выбранный цвет в базу
-        color_name = get_color_name(color_tuple)
-        self.db.save_setting('color', color_name)
-        self.initial_color = color_name
-        
-        # Обновляем цвет заголовка, если есть ссылка на главное окно
-        if hasattr(self, 'main_window') and hasattr(self.main_window, 'update_color'):
-            self.main_window.update_color(color_name)
-        else:
-            pass
+        try:
+            # Обновляем цвет часов
+            if hasattr(self.clock_label, 'apply_settings'):
+                # Вызываем apply_settings у часов
+                self.clock_label.apply_settings(color_tuple)
+            elif hasattr(self.clock_label, 'color'):
+                # Резервный вариант - напрямую устанавливаем цвет
+                self.clock_label.color = color_tuple
+            
+            # Получаем имя темы по цвету
+            color_name = get_color_name(color_tuple)
+            Logger.debug(f'Applying theme: {color_name}')
+            
+            # Сохраняем выбранный цвет в базу
+            self.db.save_setting('color', color_name)
+            self.initial_color = color_name
+            
+            # Обновляем цвет заголовка и тему приложения
+            if hasattr(self, 'main_window'):
+                if hasattr(self.main_window, 'update_color'):
+                    self.main_window.update_color(color_name)
+                
+                # Обновляем тему в PrayerTimesBox, если он существует
+                if hasattr(self.main_window, 'prayer_times_box') and self.main_window.prayer_times_box is not None:
+                    Logger.debug(f'Updating theme in PrayerTimesBox to: {color_name}')
+                    self.main_window.prayer_times_box.update_colors(color_name)
+                    
+        except Exception as e:
+            Logger.error(f'Error applying theme: {str(e)}')
 
     def cancel_settings(self):
         """
