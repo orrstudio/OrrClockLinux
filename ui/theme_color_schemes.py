@@ -160,11 +160,11 @@ COLOR_SCHEMES = {
     },
     'white': {
         'prayer_names': COLORS['white'],
-        'prayer_times': COLORS['white'],
+        'prayer_times': COLORS['white_t3'],
         'active_time': COLORS['white'],
-        'next_time': COLORS['white'],
-        'countdown': COLORS['white'],
-        'prayer_icons': COLORS['white'],
+        'next_time': COLORS['yellow'],
+        'countdown': COLORS['yellow'],
+        'prayer_icons': COLORS['white_t5'],
         'date_text': COLORS['white'],
         'separator': COLORS['white']
     }
