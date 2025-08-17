@@ -104,6 +104,16 @@ COLORS = {
     'orange_t2': (1.0, 0.5, 0.0, 0.2),   # Оранжевый с прозрачностью 20%
     'orange_t1': (1.0, 0.5, 0.0, 0.1),   # Оранжевый с прозрачностью 10%
 
+    'black': (0, 0, 0, 1), # Черный без прозрачности
+    'black_t9': (0, 0, 0, 0.9), # Черный с прозрачностью 90%
+    'black_t8': (0, 0, 0, 0.8), # Черный с прозрачностью 80%
+    'black_t7': (0, 0, 0, 0.7), # Черный с прозрачностью 70%
+    'black_t6': (0, 0, 0, 0.6), # Черный с прозрачностью 60%
+    'black_t5': (0, 0, 0, 0.5), # Черный с прозрачностью 50%
+    'black_t4': (0, 0, 0, 0.4), # Черный с прозрачностью 40%
+    'black_t3': (0, 0, 0, 0.3), # Черный с прозрачностью 30%
+    'black_t2': (0, 0, 0, 0.2), # Черный с прозрачностью 20%
+    'black_t1': (0, 0, 0, 0.1), # Черный с прозрачностью 10%
 }
 
 # Цветовые схемы для различных тем
@@ -146,7 +156,7 @@ COLOR_SCHEMES = {
         'countdown': COLORS['blue'],
         'prayer_icons': COLORS['red_t5'],
         'date_text': COLORS['red'],
-        'separator': COLORS['blue']
+        'separator': COLORS['red']
     },
     'yellow': {
         'prayer_names': COLORS['yellow'],
@@ -167,6 +177,16 @@ COLOR_SCHEMES = {
         'prayer_icons': COLORS['white_t5'],
         'date_text': COLORS['white'],
         'separator': COLORS['white']
+    },
+    'black': {
+        'prayer_names': COLORS['black'],
+        'prayer_times': COLORS['black_t3'],
+        'active_time': COLORS['black'],
+        'next_time': COLORS['red'],
+        'countdown': COLORS['red'],
+        'prayer_icons': COLORS['black_t5'],
+        'date_text': COLORS['black'],
+        'separator': COLORS['black']
     }
 }
 

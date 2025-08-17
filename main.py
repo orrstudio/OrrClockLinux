@@ -106,6 +106,10 @@ class MainWindowApp(App):
         # Инициализируем базу данных настроек
         self.settings_db = SettingsDatabase()
         
+        # Атрибуты для хранения ссылок на элементы интерфейса, требующие обновления цветов
+        self.date_hijri_label = None  # Метка с датой хиджры
+        self.separator_lines = []     # Список для хранения разделительных линий
+        
     def get_time_until_next_prayer(self, prayer_times_data):
         """
         Вычисляет и возвращает время до следующей молитвы
@@ -416,6 +420,46 @@ class MainWindowApp(App):
         # Принудительно обновляем отображение
         self.title_label.canvas.ask_update()
         
+    def update_ui_colors(self, color_name):
+        """
+        Обновляет цвета для всех элементов интерфейса при смене темы
+        
+        Args:
+            color_name (str): Название цветовой темы
+        """
+        try:
+            # Получаем цветовую схему для новой темы
+            from ui.theme_color_schemes import get_theme_scheme
+            theme_colors = get_theme_scheme(color_name)
+            
+            # Обновляем цвет метки даты, если она существует
+            if hasattr(self, 'date_hijri_label') and self.date_hijri_label:
+                self.date_hijri_label.color = theme_colors['date_text']
+            
+            # Обновляем все разделительные линии
+            if hasattr(self, 'separator_lines'):
+                for line in self.separator_lines:
+                    if line:
+                        line.color = theme_colors['separator']
+            
+            # Обновляем цвета в PrayerTimesBox, если он существует
+            if hasattr(self, 'prayer_times_box') and self.prayer_times_box is not None:
+                Logger.debug(f'Updating colors in PrayerTimesBox to {color_name}')
+                self.prayer_times_box.update_colors(color_name)
+                self.prayer_times_box.refresh_prayer_times()
+                
+            # Обновляем цвета в NextPrayerTimeBox, если он существует
+            if hasattr(self, 'next_prayer_time_box') and self.next_prayer_time_box is not None:
+                Logger.debug(f'Updating colors in NextPrayerTimeBox to {color_name}')
+                self.next_prayer_time_box.update_colors(color_name)
+                
+            Logger.info(f'Successfully updated all UI colors to {color_name} theme')
+            
+        except Exception as e:
+            Logger.error(f'Error updating UI colors: {str(e)}')
+            import traceback
+            Logger.error(f'Error details: {traceback.format_exc()}')
+    
     def update_color(self, color_name):
         """
         Обновляем цвет по имени
@@ -423,7 +467,6 @@ class MainWindowApp(App):
         Args:
             color_name (str): Название темы (lime, aqua, blue, red, yellow, white)
         """
-       
         try:
             # Получаем цвет в формате кортежа
             color_tuple = get_color_tuple(color_name)
@@ -431,15 +474,8 @@ class MainWindowApp(App):
             # Обновляем цвет заголовка
             self.update_title_color(color_tuple)
             
-            # Обновляем цвета в PrayerTimesBox, если он существует
-            if hasattr(self, 'prayer_times_box') and self.prayer_times_box is not None:
-                Logger.debug(f'Updating colors in PrayerTimesBox to {color_name}')
-                self.prayer_times_box.update_colors(color_name)
-                
-                # Принудительно обновляем отображение
-                self.prayer_times_box.refresh_prayer_times()
-                
-            Logger.info(f'Successfully updated theme to {color_name}')
+            # Обновляем все цвета интерфейса
+            self.update_ui_colors(color_name)
             
         except Exception as e:
             Logger.error(f'Error updating theme to {color_name}: {str(e)}')
