@@ -159,23 +159,71 @@ class ColorOption(Button):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.background_normal = ''
-        self.background_color = self.color_value
+        self.background_color = (0, 0, 0, 1)  # Черный фон как у часов
         self.size_hint = (1, None)
         self.size_hint_y = None
         self.height = 0  # Будет установлено при обновлении размера
-        self.border = (2, 2, 2, 2)
+        self.border = (0, 0, 0, 0)  # Убираем стандартную границу
         self.padding = [0, 0]
+        self.text = '08:29'  # Устанавливаем фиксированный текст
+        self.font_name = 'fonts/DSEG-Classic/DSEG7Classic-Bold.ttf'  # Шрифт как у часов
+        self.font_size = 24  # Начальный размер шрифта в пикселях
+        self.color = self.color_value  # Цвет текста будет соответствовать выбранному цвету
+        self.bold = True  # Жирный шрифт
+        self.halign = 'center'  # Выравнивание по центру
+        self.valign = 'middle'  # Выравнивание по вертикали по центру
+        self.markup = True  # Включаем поддержку разметки
+        self.text_size = (None, None)  # Снимаем ограничения на размер текста
+        self.shorten = False  # Отключаем укорачивание текста
         self.bind(color_value=self.update_color)
         self.bind(is_selected=self.update_border)
         self.bind(pos=self._update_border_pos, size=self._update_border_size)
         self.bind(width=self._update_size)
+        self.bind(height=self._update_size)
+        self.bind(texture_size=self._adjust_font_size)
+        # Инициализируем размер шрифта после загрузки всех свойств
+        Clock.schedule_once(lambda dt: self._adjust_font_size())
         
-    def _update_size(self, instance, width):
+    def _adjust_font_size(self, *args):
+        # Пропускаем, если размеры еще не установлены
+        if not hasattr(self, 'width') or self.width == 0 or not hasattr(self, 'height') or self.height == 0:
+            return
+            
+        # Получаем текстуру текста
+        texture = self.texture
+        if not texture or texture.width == 0:
+            return
+            
+        # Вычисляем коэффициенты масштабирования по ширине и высоте
+        width_ratio = (self.width * 0.9) / texture.width
+        height_ratio = (self.height * 0.9) / texture.height
+        
+        # Выбираем минимальный коэффициент, чтобы текст поместился по обоим измерениям
+        scale = min(width_ratio, height_ratio)
+        
+        # Устанавливаем новый размер шрифта
+        new_size = int(self.font_size * scale)
+        
+        # Ограничиваем минимальный и максимальный размер шрифта
+        min_size = 10
+        max_size = min(100, int(min(self.width, self.height) * 0.9))
+        new_size = max(min_size, min(new_size, max_size))
+        
+        # Обновляем размер шрифта, если он изменился
+        if abs(new_size - self.font_size) > 1:
+            self.font_size = new_size
+            
+    def _update_size(self, instance, value):
         # Устанавливаем высоту равной половине ширины
-        self.height = width * 0.5
+        if instance == self and hasattr(self, 'width'):
+            self.height = self.width * 0.5
+            
+        # Обновляем размер шрифта при изменении размера кнопки
+        self._adjust_font_size()
         
     def update_color(self, instance, value):
-        self.background_color = value
+        # Устанавливаем цвет текста в соответствии с выбранным цветом
+        self.color = value
         
     def _update_border_pos(self, *args):
         # Обновляем позицию рамки при изменении позиции кнопки
@@ -188,13 +236,12 @@ class ColorOption(Button):
             self._update_border_pos()
         
     def update_border(self, instance, value):
-        self.background_color = self.color_value
         self.canvas.after.clear()  # Очищаем предыдущую рамку
         
         if value:  # Если кнопка выбрана
             with self.canvas.after:  # Используем after для отрисовки поверх кнопки
                 Color(0.7, 0.7, 0.7, 1)  # Серый цвет рамки
-                # Рисуем рамку с отступом в 2 пикселя от края
+                # Рисуем рамку с отступом
                 border_width = 6  # Толщина рамки
                 self._border = Line(
                     rectangle=(
