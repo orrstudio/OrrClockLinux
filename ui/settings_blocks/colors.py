@@ -375,7 +375,7 @@ def create_color_section(settings_window):
     # Добавляем отступ перед разделителем, чтобы он не прилипал к кнопкам
     color_section.add_widget(Widget(size_hint_y=None, height=dp(220)))
     
-    # Добавляем заголовок Background
+    # Добавляем заголовок Background с такими же настройками, как у заголовка цветов
     background_title = Label(
         text='Background',
         color=(1, 1, 1, 1),
@@ -398,58 +398,53 @@ def create_color_section(settings_window):
         size_hint_y=None,
         height=dp(30),
         row_force_default=False,
-        row_default_height=dp(40),  # Примерная высота строки
-        padding=[0, dp(5), 0, dp(5)]  # Отступы сверху и снизу
+        row_default_height=dp(40),
+        padding=[dp(15), dp(5), dp(15), dp(5)]  # Такие же отступы, как у заголовков
     )
     
     # Добавляем метку "Light" для переключателя темы фона
     background_label = Label(
         text='Light',
         color=(1, 1, 1, 1),
-        font_size=dp(16),
+        font_size=Window.width * 0.04,  # Адаптивный размер шрифта
         size_hint=(1, 1),
         height=dp(30),  # Высота как у переключателя
-        text_size=(Window.width - dp(110), None),  # Ширина с учетом отступов
         halign='left',
         valign='middle',
-        padding=(dp(25), dp(25)),  # Такие же отступы, как у кнопок темы
+        text_size=(Window.width - dp(100), None),  # Оставляем место для переключателя
+        shorten=True,
+        shorten_from='right',
+        padding=(dp(15), dp(5)),
         bold=False
     )
     
-    # Контейнер для переключателя с выравниванием по правому краю
-    switch_container = GridLayout(
-        cols=1,
-        size_hint=(None, 1),
-        width=dp(60),  # Фиксированная ширина для переключателя
-        padding=(0, 0, dp(15), 0)  # Отступ справа как у кнопок темы
-    )
+    # Функция для обновления размера текста при изменении размера окна
+    def update_background_label_size(instance, value):
+        background_label.text_size = (value - dp(100), None)
+        background_label.texture_update()
+    
+    # Привязываем обновление размера текста к изменению ширины окна
+    Window.bind(width=update_background_label_size)
+    Clock.schedule_once(lambda dt: update_background_label_size(None, Window.width))
     
     # Добавляем кастомный переключатель
     from ui.components.custom_switch import CustomMDSwitch
     background_switch = CustomMDSwitch(
-        width=dp(64),  # Ширина как в уведомлениях
-        height=dp(36),  # Высота как в уведомлениях
-        thumb_padding=dp(4),  # Отступ ползунка
-        thumb_color_active=[0, 1, 0, 1],  # Ярко-зеленый при включении
-        thumb_color_inactive=[1, 0, 0, 1]  # Ярко-красный при выключении
+        width=dp(64),
+        height=dp(36),
+        size_hint=(None, None),
+        thumb_padding=dp(4),
+        thumb_color_active=[0, 1, 0, 1],
+        thumb_color_inactive=[1, 0, 0, 1],
+        pos_hint={'center_y': 0.5}
     )
-    
-    # Добавляем переключатель в контейнер
-    switch_container.add_widget(background_switch)
     
     # Добавляем виджеты в основной layout
     background_theme_layout.add_widget(background_label)
-    background_theme_layout.add_widget(switch_container)
+    background_theme_layout.add_widget(background_switch)
     
     # Добавляем блок темы фона в конец секции
     color_section.add_widget(background_theme_layout)
-    
-    # Привязываем обновление размера шрифта метки при изменении размера окна
-    def update_background_label_size(instance, value):
-        background_label.font_size = Window.width * 0.04
-    
-    Window.bind(width=update_background_label_size)
-    Clock.schedule_once(lambda dt: update_background_label_size(None, None))
     
     return color_section
 
