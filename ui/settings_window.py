@@ -15,6 +15,7 @@ from .settings_blocks.header import create_header
 from .settings_blocks.footer import create_footer
 from .settings_blocks.utils import add_border, print_sizes
 from .settings_blocks.window_settings import apply_window_settings, on_window_resize, save_window_settings
+from .settings_blocks.tabs import create_tabbed_interface
 
 from kivy.clock import Clock
 from kivy.metrics import dp
@@ -97,24 +98,20 @@ class SettingsWindow(ModalView):
         # Создаем заголовок
         title_layout, self.title_rect = create_header()
         
-        # Основной контейнер для всех секций
+        # Создаем панель с вкладками
+        tab_panel, tab_contents = create_tabbed_interface()
+        
+        # Получаем контейнеры вкладок
+        theme_content = tab_contents['theme']
+        notification_content = tab_contents['notification']
+        admin_content = tab_contents['admin']
+        
+        # Создаем контейнер для содержимого вкладок
         content_container = GridLayout(
             cols=1,
             size_hint_y=None,
             spacing=dp(15),  # Отступ между секциями
             padding=[dp(10), dp(10), dp(10), dp(10)]  # Отступы по краям
-        )
-        # Автоматическая подстройка высоты контейнера
-        content_container.bind(minimum_height=content_container.setter('height'))
-        
-        # Контент (ScrollView)
-        content_layout = ScrollView(
-            do_scroll_x=False,
-            do_scroll_y=True,
-            size_hint=(1, 1),
-            bar_width=dp(10),  # Ширина полосы прокрутки
-            bar_color=(0.5, 0.5, 0.5, 0.5),  # Цвет полосы прокрутки
-            bar_inactive_color=(0.5, 0.5, 0.5, 0.2)  # Цвет неактивной полосы прокрутки
         )
         
         # Создаем секцию выбора цвета
@@ -131,15 +128,30 @@ class SettingsWindow(ModalView):
         # Инициализируем ссылки на виджеты для доступа из других методов
         self.color_section = color_section
         
-        # Добавляем все виджеты в основной контейнер
-        content_container.clear_widgets()  # Очищаем контейнер
+        # Добавляем виджеты во вкладку "Theme"
+        theme_content.add_widget(color_section)
         
-        # Добавляем блоки с отступами
-        content_container.add_widget(color_section)
-        content_container.add_widget(Widget(size_hint_y=None, height=dp(10)))  # Разделитель
-        content_container.add_widget(notifications_section)
-        content_container.add_widget(Widget(size_hint_y=None, height=dp(10)))  # Разделитель
-        content_container.add_widget(admin_section)
+        # Добавляем виджеты во вкладку "Notification"
+        notification_content.add_widget(notifications_section)
+        
+        # Добавляем виджеты во вкладку "Admin Panel"
+        admin_content.add_widget(admin_section)
+        
+        # Автоматическая подстройка высоты контейнера
+        content_container.bind(minimum_height=content_container.setter('height'))
+        
+        # Контент (ScrollView)
+        content_layout = ScrollView(
+            do_scroll_x=False,
+            do_scroll_y=True,
+            size_hint=(1, 1),
+            bar_width=dp(10),  # Ширина полосы прокрутки
+            bar_color=(0.5, 0.5, 0.5, 0.5),  # Цвет полосы прокрутки
+            bar_inactive_color=(0.5, 0.5, 0.5, 0.2)  # Цвет неактивной полосы прокрутки
+        )
+        
+        # Добавляем панель вкладок в основной контейнер
+        content_container.add_widget(tab_panel)
         
         # Обновляем размеры после добавления всех виджетов
         Clock.schedule_once(self.print_sizes, 0.5)
