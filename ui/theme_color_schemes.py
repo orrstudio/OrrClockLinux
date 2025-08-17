@@ -12,7 +12,7 @@ COLORS = {
     'yellow': (1.0, 1.0, 0.0, 1),
     'white': (1.0, 1.0, 1.0, 1),
     'dark_goldenrod': (0.6, 0.5, 0.0, 1),
-    'gray': (0.7, 0.7, 0.7, 1)
+    'gray': (0.3, 0.3, 0.3, 1)
 }
 
 # Цветовые схемы для различных тем
@@ -55,9 +55,9 @@ COLOR_SCHEMES = {
     'white': {
         'prayer_names': COLORS['gray'],
         'prayer_times': COLORS['gray'],
-        'active_time': COLORS['red'],
+        'active_time': COLORS['white'],
         'next_time': COLORS['yellow'],
-        'countdown': COLORS['red']
+        'countdown': COLORS['yellow']
     }
 }
 

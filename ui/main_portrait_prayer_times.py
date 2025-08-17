@@ -97,28 +97,52 @@ class PrayerTimesBox(GridLayout):
         """
         try:
             from kivy.logger import Logger
-            Logger.debug(f'Updating colors to theme: {scheme_name}')
+            Logger.debug(f'[PrayerTimesBox] Начало обновления цветов на тему: {scheme_name}')
             
             # Получаем новую цветовую схему
             new_scheme = get_theme_scheme(scheme_name)
             if not new_scheme:
-                Logger.error(f'Invalid theme scheme: {scheme_name}')
+                Logger.error(f'[PrayerTimesBox] Ошибка: Неверное имя темы: {scheme_name}')
+                Logger.error(f'[PrayerTimesBox] Доступные темы: {list(COLOR_SCHEMES.keys())}')
                 return
                 
             self.current_scheme = new_scheme
-            Logger.debug(f'New color scheme: {self.current_scheme}')
+            Logger.debug(f'[PrayerTimesBox] Новая цветовая схема: {self.current_scheme}')
             
+            # Проверяем наличие элементов перед обновлением
+            if not hasattr(self, 'prayer_labels') or not self.prayer_labels:
+                Logger.error('[PrayerTimesBox] Ошибка: prayer_labels не инициализирован')
+                return
+                
             # Принудительно обновляем цвета с помощью refresh_prayer_times
+            Logger.debug('[PrayerTimesBox] Вызов refresh_prayer_times()')
             self.refresh_prayer_times()
-            Logger.info(f'Successfully updated colors to theme: {scheme_name}')
+            
+            # Проверяем, применились ли цвета
+            if hasattr(self, 'prayer_labels'):
+                for api_key, labels in self.prayer_labels.items():
+                    Logger.debug(f'[PrayerTimesBox] {api_key} - цвет времени: {labels["time_label"].color}')
+                    Logger.debug(f'[PrayerTimesBox] {api_key} - цвет названия: {labels["name_label"].color}')
+            
+            Logger.info(f'[PrayerTimesBox] Цвета успешно обновлены на тему: {scheme_name}')
             
         except Exception as e:
+            import traceback
             from kivy.logger import Logger
-            Logger.error(f'Error updating colors: {str(e)}')
+            Logger.error(f'[PrayerTimesBox] Ошибка при обновлении цветов: {str(e)}')
+            Logger.error(f'[PrayerTimesBox] Трассировка: {traceback.format_exc()}')
 
     def refresh_prayer_times(self):
+        from kivy.logger import Logger
+        Logger.debug('[PrayerTimesBox.refresh_prayer_times] Начало обновления времен молитв')
+        
         prayer_times_data = prayer_times_manager.get_prayer_times()
         current_time = datetime.now().time()
+        
+        # Логируем полученные данные
+        Logger.debug(f'[PrayerTimesBox.refresh_prayer_times] Текущее время: {current_time}')
+        Logger.debug(f'[PrayerTimesBox.refresh_prayer_times] Данные молитв: {prayer_times_data}')
+        Logger.debug(f'[PrayerTimesBox.refresh_prayer_times] Текущая цветовая схема: {self.current_scheme if hasattr(self, "current_scheme") else "Не определена"}')
         
         # Получаем текущую активную молитву
         current_prayer = None
@@ -160,22 +184,34 @@ class PrayerTimesBox(GridLayout):
         # Обновляем текст и цвет для всех меток
         for api_key, labels in self.prayer_labels.items():
             # Обновляем текст времени молитвы
-            labels['time_label'].text = prayer_times_data.get(api_key, '00:00')
+            time_text = prayer_times_data.get(api_key, '00:00')
+            labels['time_label'].text = time_text
+            
+            # Проверяем, что current_prayer и next_prayer определены
+            current_prayer_defined = current_prayer is not None
+            next_prayer_defined = next_prayer is not None
             
             # Устанавливаем цвета из текущей схемы
-            if api_key == current_prayer:
+            if current_prayer_defined and api_key == current_prayer:
                 # Активное время
                 color = self.current_scheme['active_time']
-            elif api_key == next_prayer:
+                color_type = 'active_time'
+            elif next_prayer_defined and api_key == next_prayer:
                 # Следующая молитва
                 color = self.current_scheme['next_time']
+                color_type = 'next_time'
             else:
                 # Обычное время молитвы
                 color = self.current_scheme['prayer_times']
+                color_type = 'prayer_times'
             
             # Применяем цвет к времени и названию молитвы
             labels['time_label'].color = color
             labels['name_label'].color = color
+            
+            # Логируем установленные цвета
+            from kivy.logger import Logger
+            Logger.debug(f'[PrayerTimesBox.refresh_prayer_times] Установлен цвет для {api_key} ({time_text}): {color} (тип: {color_type})')
 
     def on_parent(self, widget, parent):
         # Автоматическая отписка при удалении с экрана

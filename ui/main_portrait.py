@@ -53,10 +53,19 @@ def create_portrait_widgets(self, portrait_layout):
     portrait_layout.add_widget(next_time_widget)                    # Виджет с временем до следующей молитвы
     portrait_layout.add_widget(create_line_label(base_font_size))   # Линия-разделитель
     
+    # Получаем текущую тему из настроек
+    from data.database import SettingsDatabase
+    settings_db = SettingsDatabase()
+    current_theme = settings_db.get_setting('color', 'lime')  # По умолчанию 'lime'
+    
     # Создаем реактивный layout с временами молитв
     self.prayer_times_box = PrayerTimesBox(base_font_size=base_font_size)
+    
+    # Устанавливаем текущую цветовую схему
+    self.prayer_times_box.update_colors(current_theme)
+    
     from kivy.logger import Logger
-    Logger.debug(f'Created prayer_times_box: {type(self.prayer_times_box).__name__} (id: {id(self.prayer_times_box)})')
+    Logger.debug(f'Created prayer_times_box: {type(self.prayer_times_box).__name__} (id: {id(self.prayer_times_box)}) with theme: {current_theme}')
     
     # Связываем NextPrayerTimeBox с PrayerTimesBox для синхронизации анимаций
     next_time_widget.prayer_times_box = self.prayer_times_box
