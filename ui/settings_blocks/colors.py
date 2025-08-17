@@ -372,10 +372,23 @@ def create_color_section(settings_window):
     
     Window.bind(width=update_separator)
     
-    # Добавляем отступ перед разделителем, чтобы он не прилипал к кнопкам
-    color_section.add_widget(Widget(size_hint_y=None, height=dp(220)))
+    # Создаем виджет-отступ
+    spacer = Widget(size_hint_y=None, height=dp(200))
     
-    # Добавляем заголовок Background с такими же настройками, как у заголовка цветов
+    # Функция для обновления отступа
+    def update_spacer(*args):
+        # Обновляем высоту отступа при изменении размера окна
+        # Используем фиксированное значение, но с привязкой к размеру окна
+        spacer.height = dp(200) * (Window.width / 800)  # 800 - базовая ширина
+    
+    # Привязываем обновление отступа к изменению размера окна
+    Window.bind(width=update_spacer)
+    Clock.schedule_once(update_spacer)
+    
+    # Добавляем отступ перед разделителем
+    color_section.add_widget(spacer)
+    
+    # Добавляем заголовок Background
     background_title = Label(
         text='Background',
         color=(1, 1, 1, 1),
