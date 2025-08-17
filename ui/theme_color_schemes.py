@@ -109,14 +109,14 @@ COLORS = {
 # Цветовые схемы для различных тем
 COLOR_SCHEMES = {
     'lime': {
-        'prayer_names': COLORS['lime'],         # Названия молитв (не используется)
-        'prayer_times': COLORS['yellow_t3'],    # Время молитв (название и цифры)
-        'active_time': COLORS['lime'],         # Активное время (текущая молитва)
-        'next_time': COLORS['yellow'],           # Следующая молитва (После текущей)
-        'countdown': COLORS['red'],           # Счетчик времени до следующей молитвы
-        'prayer_icons': COLORS['yellow_t5'],      # Иконки
-        'date_text': COLORS['yellow'],         # Текст даты
-        'separator': COLORS['yellow']          # Разделительные линии
+        'prayer_names': COLORS['lime'],       # Названия молитв (не используется)
+        'prayer_times': COLORS['yellow_t3'],  # Время молитв (название и цифры)
+        'active_time': COLORS['lime'],        # Активное время (название и цифры текущей молитвы)
+        'next_time': COLORS['yellow'],        # Следующая молитва (название и цифры после текущей)
+        'countdown': COLORS['red'],           # Счетчик времени до следующей молитвы (только цифры)
+        'prayer_icons': COLORS['yellow_t5'],  # Иконки
+        'date_text': COLORS['yellow'],        # Текст даты
+        'separator': COLORS['yellow']         # Разделительные линии
     },
     'aqua': {
         'prayer_names': COLORS['aqua'],
