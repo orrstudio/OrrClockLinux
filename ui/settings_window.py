@@ -71,9 +71,11 @@ class SettingsWindow(ModalView):
         
         # Получаем текущие настройки
         self.initial_color = self.db.get_setting('color')
+        logger.info(f'Получен цвет из базы данных: {self.initial_color}')
         
         # Инициализируем переменные для хранения выбранных значений
         self.selected_color = self.initial_color
+        logger.info(f'Установлен selected_color: {self.selected_color}')
         
         # Настройки азана были удалены
         self.active_button = None  # Инициализируем как None
