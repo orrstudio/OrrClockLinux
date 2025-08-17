@@ -118,6 +118,12 @@ class NextPrayerTimeBox(GridLayout):
         self._60min_blink_opacity = 1.0
         self._60min_blink_direction = -1
         
+        # Импортируем цветовые схемы
+        from .theme_color_schemes import get_theme_scheme
+        
+        # Получаем цветовую схему по умолчанию
+        self.current_scheme = get_theme_scheme('lime')
+        
         # Цвета для анимации иконок
         self.normal_icon_color = (0.6, 0.5, 0.0, 1)  # Темно-желтый
         self.highlight_icon_color = (1.0, 0.84, 0.0, 1)  # Ярко-желтый
@@ -133,11 +139,12 @@ class NextPrayerTimeBox(GridLayout):
             color=self.normal_icon_color  # Используем свойство для цвета
         )
         
+        # Создаем метку времени с цветом из текущей схемы
         self.time_label = Label(
             text='00:00',
             font_name='FontDSEG7-Bold',
             font_size=base_font_size * 0.55,
-            color=(1, 0, 0, 1),  # Красный для времени следующей молитвы
+            color=self.current_scheme.get('countdown', (1, 0, 0, 1)),  # Используем цвет countdown из схемы
             halign='center',
             size_hint_x=1
         )
@@ -165,9 +172,48 @@ class NextPrayerTimeBox(GridLayout):
         # Немедленное обновление времени при создании виджета
         self.update_time()
         
+    def update_colors(self, scheme_name='lime'):
+        """
+        Обновляет цвета элементов в соответствии с выбранной темой
+        
+        Args:
+            scheme_name: Имя темы (по умолчанию 'lime')
+        """
+        try:
+            from kivy.logger import Logger
+            Logger.debug(f'[NextPrayerTimeBox] Обновление цветов на тему: {scheme_name}')
+            
+            # Получаем новую цветовую схему
+            from .theme_color_schemes import get_theme_scheme
+            new_scheme = get_theme_scheme(scheme_name)
+            if not new_scheme:
+                Logger.error(f'[NextPrayerTimeBox] Ошибка: Неверное имя темы: {scheme_name}')
+                return
+                
+            self.current_scheme = new_scheme
+            
+            # Обновляем цвет метки времени
+            if hasattr(self, 'time_label'):
+                self.time_label.color = self.current_scheme.get('countdown', (1, 1, 1, 1))
+                
+            # Обновляем цвета иконок
+            if hasattr(self, 'prayer_icon_left'):
+                self.prayer_icon_left.color = self.current_scheme.get('prayer_icons', self.normal_icon_color)
+                
+            if hasattr(self, 'prayer_icon_right'):
+                self.prayer_icon_right.color = self.current_scheme.get('prayer_icons', self.normal_icon_color)
+            
+            Logger.info(f'[NextPrayerTimeBox] Цвета успешно обновлены на тему: {scheme_name}')
+            
+        except Exception as e:
+            import traceback
+            from kivy.logger import Logger
+            Logger.error(f'[NextPrayerTimeBox] Ошибка при обновлении цветов: {str(e)}')
+            Logger.error(f'[NextPrayerTimeBox] Трассировка: {traceback.format_exc()}')
+    
     def on_kv_post(self, *args):
         # Запускаем таймер после инициализации виджета в дереве
-        self._update_event = Clock.schedule_interval(lambda dt: self.update_time(), 5)  # Обновляем каждую секунду
+        self._update_event = Clock.schedule_interval(lambda dt: self.update_time(), 5)  # Обновляем каждые 5 секунд
         
     def animate_icons(self, *args):
         """Анимация изменения цвета иконок"""

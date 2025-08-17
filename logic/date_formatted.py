@@ -144,16 +144,20 @@ def create_gregorian_date_label(base_font_size):
     
     return date_label
 
-def create_hijri_date_label(base_font_size):
+def create_hijri_date_label(base_font_size, color=None):
     """
     Создает Label с датами хиджры и григорианской в одной строке
     
     Args:
         base_font_size (float): Базовый размер шрифта
+        color (tuple, optional): Цвет текста в формате (R, G, B, A). 
+                              Если не указан, используется желтый цвет по умолчанию.
     
     Returns:
         Label: Label с обеими датами в одной строке
     """
+    # Если цвет не передан, используем желтый по умолчанию
+    text_color = color if color is not None else (1, 1, 0, 1)
     formatted_dates = get_formatted_dates()
     
     # Рассчитываем базовый размер на основе ширины окна
@@ -186,7 +190,7 @@ def create_hijri_date_label(base_font_size):
     date_label = Label(
         text=marked_text,
         markup=True,
-        color=(1, 1, 0, 1),  # Желтый цвет для дат
+        color=text_color,
         size_hint_x=1,
         size_hint_y=None,
         height=window_width * 0.06,  # Высота тоже адаптивная

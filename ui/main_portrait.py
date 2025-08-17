@@ -7,11 +7,22 @@ from ui.next_prayer_time_box import NextPrayerTimeBox
 from logic.date_formatted import create_gregorian_date_label, create_hijri_date_label, get_formatted_dates
 from utils.logger import logger
 
-def create_line_label(base_font_size):
+def create_line_label(base_font_size, color=None):
+    """
+    Создает Label с разделительной линией
+    
+    Args:
+        base_font_size (float): Базовый размер шрифта
+        color (tuple, optional): Цвет линии в формате (R, G, B, A). 
+                              Если не указан, используется цвет по умолчанию.
+    """
+    # Если цвет не передан, используем темно-желтый по умолчанию
+    line_color = color if color is not None else (0.6, 0.5, 0.0, 1)
+    
     return Label(
         text='―' * 150,  # Много тире для линии
         font_name='FontSourceCodePro-Regular',
-        color=(0.6, 0.5, 0.0, 1),  # Темно-желтый цвет для линий
+        color=line_color,
         height=base_font_size * 0.1, # Фиксированная высота
         size_hint_y=None,  # Нужно для фиксированной высоты
     )
@@ -42,21 +53,31 @@ def create_portrait_widgets(self, portrait_layout):
     # Создаем Label для даты Хиджры (включает обе даты)
     date_hijri_label = create_hijri_date_label(base_font_size)
     
+    # Получаем текущую тему из настроек
+    from data.database import SettingsDatabase
+    from ui.theme_color_schemes import get_theme_scheme
+    
+    settings_db = SettingsDatabase()
+    current_theme = settings_db.get_setting('color', 'lime')  # По умолчанию 'lime'
+    theme_colors = get_theme_scheme(current_theme)
+
+    # Создаем Label для даты Хиджры (включает обе даты) с цветом из темы
+    date_hijri_label = create_hijri_date_label(base_font_size, color=theme_colors['date_text'])
+    
     # Создаем виджет с временем до следующей молитвы (автообновляется каждую минуту)
     next_time_widget = NextPrayerTimeBox(base_font_size=base_font_size, app=self)
+    self.next_prayer_time_box = next_time_widget  # Сохраняем ссылку на виджет в MainWindowApp
+    
+    # Устанавливаем текущую цветовую схему для next_prayer_time_box
+    next_time_widget.update_colors(current_theme)
 
     # Добавляем виджеты в layout в нужном порядке
     portrait_layout.add_widget(create_space_label(base_font_size))  # Пустое пространство
-    portrait_layout.add_widget(create_line_label(base_font_size))   # Линия-разделитель
+    portrait_layout.add_widget(create_line_label(base_font_size, color=theme_colors['separator']))   # Линия-разделитель
     portrait_layout.add_widget(date_hijri_label)                    # Метка с датой Хиджры
-    portrait_layout.add_widget(create_line_label(base_font_size))   # Линия-разделитель
+    portrait_layout.add_widget(create_line_label(base_font_size, color=theme_colors['separator']))   # Линия-разделитель
     portrait_layout.add_widget(next_time_widget)                    # Виджет с временем до следующей молитвы
-    portrait_layout.add_widget(create_line_label(base_font_size))   # Линия-разделитель
-    
-    # Получаем текущую тему из настроек
-    from data.database import SettingsDatabase
-    settings_db = SettingsDatabase()
-    current_theme = settings_db.get_setting('color', 'lime')  # По умолчанию 'lime'
+    portrait_layout.add_widget(create_line_label(base_font_size, color=theme_colors['separator']))   # Линия-разделитель
     
     # Создаем реактивный layout с временами молитв
     self.prayer_times_box = PrayerTimesBox(base_font_size=base_font_size)

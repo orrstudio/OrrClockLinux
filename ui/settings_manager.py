@@ -89,6 +89,11 @@ class SettingsManager:
                     Logger.debug(f'Updating theme in PrayerTimesBox to: {color_name}')
                     self.main_window.prayer_times_box.update_colors(color_name)
                     
+                # Обновляем тему в NextPrayerTimeBox, если он существует
+                if hasattr(self.main_window, 'next_prayer_time_box') and self.main_window.next_prayer_time_box is not None:
+                    Logger.debug(f'Updating theme in NextPrayerTimeBox to: {color_name}')
+                    self.main_window.next_prayer_time_box.update_colors(color_name)
+                    
         except Exception as e:
             Logger.error(f'Error applying theme: {str(e)}')
 
