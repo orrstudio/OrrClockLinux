@@ -31,7 +31,7 @@ os.makedirs(logs_dir, exist_ok=True)
 Config.set('kivy', 'log_level', 'debug')
 Config.set('kivy', 'log_enable', 1)
 Config.set('kivy', 'log_dir', logs_dir)  # Указываем полный путь к папке logs
-Config.set('kivy', 'log_name', 'logs_%y-%m-%d_%H:%M:%S_%_.txt')
+Config.set('kivy', 'log_name', 'logs_%__%y-%m-%d_%H:%M:%S.txt')
 Config.set('kivy', 'log_maxfiles', 10)
 Config.set('kivy', 'log_maxsize', 1024 * 1024 * 5)
 
@@ -68,6 +68,8 @@ from logic.prayer_times import prayer_times_manager
 from utils.logger import logger
 
 class MainWindowApp(App):
+    title = 'Adhan'  # Устанавливаем заголовок окна
+    
     def on_new_day(self):
         """
         Метод вызывается в полночь для пересчёта и обновления всех данных, зависящих от даты.
