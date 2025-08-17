@@ -172,23 +172,38 @@ class NextPrayerTimeBox(GridLayout):
         # Немедленное обновление времени при создании виджета
         self.update_time()
         
-    def update_colors(self, scheme_name='lime'):
+    def update_colors(self, scheme_name=None):
         """
         Обновляет цвета элементов в соответствии с выбранной темой
         
         Args:
-            scheme_name: Имя темы (по умолчанию 'lime')
+            scheme_name: Имя темы. Если не указано, берется из базы данных или используется 'lime' по умолчанию
         """
         try:
             from kivy.logger import Logger
+            
+            # Получаем имя темы из базы данных, если не указано
+            if scheme_name is None:
+                try:
+                    from database.settings_db import SettingsDatabase
+                    db = SettingsDatabase()
+                    scheme_name = db.get_setting('theme', 'lime')
+                    Logger.debug(f'[NextPrayerTimeBox] Тема из базы данных: {scheme_name}')
+                except ImportError:
+                    Logger.warning('[NextPrayerTimeBox] Не удалось импортировать SettingsDatabase')
+                    scheme_name = 'lime'
+                except Exception as e:
+                    Logger.error(f'[NextPrayerTimeBox] Ошибка при получении темы из БД: {str(e)}')
+                    scheme_name = 'lime'
+            
             Logger.debug(f'[NextPrayerTimeBox] Обновление цветов на тему: {scheme_name}')
             
             # Получаем новую цветовую схему
             from .theme_color_schemes import get_theme_scheme
             new_scheme = get_theme_scheme(scheme_name)
             if not new_scheme:
-                Logger.error(f'[NextPrayerTimeBox] Ошибка: Неверное имя темы: {scheme_name}')
-                return
+                Logger.error(f'[NextPrayerTimeBox] Ошибка: Неверное имя темы: {scheme_name}. Используется тема по умолчанию (lime)')
+                new_scheme = get_theme_scheme('lime')
                 
             self.current_scheme = new_scheme
             
@@ -196,19 +211,21 @@ class NextPrayerTimeBox(GridLayout):
             if hasattr(self, 'time_label'):
                 self.time_label.color = self.current_scheme.get('countdown', (1, 1, 1, 1))
                 
-            # Обновляем цвета иконок
-            if hasattr(self, 'prayer_icon_left'):
-                self.prayer_icon_left.color = self.current_scheme.get('prayer_icons', self.normal_icon_color)
-                
-            if hasattr(self, 'prayer_icon_right'):
-                self.prayer_icon_right.color = self.current_scheme.get('prayer_icons', self.normal_icon_color)
+            # Обновляем цвета иконок, только если анимация не активна
+            if not self.is_animating:
+                icon_color = self.current_scheme.get('prayer_icons', self.normal_icon_color)
+                if hasattr(self, 'prayer_icon_left'):
+                    self.prayer_icon_left.color = icon_color
+                if hasattr(self, 'prayer_icon_right'):
+                    self.prayer_icon_right.color = icon_color
             
             Logger.info(f'[NextPrayerTimeBox] Цвета успешно обновлены на тему: {scheme_name}')
             
         except Exception as e:
             import traceback
             from kivy.logger import Logger
-            Logger.error(f'[NextPrayerTimeBox] Ошибка при обновлении цветов: {str(e)}')
+            Logger.error(f'[NextPrayerTimeBox] Критическая ошибка при обновлении цветов: {str(e)}')
+            Logger.error(f'[NextPrayerTimeBox] Тип ошибки: {type(e).__name__}')
             Logger.error(f'[NextPrayerTimeBox] Трассировка: {traceback.format_exc()}')
     
     def on_kv_post(self, *args):
@@ -271,17 +288,17 @@ class NextPrayerTimeBox(GridLayout):
         if hasattr(self, '_anim_left'):
             self._anim_left.cancel(self.prayer_icon_left)
             
-        # Возвращаем иконки в исходное состояние (темно-желтый цвет, полная непрозрачность)
-        self.prayer_icon_left.color = self.normal_icon_color
-        self.prayer_icon_right.color = self.normal_icon_color
+        # Получаем цвет иконок из текущей темы
+        icon_color = self.current_scheme.get('prayer_icons', self.normal_icon_color)
+        
+        # Устанавливаем цвет иконок из темы
+        self.prayer_icon_left.color = icon_color
+        self.prayer_icon_right.color = icon_color
         self.prayer_icon_left.opacity = 1.0
         self.prayer_icon_right.opacity = 1.0
+        
         if hasattr(self, '_anim_right'):
             self._anim_right.cancel(self.prayer_icon_right)
-        
-        # Возвращаем исходный цвет
-        self.prayer_icon_left.color = self.normal_icon_color
-        self.prayer_icon_right.color = self.normal_icon_color
         
         # Останавливаем анимацию часов, если доступно приложение
         if self.app and hasattr(self.app, 'stop_clock_animation'):
@@ -526,11 +543,15 @@ class NextPrayerTimeBox(GridLayout):
         self._blink_event = Clock.schedule_interval(self._update_time_blink, 0.5)
         
     def _stop_time_blink(self):
-        """Остановка анимации мигания времени следующего намаза"""
+        """
+        Остановка анимации мигания времени следующего намаза
+        
+        Восстанавливает полную видимость и цвет текста из текущей темы.
+        """
         if not self._is_time_blinking:
             return
             
-        Logger.debug('Stopping next prayer time blinking')
+        Logger.debug('[NextPrayerTimeBox] Остановка анимации мигания времени намаза')
         self._is_time_blinking = False
         
         # Отменяем запланированное обновление
@@ -538,9 +559,12 @@ class NextPrayerTimeBox(GridLayout):
             self._blink_event.cancel()
             self._blink_event = None
             
-        # Восстанавливаем полную видимость
+        # Восстанавливаем полную видимость и цвет из текущей темы
         if hasattr(self, 'time_label'):
             self.time_label.opacity = 1.0
+            if hasattr(self, 'current_scheme'):
+                self.time_label.color = self.current_scheme.get('countdown', (1, 1, 1, 1))
+                Logger.debug('[NextPrayerTimeBox] Восстановлен цвет времени из темы')
             
     def _update_30min_blink(self, dt):
         """Обновление анимации мигания предупреждения за 30 минут"""
