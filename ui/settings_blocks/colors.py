@@ -189,20 +189,20 @@ class ColorOption(Button):
         
     def update_border(self, instance, value):
         self.background_color = self.color_value
-        self.canvas.before.clear()
+        self.canvas.after.clear()  # Очищаем предыдущую рамку
         
         if value:  # Если кнопка выбрана
-            with self.canvas.before:
-                Color(1, 1, 1, 1)  # Белый цвет рамки
+            with self.canvas.after:  # Используем after для отрисовки поверх кнопки
+                Color(0.7, 0.7, 0.7, 1)  # Серый цвет рамки
                 # Рисуем рамку с отступом в 2 пикселя от края
-                border_width = 2
+                border_width = 6  # Толщина рамки
                 self._border = Line(
                     rectangle=(
-                        self.x + border_width/2, 
-                        self.y + border_width/2, 
-                        self.width - border_width, 
+                        self.x + border_width/2,
+                        self.y + border_width/2,
+                        self.width - border_width,
                         self.height - border_width
-                    ), 
+                    ),
                     width=border_width
                 )
 
