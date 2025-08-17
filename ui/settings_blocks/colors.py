@@ -409,10 +409,10 @@ def create_color_section(settings_window):
         font_size=dp(16),
         size_hint=(1, 1),
         height=dp(30),  # Высота как у переключателя
-        text_size=(None, None),
+        text_size=(Window.width - dp(110), None),  # Ширина с учетом отступов
         halign='left',
         valign='middle',
-        padding=(dp(15), dp(5)),  # Такие же отступы, как у кнопок темы
+        padding=(dp(25), dp(25)),  # Такие же отступы, как у кнопок темы
         bold=False
     )
     
