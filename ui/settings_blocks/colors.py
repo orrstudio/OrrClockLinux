@@ -379,12 +379,12 @@ def create_color_section(settings_window):
     background_title = Label(
         text='Background',
         color=(1, 1, 1, 1),
-        font_size=Window.width * 0.04,  # Адаптивный размер шрифта
+        font_size=Window.width * 0.04,  # Уменьшенный адаптивный размер шрифта
         size_hint=(1, None),
         height=dp(30),
         halign='left',
         valign='middle',
-        text_size=(Window.width - dp(40), None),
+        text_size=(Window.width - dp(60), None),  # Увеличиваем отступы с боков
         shorten=True,
         shorten_from='right',
         padding=(dp(25), dp(5))  # Отступы: слева, сверху
@@ -422,7 +422,7 @@ def create_color_section(settings_window):
         text_size=(Window.width - dp(100), None),  # Оставляем место для переключателя
         shorten=True,
         shorten_from='right',
-        padding=(dp(15), dp(5)),
+        padding=(dp(35), dp(5)),
         bold=False
     )
     
