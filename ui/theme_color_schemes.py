@@ -227,6 +227,28 @@ COLOR_SCHEMES = {
         'date_text': COLORS['magenta'],
         'separator': COLORS['magenta'],
         'background_color': COLORS['black']  # Используем серый вместо черного
+    },
+        'gray': {
+        'prayer_names': COLORS['black'],
+        'prayer_times': COLORS['black_t2'],
+        'active_time': COLORS['black'],
+        'next_time': COLORS['red'],
+        'countdown': COLORS['red'],
+        'prayer_icons': COLORS['black_t5'],
+        'date_text': COLORS['black'],
+        'separator': COLORS['black'],
+        'background_color': COLORS['gray']  # Используем серый вместо белого
+    },
+        'white_gray': {
+        'prayer_names': COLORS['magenta'],
+        'prayer_times': COLORS['magenta_t2'],
+        'active_time': COLORS['magenta'],
+        'next_time': COLORS['white'],
+        'countdown': COLORS['white'],
+        'prayer_icons': COLORS['magenta_t5'],
+        'date_text': COLORS['magenta'],
+        'separator': COLORS['magenta'],
+        'background_color': COLORS['black']  # Используем серый вместо черного
     }
 }
 
