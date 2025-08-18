@@ -210,12 +210,12 @@ COLOR_SCHEMES = {
         'prayer_names': COLORS['black'],
         'prayer_times': COLORS['black_t2'],
         'active_time': COLORS['black'],
-        'next_time': COLORS['white'],
-        'countdown': COLORS['white'],
+        'next_time': COLORS['red'],
+        'countdown': COLORS['red'],
         'prayer_icons': COLORS['black_t5'],
         'date_text': COLORS['black'],
         'separator': COLORS['black'],
-        'background_color': COLORS['gray']  # Используем серый вместо белого
+        'background_color': COLORS['white']  # Используем серый вместо белого
     },
     'magenta': {
         'prayer_names': COLORS['magenta'],
