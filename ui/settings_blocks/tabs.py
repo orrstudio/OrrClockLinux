@@ -19,8 +19,8 @@ def create_tab(name):
     # Создаем вкладку
     tab = TabbedPanelHeader(
         text=name,
-        font_size=dp(14),
-        background_color=(0.2, 0.2, 0.2, 1),
+        font_size=dp(24),
+        background_color=(0.1, 0.1, 0.1, 1),
         background_normal='',
         background_down='',
         color=(1, 1, 1, 1)
@@ -50,10 +50,10 @@ def create_tabbed_interface():
     # Создаем панель вкладок
     tab_panel = TabbedPanel(
         do_default_tab=False,
-        tab_width=dp(120),
-        tab_height=dp(40),
+        tab_width=dp(180),
+        tab_height=dp(45),
         background_color=(0.1, 0.1, 0.1, 1),
-        border=[0, 0, 0, 0],
+        border=[dp(1), dp(0), dp(0), dp(0)],
         background_image='',
         tab_pos='top_mid'
     )
