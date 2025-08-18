@@ -4,6 +4,10 @@
 """
 
 import logging
+import os
+import subprocess
+import threading
+import shutil
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.anchorlayout import AnchorLayout
@@ -75,9 +79,97 @@ def save_debug_state(settings_window, enabled):
         except Exception as db_error:
             logger.error(f'Критическая ошибка: не удалось сохранить состояние отладки: {db_error}')
 
+def open_logs_terminal(button_instance):
+    """Открывает терминал с отображением логов приложения."""
+    def open_terminal():
+        try:
+            # Получаем путь к директории приложения
+            app_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            logs_dir = os.path.join(app_dir, 'logs')
+            
+            # Получаем последний созданный файл лога
+            log_files = sorted(
+                [f for f in os.listdir(logs_dir) if f.startswith('logs_') and f.endswith('.txt')],
+                key=lambda x: os.path.getmtime(os.path.join(logs_dir, x)),
+                reverse=True
+            )
+            
+            if log_files:
+                log_file = os.path.join(logs_dir, log_files[0])
+                script_content = f'''#!/bin/bash
+                echo "Отслеживание логов (для выхода нажмите Ctrl+C):"
+                if [ -f "{log_file}" ]; then
+                    tail -f "{log_file}"
+                else
+                    echo "Файл логов не найден: {log_file}"
+                fi
+                read -p "Нажмите Enter для выхода..."
+                '''
+            else:
+                script_content = '''#!/bin/bash
+                echo "Файлы логов не найдены в директории logs."
+                echo "Проверьте настройки логирования в приложении."
+                read -p "Нажмите Enter для выхода..."
+                '''
+            
+            # Создаем временный скрипт для отображения логов
+            import tempfile
+            import stat
+            
+            with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.sh') as f:
+                script_path = f.name
+                f.write(script_content)
+            
+            # Устанавливаем права на выполнение
+            os.chmod(script_path, os.stat(script_path).st_mode | stat.S_IEXEC)
+            
+            # Список возможных команд для открытия терминала
+            terminal_commands = [
+                # Стандартные команды для разных окружений рабочего стола
+                ['xdg-terminal', '--', script_path],
+                ['x-terminal-emulator', '-e', script_path],
+                ['terminator', '-x', 'bash', script_path],  # Терминатор
+                ['gnome-terminal', '--', script_path],
+                ['konsole', '-e', script_path],
+                ['xfce4-terminal', '-x', script_path],
+                ['lxterminal', '-e', script_path],
+                ['mate-terminal', '--command', script_path],
+                ['alacritty', '-e', 'bash', script_path],
+                ['urxvt', '-e', 'bash', script_path],
+                ['xterm', '-e', 'bash', script_path],
+                # Если ничего не помогло, пробуем просто bash в текущей консоли
+                ['bash', script_path]
+            ]
+            
+            # Пробуем выполнить команды по очереди, пока не сработает
+            for cmd in terminal_commands:
+                try:
+                    # Проверяем, существует ли исполняемый файл
+                    if cmd[0] != 'bash' and not shutil.which(cmd[0]):
+                        continue
+                    
+                    # Пробуем выполнить команду
+                    subprocess.Popen(cmd, 
+                                   stdout=subprocess.PIPE, 
+                                   stderr=subprocess.PIPE)
+                    return  # Успешно открыли терминал, выходим из функции
+                    
+                except (FileNotFoundError, OSError) as e:
+                    continue  # Пробуем следующую команду
+            
+            # Если ни одна команда не сработала
+            print("Не удалось открыть терминал. Установите терминал, например: sudo pacman -S xterm или terminator")
+            # Удаляем временный файл, если не удалось открыть терминал
+            os.unlink(script_path)
+        except Exception as e:
+            print(f"Ошибка при открытии терминала с логами: {e}")
+    
+    # Запускаем в отдельном потоке, чтобы не блокировать интерфейс
+    threading.Thread(target=open_terminal, daemon=True).start()
+
 def on_debug_switch(switch_instance, value, settings_window):
     """Обработчик изменения состояния переключателя отладочного режима."""
-    # Только логируем изменение состояния, без сохранения
+    save_debug_state(settings_window, value)
     status = 'Enabled' if value else 'Disabled'
     logger.info(f'Debug Mode: {status}')
 
@@ -173,11 +265,13 @@ def create_admin_section(settings_window):
         # 3. Кнопка с закругленными углами (по центру)
         button_layout = AnchorLayout(anchor_x='center', anchor_y='center')
         button = RoundedButton(
-            text="Button",
+            text="Логи" if switch_attr == 'debug_switch' else "Button",
             size_hint=(None, None),
             size=(dp(100), dp(35)),
             border_radius=dp(10)  # Радиус скругления
         )
+        if switch_attr == 'debug_switch':
+            button.bind(on_press=open_logs_terminal)
         button_layout.add_widget(button)
         setattr(settings_window, button_attr, button)
         table.add_widget(button_layout)
