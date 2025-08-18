@@ -58,7 +58,8 @@ COLOR_NAMES = {
     (0, 1, 1, 1): 'Aqua',
     (0, 0, 1, 1): 'Blue',
     (1, 1, 0, 1): 'Yellow',
-    (1, 0, 1, 1): 'Magenta'
+    (1, 0, 1, 1): 'Magenta',
+    (3, 3, 3, 1): 'Gray'
 }
 
 def get_color_name(rgba):

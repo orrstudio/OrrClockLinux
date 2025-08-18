@@ -167,9 +167,16 @@ class ColorOption(Button):
     is_selected = BooleanProperty(False)
     
     def __init__(self, **kwargs):
+        from ui.theme_color_schemes import get_theme_scheme
+        
         super().__init__(**kwargs)
         self.background_normal = ''
-        self.background_color = (0, 0, 0, 1)  # Черный фон как у часов
+        
+        # Получаем цвет фона из текущей темы
+        theme = kwargs.get('color_name', 'lime')
+        theme_scheme = get_theme_scheme(theme)
+        self.background_color = theme_scheme.get('background_color', (0, 0, 0, 1))
+        
         self.size_hint = (1, None)
         self.size_hint_y = None
         self.height = 0  # Будет установлено при обновлении размера
