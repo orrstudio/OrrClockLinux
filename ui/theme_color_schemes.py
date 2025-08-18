@@ -122,9 +122,9 @@ COLOR_SCHEMES = {
         'prayer_names': COLORS['lime'],       # Названия молитв (не используется)
         'prayer_times': COLORS['yellow_t3'],  # Время молитв (название и цифры)
         'active_time': COLORS['lime'],        # Активное время (название и цифры текущей молитвы)
-        'next_time': COLORS['yellow'],        # Следующая молитва (название и цифры после текущей)
-        'countdown': COLORS['yellow'],           # Счетчик времени до следующей молитвы (только цифры)
-        'prayer_icons': COLORS['red'],  # Иконки
+        'next_time': COLORS['red'],        # Следующая молитва (название и цифры после текущей)
+        'countdown': COLORS['red'],           # Счетчик времени до следующей молитвы (только цифры)
+        'prayer_icons': COLORS['yellow_t5'],  # Иконки
         'date_text': COLORS['yellow'],        # Текст даты
         'separator': COLORS['yellow']         # Разделительные линии
     },
