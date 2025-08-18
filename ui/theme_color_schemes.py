@@ -198,6 +198,16 @@ COLOR_SCHEMES = {
         'prayer_icons': COLORS['black_t5'],
         'date_text': COLORS['black'],
         'separator': COLORS['black']
+    },
+    'magenta': {
+        'prayer_names': COLORS['magenta'],
+        'prayer_times': COLORS['magenta_t2'],
+        'active_time': COLORS['magenta'],
+        'next_time': COLORS['white'],
+        'countdown': COLORS['white'],
+        'prayer_icons': COLORS['magenta_t5'],
+        'date_text': COLORS['magenta'],
+        'separator': COLORS['magenta']
     }
 }
 
