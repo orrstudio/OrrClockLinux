@@ -131,13 +131,14 @@ COLORS = {
 COLOR_SCHEMES = {
     'lime': {
         'prayer_names': COLORS['lime'],       # Названия молитв (не используется)
-        'prayer_times': COLORS['yellow_t3'],  # Время молитв (название и цифры)
+        'prayer_times': COLORS['yellow_t2'],  # Время молитв (название и цифры)
         'active_time': COLORS['lime'],        # Активное время (название и цифры текущей молитвы)
         'next_time': COLORS['yellow'],        # Следующая молитва (название и цифры после текущей)
         'countdown': COLORS['red'],           # Счетчик времени до следующей молитвы (только цифры)
         'prayer_icons': COLORS['yellow_t5'],  # Иконки
         'date_text': COLORS['yellow'],        # Текст даты
-        'separator': COLORS['yellow']         # Разделительные линии
+        'separator': COLORS['yellow'],        # Разделительные линии
+        'background_color': COLORS['black']   # Цвет фона
     },
     'aqua': {
         'prayer_names': COLORS['aqua'],
@@ -147,7 +148,8 @@ COLOR_SCHEMES = {
         'countdown': COLORS['red'],
         'prayer_icons': COLORS['yellow_t5'],
         'date_text': COLORS['yellow'],
-        'separator': COLORS['yellow']
+        'separator': COLORS['yellow'],
+        'background_color': COLORS['black']
     },
     'blue': {
         'prayer_names': COLORS['blue'],
@@ -157,7 +159,8 @@ COLOR_SCHEMES = {
         'countdown': COLORS['red'],
         'prayer_icons': COLORS['blue_t3'],
         'date_text': COLORS['blue'],
-        'separator': COLORS['blue']
+        'separator': COLORS['blue'],
+        'background_color': COLORS['white']
     },
     'red': {
         'prayer_names': COLORS['red'],
@@ -167,37 +170,41 @@ COLOR_SCHEMES = {
         'countdown': COLORS['blue'],
         'prayer_icons': COLORS['red_t5'],
         'date_text': COLORS['red'],
-        'separator': COLORS['red']
+        'separator': COLORS['red'],
+        'background_color': COLORS['black']
     },
     'yellow': {
         'prayer_names': COLORS['yellow'],
-        'prayer_times': COLORS['yellow_t3'],
+        'prayer_times': COLORS['yellow_t2'],
         'active_time': COLORS['yellow'],
         'next_time': COLORS['red'],
         'countdown': COLORS['red'],
         'prayer_icons': COLORS['yellow_t5'],
         'date_text': COLORS['yellow'],
-        'separator': COLORS['yellow']
+        'separator': COLORS['yellow'],
+        'background_color': COLORS['black']
     },
     'white': {
         'prayer_names': COLORS['white'],
-        'prayer_times': COLORS['white_t3'],
+        'prayer_times': COLORS['white_t2'],
         'active_time': COLORS['white'],
         'next_time': COLORS['red'],
         'countdown': COLORS['red'],
         'prayer_icons': COLORS['white_t5'],
         'date_text': COLORS['white'],
-        'separator': COLORS['white']
+        'separator': COLORS['white'],
+        'background_color': COLORS['black']
     },
     'black': {
         'prayer_names': COLORS['black'],
-        'prayer_times': COLORS['black_t3'],
+        'prayer_times': COLORS['black_t2'],
         'active_time': COLORS['black'],
         'next_time': COLORS['red'],
         'countdown': COLORS['red'],
         'prayer_icons': COLORS['black_t5'],
         'date_text': COLORS['black'],
-        'separator': COLORS['black']
+        'separator': COLORS['black'],
+        'background_color': COLORS['white']
     },
     'magenta': {
         'prayer_names': COLORS['magenta'],
@@ -207,7 +214,8 @@ COLOR_SCHEMES = {
         'countdown': COLORS['white'],
         'prayer_icons': COLORS['magenta_t5'],
         'date_text': COLORS['magenta'],
-        'separator': COLORS['magenta']
+        'separator': COLORS['magenta'],
+        'background_color': COLORS['black']
     }
 }
 

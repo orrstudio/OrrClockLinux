@@ -66,7 +66,7 @@ def get_color_name(rgba):
     # Округляем значения до целых для сравнения
     rgb = tuple(round(c) for c in rgba[:3])
     return COLOR_NAMES.get(rgb + (1,), str(rgba))
-    
+
 from kivy.metrics import dp  # Используется для задания размеров в пикселях, независимых от плотности экрана
 # Импорты локальных модулей приложения
 from ui.settings_window import SettingsWindow
@@ -161,7 +161,6 @@ class MainWindowApp(App):
         
         # Фон главного окна
         Window.clearcolor = (0, 0, 0, 1) # Черный фон
-        # Window.clearcolor = (1, 1, 1, 1) # Белый фон
         Logger.info(f'Window MAIN: Background color set to: {get_color_name(Window.clearcolor)}')
         
         # Привязываем обработчики событий
@@ -452,6 +451,11 @@ class MainWindowApp(App):
             # Получаем цветовую схему для новой темы
             from ui.theme_color_schemes import get_theme_scheme
             theme_colors = get_theme_scheme(color_name)
+            
+            # Устанавливаем цвет фона главного окна
+            if 'background_color' in theme_colors:
+                Window.clearcolor = theme_colors['background_color']
+                Logger.info(f'Window MAIN: Background color set to: {get_color_name(Window.clearcolor)}')
             
             # Обновляем цвет метки даты, если она существует
             if hasattr(self, 'date_hijri_label') and self.date_hijri_label:
