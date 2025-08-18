@@ -343,11 +343,12 @@ class MainWindowApp(App):
         """
         Применение начального цвета после инициализации
         """
-        initial_color = self.settings_manager.db.get_setting('color')
-        if initial_color:
-            color_tuple = get_color_tuple(initial_color)
-            self.update_title_color(color_tuple)
-        
+        saved_color = self.settings_db.get_setting('color')
+        if saved_color:
+            self.update_color(saved_color)
+            # Обновляем цвета интерфейса, включая фон
+            self.update_ui_colors(saved_color)
+
     def update_title_color(self, color):
         """Обновляем цвет заголовка"""
         self.title_label.color = color
