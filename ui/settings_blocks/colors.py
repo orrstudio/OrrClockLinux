@@ -35,9 +35,10 @@ def get_color_tuple(color_name):
         'blue': (0, 0, 1, 1),
         'red': (1, 0, 0, 1),
         'yellow': (1, 1, 0, 1),
+        'magenta': (1, 0, 1, 1),
         'white': (1, 1, 1, 1),
         'black': (0, 0, 0, 1),
-        'magenta': (1, 0, 1, 1)
+
     }
     return colors.get(color_name.lower(), (0, 1, 0, 1))
 
@@ -83,9 +84,9 @@ class ColorSettings:
             'blue': (0, 0, 1, 1),
             'red': (1, 0, 0, 1),
             'yellow': (1, 1, 0, 1),
+            'magenta': (1, 0, 1, 1),
             'white': (1, 1, 1, 1),
             'black': (0, 0, 0, 1),
-            'magenta': (1, 0, 1, 1)
         }
     
     def _add_border_to_button(self, button):
@@ -311,28 +312,6 @@ def create_color_section(settings_window):
         size_hint=(1, None)
     )
     
-    # Адаптивный заголовок блока выбора цвета
-    color_title = Label(
-        text='Application theme',  # Добавлены пробелы для отступа слева
-        color=(1, 1, 1, 1),
-        font_size=Window.width * 0.04,  # Адаптивный размер шрифта
-        size_hint=(1, None),
-        height=dp(30),
-        halign='left',
-        valign='middle',
-        text_size=(Window.width - dp(40), None),
-        shorten=True,
-        shorten_from='right',
-        padding=(dp(25), dp(5))  # Отступы: слева, сверху
-    )
-    
-    def update_color_title_size(*args):
-        color_title.text_size = (Window.width - dp(40), None)
-        color_title.texture_update()
-    
-    Window.bind(width=update_color_title_size)
-    Clock.schedule_once(update_color_title_size)
-    
     # Создаем экземпляр настроек цветов
     color_settings = ColorSettings(settings_window)
     
@@ -373,7 +352,6 @@ def create_color_section(settings_window):
     settings_window.color_settings = color_settings
     
     # Собираем блок выбора цвета
-    color_section.add_widget(color_title)  # Добавляем заголовок
     color_section.add_widget(colors_grid)  # Добавляем сетку цветов
     
     # Добавляем разделитель перед блоком темы фона (но после всех кнопок цветов)
