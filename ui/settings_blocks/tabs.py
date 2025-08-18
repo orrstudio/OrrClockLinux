@@ -12,7 +12,7 @@ Builder.load_string('''
 <CustomTabbedPanel>:
     canvas.before:
         Color:
-            rgba: 0.1, 0.1, 0.1, 1
+            rgba: 0.5, 0.5, 0.5, 1
         Rectangle:
             pos: self.pos
             size: self.size
@@ -38,13 +38,13 @@ Builder.load_string('''
     canvas.before:
         # Фон вкладки - более светлый для активной
         Color:
-            rgba: (0.2, 0.4, 0.6, 1) if self.state == 'down' else (0.15, 0.15, 0.15, 1)
+            rgba: (0.5, 0.5, 0.5, 1) if self.state == 'down' else (0.5, 0.5, 0.5, 1)
         Rectangle:
             pos: self.pos
             size: self.size
         # Добавляем обводку для активной вкладки
         Color:
-            rgba: (0.3, 0.6, 0.9, 1) if self.state == 'down' else (0, 0, 0, 0)
+            rgba: (1, 1, 1, 1) if self.state == 'down' else (0, 0, 0, 1)
         Line:
             rectangle: (self.x, self.y, self.width, 2)
 ''')

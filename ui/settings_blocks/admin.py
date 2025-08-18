@@ -6,7 +6,7 @@
 import logging
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
-from kivy.uix.switch import Switch
+from ui.components.custom_switch import CustomSwitch
 from kivy.uix.widget import Widget
 from kivy.metrics import dp, sp
 from kivy.clock import Clock
@@ -117,21 +117,28 @@ def create_admin_section(settings_window):
     )
     
     # Переключатель (1/3 ширины)
-    settings_window.debug_switch = Switch(
+    debug_switch = CustomSwitch(
         active=debug_enabled,
-        size_hint_x=1/3
+        size_hint=(None, None),
+        size=(dp(64), dp(36)),
+        thumb_color_active=[0, 1, 0, 1],
+        thumb_color_inactive=[1, 0, 0, 1],
+        track_color_active=[0.15, 0.3, 0.15, 1],
+        track_color_inactive=[0.2, 0.1, 0.1, 1]
     )
+    debug_switch.bind(active=lambda instance, value: on_debug_switch(instance, value, settings_window))
+    settings_window.debug_switch = debug_switch
+    
+    # Создаем контейнер для переключателя с выравниванием по центру
+    switch_container = GridLayout(cols=1, size_hint=(None, None), size=(dp(70), dp(40)))
+    switch_container.add_widget(debug_switch)
     
     # Пустой виджет для выравнивания (1/3 ширины)
     empty_widget = Widget(size_hint_x=1/3)
     
-    # Привязываем обработчик события изменения состояния переключателя
-    # Обработчик только логирует изменение, сохранение будет при нажатии кнопки "Сохранить"
-    settings_window.debug_switch.bind(active=lambda instance, value: on_debug_switch(instance, value, settings_window))
-    
     # Добавляем виджеты в контейнер
     controls_layout.add_widget(switch_label)
-    controls_layout.add_widget(settings_window.debug_switch)
+    controls_layout.add_widget(switch_container)
     controls_layout.add_widget(empty_widget)
     
     # Добавляем виджеты в секцию
