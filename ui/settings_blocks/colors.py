@@ -35,7 +35,9 @@ def get_color_tuple(color_name):
         'blue': (0, 0, 1, 1),
         'red': (1, 0, 0, 1),
         'yellow': (1, 1, 0, 1),
-        'white': (1, 1, 1, 1)
+        'white': (1, 1, 1, 1),
+        'black': (0, 0, 0, 1),
+        'magenta': (1, 0, 1, 1)
     }
     return colors.get(color_name.lower(), (0, 1, 0, 1))
 
@@ -55,7 +57,9 @@ def get_color_name(color_tuple):
         (0, 0, 1, 1): 'blue',
         (1, 0, 0, 1): 'red',
         (1, 1, 0, 1): 'yellow',
-        (1, 1, 1, 1): 'white'
+        (1, 1, 1, 1): 'white',
+        (0, 0, 0, 1): 'black',
+        (1, 0, 1, 1): 'magenta'
     }
     return colors.get(tuple(color_tuple), 'lime')
 
@@ -79,7 +83,9 @@ class ColorSettings:
             'blue': (0, 0, 1, 1),
             'red': (1, 0, 0, 1),
             'yellow': (1, 1, 0, 1),
-            'white': (1, 1, 1, 1)
+            'white': (1, 1, 1, 1),
+            'black': (0, 0, 0, 1),
+            'magenta': (1, 0, 1, 1)
         }
     
     def _add_border_to_button(self, button):
@@ -323,12 +329,12 @@ def create_color_section(settings_window):
     # Создаем экземпляр настроек цветов
     color_settings = ColorSettings(settings_window)
     
-    # Сетка цветов (2 колонки, 3 строки)
+    # Сетка цветов (2 колонки, 4 строки)
     colors_grid = GridLayout(
         cols=2,  # Две колонки
         spacing=dp(10),  # Отступы между кнопками
         size_hint_y=None,
-        height=dp(300),  # Примерная высота, будет пересчитана
+        height=dp(400),  # Увеличиваем высоту для 4 строк
         row_force_default=False,
         row_default_height=dp(100),  # Примерная высота строки
         padding=[0, dp(5), 0, dp(5)]  # Отступы сверху и снизу
