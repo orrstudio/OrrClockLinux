@@ -378,12 +378,12 @@ def create_color_section(settings_window):
     # Функция для обновления отступа
     def update_spacer(*args):
         # Обновляем высоту отступа при изменении размера окна
-        # Используем увеличенный коэффициент для более заметного изменения
         base_width = 800  # Базовая ширина
-        min_height = dp(100)  # Минимальная высота
-        max_height = dp(800)  # Максимальная высота
+        min_height = dp(80)  # Минимальная высота
+        max_height = dp(250)  # Максимальная высота
         scale = Window.width / base_width
-        spacer.height = min(max_height, max(min_height, dp(180) * scale * 1.8))  # Увеличили множитель
+        # Более плавное масштабирование с меньшим множителем
+        spacer.height = min(max_height, max(min_height, dp(120) * scale * 1.2))
     
     # Привязываем обновление отступа к изменению размера окна
     Window.bind(width=update_spacer)
