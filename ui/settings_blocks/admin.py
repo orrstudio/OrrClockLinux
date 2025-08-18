@@ -8,7 +8,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.widget import Widget
-from kivy.metrics import dp, sp
+from kivy.metrics import dp
 from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.graphics import Color, Line
@@ -16,7 +16,6 @@ from kivy.properties import ListProperty
 
 from ui.components.custom_switch import CustomSwitch
 from ui.components.custom_button import RoundedButton
-from .base import ResponsiveLabel
 
 # Настройка логирования
 logger = logging.getLogger(__name__)
@@ -96,7 +95,7 @@ def create_admin_section(settings_window):
     container = GridLayout(
         cols=1,
         size_hint=(1, None),
-        height=dp(210),  # Высота аналогична уведомлениям
+        height=dp(210),  # Такая же высота, как у уведомлений
         padding=(dp(30), dp(5), dp(30), dp(5)),
         spacing=dp(5)
     )
@@ -106,13 +105,13 @@ def create_admin_section(settings_window):
         cols=3,
         rows=3,
         size_hint_y=None,
-        height=dp(150),
+        height=dp(150),  # Такая же высота, как у уведомлений
         spacing=0
     )
     
     # Настройка ширины столбцов
     def update_col_widths(*args):
-        available_width = table.width
+        available_width = table.width  # ширина именно таблицы
         table.cols_minimum = {
             0: available_width * 0.4,
             1: available_width * 0.3,
@@ -122,13 +121,13 @@ def create_admin_section(settings_window):
     table.bind(size=update_col_widths)
     update_col_widths()
     
-    # Данные для строк таблицы
+    # Данные для строк
     rows = [
         ("Debug Mode", 'debug_switch', 'debug_button'),
         ("Feature 2", 'feature2_switch', 'feature2_button'),
         ("Feature 3", 'feature3_switch', 'feature3_button')
     ]
-    
+
     for text, switch_attr, button_attr in rows:
         # 1. Текст (слева по центру вертикально)
         label = Label(
@@ -139,51 +138,50 @@ def create_admin_section(settings_window):
             bold=False,
             size_hint_x=0.8
         )
-        label.bind(size=lambda inst, val: setattr(inst, 'text_size', (val[0], None)))
-        
+
+        def update_text_size(inst, val):
+            padding = dp(30)  # отступ слева
+            inst.text_size = (val[0] - padding, None)
+            inst.canvas.ask_update()
+
+        label.bind(size=update_text_size)
+        table.add_widget(label)
+
         # 2. Переключатель (по центру)
+        switch_layout = AnchorLayout(anchor_x='center', anchor_y='center')
         if switch_attr == 'debug_switch':
             # Используем существующий переключатель для debug
             debug_enabled = load_debug_state(settings_window)
             switch = CustomSwitch(
-                active=debug_enabled,
                 size_hint=(None, None),
-                size=(dp(64), dp(36)),
-                thumb_color_active=[0, 1, 0, 1],
-                thumb_color_inactive=[1, 0, 0, 1],
-                track_color_active=[0.15, 0.3, 0.15, 1],
-                track_color_inactive=[0.2, 0.1, 0.1, 1]
+                size=(dp(64), dp(40))  # Размер как в уведомлениях
             )
+            switch.active = debug_enabled
             switch.bind(active=lambda instance, value: on_debug_switch(instance, value, settings_window))
             settings_window.debug_switch = switch
         else:
-            # Пустой виджет для остальных строк
-            switch = Widget()
-        
-        # 3. Кнопка (по центру)
-        if button_attr == 'debug_button':
-            button = RoundedButton(
-                text='Настройки',
+            switch = CustomSwitch(
                 size_hint=(None, None),
-                size=(dp(120), dp(40)),
-                font_size='16sp',
-                background_color=(0.2, 0.6, 0.8, 1)
+                size=(dp(64), dp(40))
             )
-            # Здесь можно добавить обработчик нажатия на кнопку
-            # button.bind(on_press=...)
-        else:
-            # Пустой виджет для остальных строк
-            button = Widget()
+            switch.active = False
         
-        # Добавляем элементы в таблицу
-        table.add_widget(label)
-        table.add_widget(switch)
-        table.add_widget(button)
+        switch_layout.add_widget(switch)
+        setattr(settings_window, switch_attr, switch)
+        table.add_widget(switch_layout)
+
+        # 3. Кнопка с закругленными углами (по центру)
+        button_layout = AnchorLayout(anchor_x='center', anchor_y='center')
+        button = RoundedButton(
+            text="Button",
+            size_hint=(None, None),
+            size=(dp(100), dp(35)),
+            border_radius=dp(10)  # Радиус скругления
+        )
+        button_layout.add_widget(button)
+        setattr(settings_window, button_attr, button)
+        table.add_widget(button_layout)
     
-    # Добавляем таблицу в контейнер
     container.add_widget(table)
-    
-    # Сохраняем ссылку на секцию для доступа из других методов
     settings_window.admin_section = container
-    
     return container
