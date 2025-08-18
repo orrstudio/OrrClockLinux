@@ -122,7 +122,7 @@ COLOR_SCHEMES = {
         'prayer_names': COLORS['lime'],       # Названия молитв (не используется)
         'prayer_times': COLORS['yellow_t3'],  # Время молитв (название и цифры)
         'active_time': COLORS['lime'],        # Активное время (название и цифры текущей молитвы)
-        'next_time': COLORS['red'],        # Следующая молитва (название и цифры после текущей)
+        'next_time': COLORS['yellow'],        # Следующая молитва (название и цифры после текущей)
         'countdown': COLORS['red'],           # Счетчик времени до следующей молитвы (только цифры)
         'prayer_icons': COLORS['yellow_t5'],  # Иконки
         'date_text': COLORS['yellow'],        # Текст даты
@@ -140,17 +140,17 @@ COLOR_SCHEMES = {
     },
     'blue': {
         'prayer_names': COLORS['blue'],
-        'prayer_times': COLORS['blue_t3'],
+        'prayer_times': COLORS['blue_t2'],
         'active_time': COLORS['blue'],
         'next_time': COLORS['red'],
         'countdown': COLORS['red'],
-        'prayer_icons': COLORS['blue_t5'],
+        'prayer_icons': COLORS['blue_t3'],
         'date_text': COLORS['blue'],
         'separator': COLORS['blue']
     },
     'red': {
         'prayer_names': COLORS['red'],
-        'prayer_times': COLORS['red_t3'],
+        'prayer_times': COLORS['red_t2'],
         'active_time': COLORS['red'],
         'next_time': COLORS['blue'],
         'countdown': COLORS['blue'],
