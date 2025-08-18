@@ -9,9 +9,6 @@ from kivy.properties import ListProperty
 from ui.components.custom_switch import CustomSwitch
 from ui.components.custom_button import RoundedButton
 
-
-
-
 class BorderedGridLayout(GridLayout):
     """GridLayout с границами и адаптивными линиями."""
     border_color = ListProperty([0.2, 0.2, 0.2, 1])
@@ -34,7 +31,6 @@ class BorderedGridLayout(GridLayout):
             Line(points=[col1, self.y, col1, self.top], width=1)
             Line(points=[col2, self.y, col2, self.top], width=1)
 
-
 def create_notifications_section(settings_window):
     """Создаёт секцию уведомлений с таблицей 3x3."""
 
@@ -45,19 +41,6 @@ def create_notifications_section(settings_window):
         padding=(dp(30), dp(5), dp(30), dp(5)),
         spacing=dp(5)
     )
-
-    # Заголовок
-    title = Label(
-        text='Notifications',
-        size_hint_y=None,
-        height=dp(30),
-        font_size='24sp',
-        bold=True,
-        halign='left',
-        valign='middle'
-    )
-    title.bind(size=lambda inst, val: setattr(inst, 'text_size', (val[0], None)))
-    container.add_widget(title)
 
     # Таблица
     table = BorderedGridLayout(
