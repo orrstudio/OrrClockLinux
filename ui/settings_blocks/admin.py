@@ -6,16 +6,41 @@
 import logging
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
-from ui.components.custom_switch import CustomSwitch
+from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.widget import Widget
 from kivy.metrics import dp, sp
 from kivy.clock import Clock
 from kivy.core.window import Window
+from kivy.graphics import Color, Line
+from kivy.properties import ListProperty
 
+from ui.components.custom_switch import CustomSwitch
+from ui.components.custom_button import RoundedButton
 from .base import ResponsiveLabel
 
 # Настройка логирования
 logger = logging.getLogger(__name__)
+
+class BorderedGridLayout(GridLayout):
+    """GridLayout с границами и адаптивными линиями."""
+    border_color = ListProperty([0.2, 0.2, 0.2, 1])
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.bind(pos=self._update_border, size=self._update_border)
+
+    def _update_border(self, *args):
+        self.canvas.after.clear()
+        with self.canvas.after:
+            Color(*self.border_color)
+            # Внешняя рамка
+            Line(rectangle=(self.x, self.y, self.width, self.height), width=1)
+
+            # Вертикальные линии
+            col1 = self.x + self.width * 0.4
+            col2 = self.x + self.width * 0.7
+            Line(points=[col1, self.y, col1, self.top], width=1)
+            Line(points=[col2, self.y, col2, self.top], width=1)
 
 def load_debug_state(settings_window):
     """Загружает состояние отладочного режима из базы данных."""
@@ -59,7 +84,7 @@ def on_debug_switch(switch_instance, value, settings_window):
 
 def create_admin_section(settings_window):
     """
-    Создает секцию с настройками админ-панели.
+    Создает секцию с настройками админ-панели в виде таблицы.
     
     Args:
         settings_window: Экземпляр SettingsWindow
@@ -67,85 +92,98 @@ def create_admin_section(settings_window):
     Returns:
         GridLayout: Секция с настройками админ-панели
     """
-    # Секция админ-панели
-    admin_section = GridLayout(
+    # Основной контейнер секции
+    container = GridLayout(
         cols=1,
-        size_hint_y=None,
-        height=dp(110),  # Такая же высота, как у других блоков
-        padding=[dp(20), dp(15), dp(20), dp(20)],
-        spacing=dp(10),
-        size_hint=(1, None)
-    )
-    
-    # Адаптивный заголовок блока
-    admin_title = Label(
-        text='Admin Panel',
-        color=(1, 1, 1, 1),
-        font_size=sp(22),
         size_hint=(1, None),
-        height=dp(30),
-        halign='left',
-        valign='middle',
-        text_size=(Window.width - dp(40), None),
-        padding=(0, dp(5)),
-        shorten=True,
-        shorten_from='right'
+        height=dp(210),  # Высота аналогична уведомлениям
+        padding=(dp(30), dp(5), dp(30), dp(5)),
+        spacing=dp(5)
     )
     
-    def update_admin_title_size(*args):
-        admin_title.text_size = (Window.width - dp(40), None)
-        admin_title.texture_update()
-    
-    Window.bind(width=update_admin_title_size)
-    Clock.schedule_once(update_admin_title_size)
-    
-    # Контейнер для элементов управления (3 колонки по 1/3 ширины)
-    controls_layout = GridLayout(
+    # Таблица настроек
+    table = BorderedGridLayout(
         cols=3,
+        rows=3,
         size_hint_y=None,
-        height=dp(40),
-        spacing=dp(10)
+        height=dp(150),
+        spacing=0
     )
     
-    # Загружаем текущее состояние отладочного режима
-    debug_enabled = load_debug_state(settings_window)
+    # Настройка ширины столбцов
+    def update_col_widths(*args):
+        available_width = table.width
+        table.cols_minimum = {
+            0: available_width * 0.4,
+            1: available_width * 0.3,
+            2: available_width * 0.3
+        }
     
-    # Метка (1/3 ширины) с переносом текста
-    switch_label = ResponsiveLabel(
-        text='Debug mode:',
-        markup=True
-    )
+    table.bind(size=update_col_widths)
+    update_col_widths()
     
-    # Переключатель (1/3 ширины)
-    debug_switch = CustomSwitch(
-        active=debug_enabled,
-        size_hint=(None, None),
-        size=(dp(64), dp(36)),
-        thumb_color_active=[0, 1, 0, 1],
-        thumb_color_inactive=[1, 0, 0, 1],
-        track_color_active=[0.15, 0.3, 0.15, 1],
-        track_color_inactive=[0.2, 0.1, 0.1, 1]
-    )
-    debug_switch.bind(active=lambda instance, value: on_debug_switch(instance, value, settings_window))
-    settings_window.debug_switch = debug_switch
+    # Данные для строк таблицы
+    rows = [
+        ("Debug Mode", 'debug_switch', 'debug_button'),
+        ("Feature 2", 'feature2_switch', 'feature2_button'),
+        ("Feature 3", 'feature3_switch', 'feature3_button')
+    ]
     
-    # Создаем контейнер для переключателя с выравниванием по центру
-    switch_container = GridLayout(cols=1, size_hint=(None, None), size=(dp(70), dp(40)))
-    switch_container.add_widget(debug_switch)
+    for text, switch_attr, button_attr in rows:
+        # 1. Текст (слева по центру вертикально)
+        label = Label(
+            text=text,
+            halign='left',
+            valign='middle',
+            font_size='22sp',
+            bold=False,
+            size_hint_x=0.8
+        )
+        label.bind(size=lambda inst, val: setattr(inst, 'text_size', (val[0], None)))
+        
+        # 2. Переключатель (по центру)
+        if switch_attr == 'debug_switch':
+            # Используем существующий переключатель для debug
+            debug_enabled = load_debug_state(settings_window)
+            switch = CustomSwitch(
+                active=debug_enabled,
+                size_hint=(None, None),
+                size=(dp(64), dp(36)),
+                thumb_color_active=[0, 1, 0, 1],
+                thumb_color_inactive=[1, 0, 0, 1],
+                track_color_active=[0.15, 0.3, 0.15, 1],
+                track_color_inactive=[0.2, 0.1, 0.1, 1]
+            )
+            switch.bind(active=lambda instance, value: on_debug_switch(instance, value, settings_window))
+            settings_window.debug_switch = switch
+        else:
+            # Пустой виджет для остальных строк
+            switch = Widget()
+        
+        # 3. Кнопка (по центру)
+        if button_attr == 'debug_button':
+            button = RoundedButton(
+                text='Настройки',
+                size_hint=(None, None),
+                size=(dp(120), dp(40)),
+                font_size='16sp',
+                background_color=(0.2, 0.6, 0.8, 1)
+            )
+            # Здесь можно добавить обработчик нажатия на кнопку
+            # button.bind(on_press=...)
+        else:
+            # Пустой виджет для остальных строк
+            button = Widget()
+        
+        # Добавляем элементы в таблицу
+        table.add_widget(label)
+        table.add_widget(switch)
+        table.add_widget(button)
     
-    # Пустой виджет для выравнивания (1/3 ширины)
-    empty_widget = Widget(size_hint_x=1/3)
-    
-    # Добавляем виджеты в контейнер
-    controls_layout.add_widget(switch_label)
-    controls_layout.add_widget(switch_container)
-    controls_layout.add_widget(empty_widget)
-    
-    # Добавляем виджеты в секцию
-    admin_section.add_widget(admin_title)
-    admin_section.add_widget(controls_layout)
+    # Добавляем таблицу в контейнер
+    container.add_widget(table)
     
     # Сохраняем ссылку на секцию для доступа из других методов
-    settings_window.admin_section = admin_section
+    settings_window.admin_section = container
     
-    return admin_section
+    return container
