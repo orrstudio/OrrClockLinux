@@ -48,6 +48,25 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.modalview import ModalView
 from kivy.clock import Clock
+
+# Словарь для сопоставления RGB с названиями цветов
+COLOR_NAMES = {
+    (0, 0, 0, 1): 'Black',
+    (1, 1, 1, 1): 'White',
+    (1, 0, 0, 1): 'Red',
+    (0, 1, 0, 1): 'Lime',
+    (0, 1, 1, 1): 'Aqua',
+    (0, 0, 1, 1): 'Blue',
+    (1, 1, 0, 1): 'Yellow',
+    (1, 0, 1, 1): 'Magenta'
+}
+
+def get_color_name(rgba):
+    """Возвращает название цвета по его RGBA-значению"""
+    # Округляем значения до целых для сравнения
+    rgb = tuple(round(c) for c in rgba[:3])
+    return COLOR_NAMES.get(rgb + (1,), str(rgba))
+    
 from kivy.metrics import dp  # Используется для задания размеров в пикселях, независимых от плотности экрана
 # Импорты локальных модулей приложения
 from ui.settings_window import SettingsWindow
@@ -143,7 +162,7 @@ class MainWindowApp(App):
         # Фон главного окна
         Window.clearcolor = (0, 0, 0, 1) # Черный фон
         # Window.clearcolor = (1, 1, 1, 1) # Белый фон
-        Logger.info(f'Window MAIN: Background color set to: Black {Window.clearcolor}')
+        Logger.info(f'Window MAIN: Background color set to: {get_color_name(Window.clearcolor)}')
         
         # Привязываем обработчики событий
         Window.bind(on_touch_down=self.on_window_touch_down)
