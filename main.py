@@ -159,9 +159,6 @@ class MainWindowApp(App):
         # Создаем глобальный экземпляр для вычисления времени молитв
         self.prayer_time_calculator = prayer_time_calculator
         
-        # Фон главного окна
-        Window.clearcolor = (0, 0, 0, 1) # Черный фон
-        Logger.info(f'Window MAIN: Background color set to: {get_color_name(Window.clearcolor)}')
         
         # Привязываем обработчики событий
         Window.bind(on_touch_down=self.on_window_touch_down)
