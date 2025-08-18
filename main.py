@@ -142,6 +142,7 @@ class MainWindowApp(App):
         
         # Фон главного окна
         Window.clearcolor = (0, 0, 0, 1) # Черный фон
+        # Window.clearcolor = (1, 1, 1, 1) # Белый фон
         Logger.info(f'Window MAIN: Background color set to: Black {Window.clearcolor}')
         
         # Привязываем обработчики событий
