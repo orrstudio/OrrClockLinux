@@ -6,7 +6,7 @@ from kivy.metrics import dp
 from kivy.core.window import Window
 from kivy.properties import ListProperty
 
-from ui.components.custom_switch import CustomMDSwitch
+from ui.components.custom_switch import CustomSwitch
 from ui.components.custom_button import RoundedButton
 
 
@@ -107,14 +107,14 @@ def create_notifications_section(settings_window):
         label.bind(size=update_text_size)
         table.add_widget(label)
 
-        # 2. KivyMD переключатель (по центру)
+        # 2. Kivy переключатель (по центру)
         switch_layout = AnchorLayout(anchor_x='center', anchor_y='center')
-        switch = CustomMDSwitch(
+        switch = CustomSwitch(
             size_hint=(None, None),
             size=(dp(64), dp(40))  # Увеличиваем размер для лучшего отображения
         )
         switch_layout.add_widget(switch)
-        setattr(settings_window, switch_attr, switch.switch)  # Сохраняем ссылку на внутренний switch
+        setattr(settings_window, switch_attr, switch)  # Сохраняем ссылку на сам переключатель
         table.add_widget(switch_layout)
 
         # 3. Кнопка с закругленными углами (по центру)

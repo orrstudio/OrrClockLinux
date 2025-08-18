@@ -4,15 +4,18 @@
 """
 
 import logging
+from datetime import datetime
+from kivy.clock import Clock
+from kivy.core.window import Window
+from kivy.graphics import Color, Line
+from kivy.metrics import dp
 from kivy.properties import StringProperty, ListProperty, BooleanProperty, ObjectProperty
+from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
-from kivy.metrics import dp
-from kivy.core.window import Window
-from kivy.clock import Clock
-from kivy.graphics import Color, Line
-from datetime import datetime
+from data.database import SettingsDatabase
+
 
 logger = logging.getLogger(__name__)
 
@@ -453,20 +456,37 @@ def create_color_section(settings_window):
     Clock.schedule_once(lambda dt: update_background_label_size(None, Window.width))
     
     # Добавляем кастомный переключатель
-    from ui.components.custom_switch import CustomMDSwitch
-    background_switch = CustomMDSwitch(
-        width=dp(64),
-        height=dp(36),
+    from ui.components.custom_switch import CustomSwitch
+    
+    # Загружаем сохраненное состояние темы
+    db = SettingsDatabase()
+    is_dark_theme = db.get_setting('dark_theme', '0') == '1'
+    
+    # Создаем переключатель с текущим состоянием
+    settings_window.theme_switch = CustomSwitch(
+        active=is_dark_theme,
         size_hint=(None, None),
+        size=(dp(64), dp(36)),
         thumb_padding=dp(4),
-        thumb_color_active=[0, 1, 0, 1],
-        thumb_color_inactive=[1, 0, 0, 1],
+        track_color_active=[0.15, 0.3, 0.15, 1],  # Темно-зеленый для активного состояния
+        track_color_inactive=[0.2, 0.1, 0.1, 1],  # Темно-красный для неактивного
+        thumb_color=[1, 1, 1, 1],  # Белый ползунок
         pos_hint={'center_y': 0.5}
     )
     
+    def on_theme_switch_change(switch_instance, value):
+        """Обработчик изменения состояния переключателя темы."""
+        # Сохраняем текущее состояние темы в базу данных
+        db = SettingsDatabase()
+        db.save_setting('dark_theme', '1' if value else '0')
+        logger.info(f'Тема изменена: {"Темная" if value else "Светалая"}')
+    
+    # Привязываем обработчик изменения состояния
+    settings_window.theme_switch.bind(active=on_theme_switch_change)
+    
     # Добавляем виджеты в основной layout
     background_theme_layout.add_widget(background_label)
-    background_theme_layout.add_widget(background_switch)
+    background_theme_layout.add_widget(settings_window.theme_switch)
     
     # Добавляем блок темы фона в конец секции
     color_section.add_widget(background_theme_layout)
