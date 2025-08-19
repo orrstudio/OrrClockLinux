@@ -4,8 +4,17 @@
 
 from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelHeader
 from kivy.uix.gridlayout import GridLayout
-from kivy.metrics import dp
+from kivy.metrics import dp, sp
 from kivy.lang import Builder
+from kivy.core.window import Window
+from kivy.graphics import RoundedRectangle
+from kivy.properties import NumericProperty, ObjectProperty
+
+# Инициализируем Window для использования в kv-разметке
+Window = Window
+
+# Добавляем Window в глобальный контекст для использования в KV
+from kivy.core.window import Window
 
 # Загружаем стили для вкладок
 Builder.load_string('''
@@ -17,44 +26,113 @@ Builder.load_string('''
             pos: self.pos
             size: self.size
     
-    tab_width: '200dp'
-    tab_height: '50dp'
+    # Адаптивные размеры вкладок (инициализируем значениями по умолчанию)
+    tab_width: dp(150)
+    tab_height: dp(40)
     background_color: 0.1, 0.1, 0.1, 1
     background_image: ''
     border: [0, 0, 0, 0]  # Убираем границы
+    do_default_tab: False
+    tab_pos: 'top_mid'
+    tab_width_min: dp(100)  # Минимальная ширина вкладки
     
 <CustomTabbedPanelHeader>:
     background_color: 0.1, 0.1, 0.1, 1
     background_normal: ''
     background_down: ''
-    # Меняем цвет текста в зависимости от состояния
+    # Адаптивные стили текста
     color: (1, 1, 1, 1) if self.state == 'down' else (0.8, 0.8, 0.8, 1)
-    font_size: '24sp'
-    padding: ('15dp', '10dp')
+    font_size: sp(20)  # Фиксированный размер шрифта, будет обновляться в коде
+    padding: (dp(10), dp(5))  # Уменьшенные отступы
+    text_size: self.width - dp(20), None  # Автоматический перенос текста
+    halign: 'center'
+    valign: 'middle'
     
     # Делаем текст жирным для активной вкладки
     bold: True if self.state == 'down' else False
     
     canvas.before:
-        # Фон вкладки - более светлый для активной
+        # Адаптивный фон вкладки
         Color:
-            rgba: (0.5, 0.5, 0.5, 1) if self.state == 'down' else (0.5, 0.5, 0.5, 1)
-        Rectangle:
+            rgba: (0.5, 0.5, 0.5, 1) if self.state == 'down' else (0.3, 0.3, 0.3, 1)
+        RoundedRectangle:
             pos: self.pos
             size: self.size
-        # Добавляем обводку для активной вкладки
+            radius: [dp(5), dp(5), 0, 0]  # Закругленные углы сверху
+        
+        # Подсветка активной вкладки
         Color:
-            rgba: (1, 1, 1, 1) if self.state == 'down' else (0, 0, 0, 1)
+            rgba: (0.8, 0.8, 0.8, 1) if self.state == 'down' else (0, 0, 0, 0)
         Line:
-            rectangle: (self.x, self.y, self.width, 2)
+            width: dp(2)
+            points: self.x, self.y + self.height, self.x + self.width, self.y + self.height
 ''')
 
 # Создаем кастомные классы для вкладок
 class CustomTabbedPanel(TabbedPanel):
-    pass
+    """Кастомная панель вкладок с адаптивными размерами."""
+    
+    def __init__(self, **kwargs):
+        # Устанавливаем начальные размеры
+        self.tab_width = min(dp(Window.width * 0.3), dp(200))
+        self.tab_height = max(dp(Window.height * 0.06), dp(40))
+        
+        super().__init__(**kwargs)
+        
+        # Привязываем обновление размеров при изменении окна
+        Window.bind(width=self._update_tab_sizes)
+        Window.bind(height=self._update_tab_sizes)
+        
+        # Инициализируем размеры
+        self._update_tab_sizes()
+    
+    def _update_tab_sizes(self, *args):
+        """Обновляет размеры вкладок при изменении размеров окна."""
+        if not self.get_root_window():
+            return
+            
+        try:
+            # Обновляем ширину вкладок (не более 200dp и не менее 30% ширины окна)
+            new_width = min(dp(Window.width * 0.3), dp(200))
+            new_height = max(dp(Window.height * 0.06), dp(40))
+            
+            if self.tab_width != new_width or self.tab_height != new_height:
+                self.tab_width = new_width
+                self.tab_height = new_height
+                
+                # Обновляем размер шрифта для всех вкладок
+                for tab in self.tab_list:
+                    if hasattr(tab, 'update_font_size'):
+                        tab.update_font_size()
+        except Exception as e:
+            import traceback
+            print(f"Ошибка при обновлении размеров вкладок: {e}")
+            print(traceback.format_exc())
 
 class CustomTabbedPanelHeader(TabbedPanelHeader):
-    pass
+    """Кастомный заголовок вкладки с адаптивными размерами."""
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.bind(size=self._update_text_size)
+        Window.bind(width=self._update_text_size)
+        # Инициализируем размер шрифта при создании
+        self._update_text_size()
+    
+    def _update_text_size(self, *args):
+        """Обновляет размер текста при изменении размеров."""
+        self.text_size = (self.width - dp(20), None)
+    
+    def update_font_size(self):
+        """Обновляет размер шрифта в зависимости от размера окна."""
+        try:
+            if hasattr(self, 'parent') and hasattr(self.parent, 'tab_width'):
+                # Размер шрифта зависит от ширины вкладки
+                base_size = max(sp(16), min(sp(24), sp(self.parent.tab_width * 0.15)))
+                self.font_size = base_size
+        except Exception as e:
+            # В случае ошибки используем размер по умолчанию
+            self.font_size = sp(18)
 
 def create_tab(name):
     """
@@ -90,13 +168,11 @@ def create_tabbed_interface():
     Returns:
         tuple: (CustomTabbedPanel, dict) - панель с вкладками и словарь с контейнерами вкладок
     """
-    # Создаем кастомную панель вкладок
+    # Создаем кастомную панель вкладок с адаптивными размерами
     tab_panel = CustomTabbedPanel(
-        do_default_tab=False,
-        tab_width=dp(200),  # Ширина вкладки
-        tab_height=dp(50),  # Высота вкладки
         tab_pos='top_mid',
-        padding=dp(5)  # Внутренний отступ панели
+        padding=dp(5),  # Внутренний отступ панели
+        background_color=(0.1, 0.1, 0.1, 1)
     )
     
     # Создаем вкладки
