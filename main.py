@@ -266,8 +266,21 @@ class MainWindowApp(App):
     def on_window_touch_down(self, window, touch):
         """
         Обработчик нажатия на окно.
-        Останавливает воспроизведение звука при любом клике.
+        Останавливает воспроизведение звука при клике, кроме кликов по окну настроек.
         """
+        # Проверяем, что клик не по окну настроек или его дочерним элементам
+        if hasattr(self, 'settings_window') and self.settings_window:
+            # Проверяем, был ли клик внутри окна настроек
+            if self.settings_window.collide_point(*touch.pos):
+                # Пропускаем обработку клика, если он был по окну настроек
+                return False
+                
+            # Проверяем, был ли клик по дочерним элементам окна настроек
+            for child in self.settings_window.walk(restrict=True):
+                if hasattr(child, 'collide_point') and child.collide_point(*touch.pos):
+                    # Пропускаем обработку клика, если он был по дочернему элементу
+                    return False
+        
         try:
             # Импортируем класс только при необходимости
             from ui.next_prayer_time_box import NextPrayerTimeBox

@@ -284,7 +284,7 @@ def create_admin_section(settings_window):
         # 3. Кнопка с закругленными углами (по центру)
         button_layout = AnchorLayout(anchor_x='center', anchor_y='center')
         button = RoundedButton(
-            text="Логи" if switch_attr == 'debug_switch' else "Button",
+            text="View in Terminal" if switch_attr == 'debug_switch' else "Button",
             size_hint=(None, None),
             size=(dp(100), dp(35)),
             border_radius=dp(10)  # Радиус скругления

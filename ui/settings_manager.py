@@ -38,6 +38,9 @@ class SettingsManager:
             apply_callback=self.apply_settings
         )
         
+        # Сохраняем ссылку на окно настроек в главном окне
+        self.main_window.settings_window = settings_window
+        
         # Привязываем обработчик закрытия окна настроек
         settings_window.bind(on_dismiss=self.on_settings_dismiss)
         settings_window.open()
@@ -48,10 +51,14 @@ class SettingsManager:
     def on_settings_dismiss(self, instance):
         """
         Обработчик закрытия окна настроек
-        Восстанавливаем параметры главного окна
+        Восстанавливаем параметры главного окна и очищаем ссылку на окно настроек
         """
         if hasattr(self.main_window, 'restore_main_window_state'):
             self.main_window.restore_main_window_state()
+        
+        # Очищаем ссылку на окно настроек
+        if hasattr(self.main_window, 'settings_window'):
+            self.main_window.settings_window = None
 
     def apply_settings(self, color_tuple):
         """
