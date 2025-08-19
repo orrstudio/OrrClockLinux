@@ -47,11 +47,14 @@ def create_notifications_section(settings_window):
     # Таблица
     table = BorderedGridLayout(
         cols=2,  # Две колонки: текст и переключатель
-        rows=14,  # 14 строк: заголовок + 5 настроек уведомлений + Play Adhan + 7 намазов
         size_hint_y=None,
-        height=dp(700),  # Увеличиваем высоту для отображения всех строк
         spacing=0
     )
+    
+    # Вычисляем высоту таблицы на основе количества строк
+    row_height = dp(50)  # Высота одной строки
+    num_rows = 10  # Общее количество строк
+    table.height = row_height * num_rows
 
     # Адаптивные ширины — теперь от ширины таблицы
     def update_col_widths(*args):
@@ -67,29 +70,31 @@ def create_notifications_section(settings_window):
     
     # Данные для строк
     rows = [
-        ("Voice Notification", 'voice_switch', '24sp', True, 0),
-        ("           At Adhan", 'switch_at_adhan', '20sp', False, 1),
-        ("           15 min before", 'switch_15_min', '20sp', False, 1),
-        ("           30 min before", 'switch_30_min', '20sp', False, 1),
-        ("           45 min before", 'switch_45_min', '20sp', False, 1),
-        ("           60 min before", 'switch_60_min', '20sp', False, 1),
-        ("Play Adhan", 'switch_play_adhan', '24sp', True, 0),
-        ("           Fajr", 'switch_fajr', '20sp', False, 1),
-        ("           Dhuhr", 'switch_dhuhr', '20sp', False, 1),
-        ("           Asr", 'switch_asr', '20sp', False, 1),
-        ("           Maghrib", 'switch_maghrib', '20sp', False, 1),
-        ("           Isha", 'switch_isha', '20sp', False, 1),
+        ("Voice Notification", 'voice_switch', '28sp', True, 0, dp(35)),
+        ("           At Adhan", 'switch_at_adhan', '22sp', False, 1, dp(30)),
+        ("           15 min before", 'switch_15_min', '22sp', False, 1, dp(30)),
+        ("           30 min before", 'switch_30_min', '22sp', False, 1, dp(30)),
+        ("           45 min before", 'switch_45_min', '22sp', False, 1, dp(30)),
+        ("           60 min before", 'switch_60_min', '22sp', False, 1, dp(30)),
+        ("Play Adhan", 'switch_play_adhan', '28sp', True, 0, dp(35)),
+        ("           Fajr", 'switch_fajr', '22sp', False, 1, dp(30)),
+        ("           Dhuhr", 'switch_dhuhr', '22sp', False, 1, dp(30)),
+        ("           Asr", 'switch_asr', '22sp', False, 1, dp(30)),
+        ("           Maghrib", 'switch_maghrib', '22sp', False, 1, dp(30)),
+        ("           Isha", 'switch_isha', '22sp', False, 1, dp(30)),
     ]
 
-    for text, switch_attr, font_size, is_bold, _ in rows:
-        # 1. Текст (слева по центру вертикально)
+    for text, switch_attr, font_size, is_bold, _, switch_height in rows:
+        # 1. Текст (слева, прижат к низу)
         label = Label(
             text=text,
             font_size=font_size,
             bold=is_bold,
             halign='left',
-            valign='middle',
-            size_hint_x=0.8
+            valign='bottom',  # Прижимаем текст к низу
+            size_hint_x=0.8,
+            text_size=(None, None),
+            padding=(0, 0, 0, 0)  # Небольшой отступ снизу
         )
 
         def update_text_size(inst, val):
@@ -101,10 +106,17 @@ def create_notifications_section(settings_window):
         table.add_widget(label)
 
         # 2. Kivy переключатель (по центру)
-        switch_layout = AnchorLayout(anchor_x='center', anchor_y='center')
+        switch_layout = AnchorLayout(
+            anchor_x='center',
+            anchor_y='top',
+            size_hint=(0.2, None),
+            height=switch_height
+        )
+        # Увеличиваем размер переключателя для заголовков (с font_size='28sp')
+        switch_size = (dp(90), dp(30)) if font_size == '28sp' else (dp(60), dp(20))
         switch = CustomSwitch(
             size_hint=(None, None),
-            size=(dp(100), dp(40))  # Увеличена ширина переключателя до 100dp
+            size=switch_size
         )
         switch_layout.add_widget(switch)
         setattr(settings_window, switch_attr, switch)  # Сохраняем ссылку на сам переключатель
