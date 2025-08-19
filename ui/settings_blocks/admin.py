@@ -292,7 +292,7 @@ def create_admin_section(settings_window):
         button = RoundedButton(
             text="View Logs in Terminal" if switch_attr == 'debug_switch' else "Button",
             size_hint=(None, None),
-            size=(dp(100), dp(35)),
+            size=(dp(200), dp(35)),
             border_radius=dp(10)  # Радиус скругления
         )
         if switch_attr == 'debug_switch':

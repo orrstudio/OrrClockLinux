@@ -110,7 +110,7 @@ def create_notifications_section(settings_window):
         button = RoundedButton(
             text="Settings",
             size_hint=(None, None),
-            size=(dp(100), dp(35)),
+            size=(dp(200), dp(35)),  # Увеличена ширина кнопки до 200dp
             border_radius=dp(10)  # Радиус скругления
         )
         button_layout.add_widget(button)
