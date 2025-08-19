@@ -359,7 +359,7 @@ def show_additional_actions(instance):
     
     # Первая кнопка
     btn1 = Button(
-        text='Action 1',
+        text='Action for test 1',
         size_hint_y=None,
         height=dp(50),
         font_size='18sp',
@@ -369,7 +369,7 @@ def show_additional_actions(instance):
     
     # Вторая кнопка
     btn2 = Button(
-        text='Action 2',
+        text='Action for test 2',
         size_hint_y=None,
         height=dp(50),
         font_size='18sp',
@@ -543,7 +543,7 @@ def create_admin_section(settings_window):
     
     # Строка 4: Logging to File + переключатель
     label4 = Label(
-        text="Logging to File",
+        text="Logging to File (Not work)",
         halign='left',
         valign='middle',
         font_size='22sp',
@@ -595,7 +595,7 @@ def create_admin_section(settings_window):
     
     # Строка 6: Additional Actions + переключатель
     label6 = Label(
-        text="Additional Actions",
+        text="Any New Action",
         halign='left',
         valign='middle',
         font_size='22sp',
@@ -618,7 +618,7 @@ def create_admin_section(settings_window):
     
     # Строка 7: Additional Actions + кнопка Show Actions
     label7 = Label(
-        text="Additional Actions",
+        text="Any New Action",
         halign='left',
         valign='middle',
         font_size='22sp',
@@ -642,7 +642,7 @@ def create_admin_section(settings_window):
     
     # Строка 8: Additional Actions + переключатель
     label8 = Label(
-        text="Additional Actions",
+        text="Any New Action",
         halign='left',
         valign='middle',
         font_size='22sp',
