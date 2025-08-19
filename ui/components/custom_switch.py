@@ -146,10 +146,9 @@ class CustomSwitch(AnchorLayout):
             
             target_y = self.y + self.thumb_padding
             
-            # Создаем анимацию
+            # Создаем анимацию позиции
             anim = Animation(
-                x=target_x,
-                y=target_y,
+                pos=(target_x, target_y),
                 d=0.2,
                 t='out_quad'
             )
