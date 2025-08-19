@@ -39,11 +39,17 @@ class BorderedGridLayout(GridLayout):
             # Внешняя рамка
             Line(rectangle=(self.x, self.y, self.width, self.height), width=1)
 
-            # Вертикальные линии
+            # Вертикальные линии для трёх колонок
+            # Первая линия на 40% (конец первой колонки)
             col1 = self.x + self.width * 0.4
-            col2 = self.x + self.width * 0.7
+            # Вторая линия на 50% (конец второй колонки, 40% + 20%)
+            col2 = self.x + self.width * 0.6
+            # Третья линия на 100% (конец третьей колонки, 60% + 40%)
+            col3 = self.x + self.width
+            
             Line(points=[col1, self.y, col1, self.top], width=1)
             Line(points=[col2, self.y, col2, self.top], width=1)
+            Line(points=[col3, self.y, col3, self.top], width=1)
 
 def load_debug_state(settings_window):
     """
@@ -224,9 +230,9 @@ def create_admin_section(settings_window):
     def update_col_widths(*args):
         available_width = table.width  # ширина именно таблицы
         table.cols_minimum = {
-            0: available_width * 0.4,
-            1: available_width * 0.3,
-            2: available_width * 0.3
+            0: available_width * 0.4,  # 40% для первой колонки (текст)
+            1: available_width * 0.2,  # 20% для второй колонки (переключатель)
+            2: available_width * 0.4   # 40% для третьей колонки (кнопка)
         }
     
     table.bind(size=update_col_widths)
@@ -273,7 +279,7 @@ def create_admin_section(settings_window):
         else:
             switch = CustomSwitch(
                 size_hint=(None, None),
-                size=(dp(64), dp(40))
+                size=(dp(64), dp(40))  # Размер как в уведомлениях
             )
             switch.active = False
         
@@ -284,7 +290,7 @@ def create_admin_section(settings_window):
         # 3. Кнопка с закругленными углами (по центру)
         button_layout = AnchorLayout(anchor_x='center', anchor_y='center')
         button = RoundedButton(
-            text="View in Terminal" if switch_attr == 'debug_switch' else "Button",
+            text="View Logs in Terminal" if switch_attr == 'debug_switch' else "Button",
             size_hint=(None, None),
             size=(dp(100), dp(35)),
             border_radius=dp(10)  # Радиус скругления
