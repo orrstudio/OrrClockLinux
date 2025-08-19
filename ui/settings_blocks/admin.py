@@ -410,117 +410,196 @@ def create_admin_section(settings_window):
     
     # Таблица настроек
     table = BorderedGridLayout(
-        cols=3,
-        rows=4,  # Увеличиваем количество строк до 4
+        cols=2,  # 2 колонки (текст и элемент управления)
+        rows=8,  # 8 строк
         size_hint_y=None,
-        height=dp(200),  # Увеличиваем высоту для четвертой строки
+        height=dp(600),  # Высота для 8 строк
         spacing=0
     )
     
     # Настройка ширины столбцов
     def update_col_widths(*args):
-        available_width = table.width  # ширина именно таблицы
+        available_width = table.width  # ширина таблицы
         table.cols_minimum = {
-            0: available_width * 0.4,  # 40% для первой колонки (текст)
-            1: available_width * 0.2,  # 20% для второй колонки (переключатель)
-            2: available_width * 0.4   # 40% для третьей колонки (кнопка)
+            0: available_width * 0.7,  # 70% для текста
+            1: available_width * 0.3   # 30% для элементов управления
         }
     
     table.bind(size=update_col_widths)
     update_col_widths()
     
-    # Данные для строк
-    rows = [
-        ("Debug Mode", 'debug_switch', 'debug_button'),
-        ("Feature 2", 'feature2_switch', 'feature2_button'),
-        ("Feature 3", 'feature3_switch', 'feature3_button'),
-        ("Feature 4", 'feature4_switch', 'feature4_button')
-    ]
-
-    for text, switch_attr, button_attr in rows:
-        # 1. Текст (слева по центру вертикально)
-        label = Label(
-            text=text,
-            halign='left',
-            valign='middle',
-            font_size='22sp',
-            bold=False,
-            size_hint_x=0.8
-        )
-
-        def update_text_size(inst, val):
-            padding = dp(30)  # отступ слева
-            inst.text_size = (val[0] - padding, None)
-            inst.canvas.ask_update()
-
-        label.bind(size=update_text_size)
-        table.add_widget(label)
-
-        # 2. Переключатель (по центру)
-        switch_layout = AnchorLayout(anchor_x='center', anchor_y='center')
-        if switch_attr == 'debug_switch':
-            # Используем существующий переключатель для debug
-            debug_enabled = load_debug_state(settings_window)
-            switch = CustomSwitch(
-                size_hint=(None, None),
-                size=(dp(100), dp(40))  # Увеличена ширина переключателя до 100dp
-            )
-            switch.active = debug_enabled
-            switch.bind(active=lambda instance, value: on_debug_switch(instance, value, settings_window))
-            settings_window.debug_switch = switch
-        else:
-            switch = CustomSwitch(
-                size_hint=(None, None),
-                size=(dp(100), dp(40))  # Увеличена ширина переключателя до 100dp
-            )
-            switch.active = False
-        
-        switch_layout.add_widget(switch)
-        setattr(settings_window, switch_attr, switch)
-        table.add_widget(switch_layout)
-
-        # 3. Кнопка с закругленными углами (по центру)
-        button_layout = AnchorLayout(anchor_x='center', anchor_y='center')
-        
-        # Настройка первой кнопки (рядом с Debug Mode)
-        if switch_attr == 'debug_switch':
-            button = RoundedButton(
-                text="Logs in Terminal",
-                size_hint=(None, None),
-                size=(dp(200), dp(35)),
-                border_radius=dp(10)
-            )
-            button.bind(on_press=open_logs_terminal)
-        # Настройка второй кнопки
-        elif switch_attr == 'feature2_switch':
-            button = RoundedButton(
-                text="Open Logs in Editor",
-                size_hint=(None, None),
-                size=(dp(200), dp(35)),
-                border_radius=dp(10)
-            )
-            button.bind(on_press=open_logs_in_editor)
-        # Настройка третьей кнопки (удаление старых логов)
-        elif switch_attr == 'feature3_switch':
-            button = RoundedButton(
-                text="Clear Old Logs",
-                size_hint=(None, None),
-                size=(dp(200), dp(35)),
-                border_radius=dp(10)
-            )
-            button.bind(on_press=clear_old_logs)
-        # Настройка четвертой кнопки (меню дополнительных действий)
-        else:
-            button = RoundedButton(
-                text="Additional Actions",
-                size_hint=(None, None),
-                size=(dp(200), dp(35)),
-                border_radius=dp(10)
-            )
-            button.bind(on_press=show_additional_actions)
-        button_layout.add_widget(button)
-        setattr(settings_window, button_attr, button)
-        table.add_widget(button_layout)
+    # Строка 1: Debug Mode + переключатель
+    label1 = Label(
+        text="Debug Mode",
+        halign='left',
+        valign='middle',
+        font_size='22sp',
+        bold=False
+    )
+    table.add_widget(label1)
+    
+    # Переключатель для Debug Mode
+    switch_debug = GridLayout(cols=1, size_hint_x=1)
+    debug_switch = CustomSwitch(
+        size_hint=(None, None),
+        size=(dp(100), dp(40))
+    )
+    debug_switch.active = load_debug_state(settings_window)
+    debug_switch.bind(active=lambda instance, value: on_debug_switch(instance, value, settings_window))
+    settings_window.debug_switch = debug_switch
+    switch_debug.add_widget(debug_switch)
+    table.add_widget(switch_debug)
+    
+    # Строка 2: Logs in Terminal + кнопка Open
+    label2 = Label(
+        text="Logs in Terminal",
+        halign='left',
+        valign='middle',
+        font_size='22sp',
+        bold=False
+    )
+    table.add_widget(label2)
+    
+    # Кнопка Open для Logs in Terminal
+    button_terminal = GridLayout(cols=1, size_hint_x=1)
+    btn_terminal = RoundedButton(
+        text="Open",
+        size_hint=(None, None),
+        size=(dp(100), dp(35)),
+        border_radius=dp(10)
+    )
+    btn_terminal.bind(on_press=open_logs_terminal)
+    button_terminal.add_widget(btn_terminal)
+    table.add_widget(button_terminal)
+    
+    # Строка 3: Logs in Editor + кнопка Open
+    label3 = Label(
+        text="Logs in Editor",
+        halign='left',
+        valign='middle',
+        font_size='22sp',
+        bold=False
+    )
+    table.add_widget(label3)
+    
+    # Кнопка Open для Logs in Editor
+    button_editor = GridLayout(cols=1, size_hint_x=1)
+    btn_editor = RoundedButton(
+        text="Open",
+        size_hint=(None, None),
+        size=(dp(100), dp(35)),
+        border_radius=dp(10)
+    )
+    btn_editor.bind(on_press=open_logs_in_editor)
+    button_editor.add_widget(btn_editor)
+    table.add_widget(button_editor)
+    
+    # Строка 4: Logging to File + переключатель
+    label4 = Label(
+        text="Logging to File",
+        halign='left',
+        valign='middle',
+        font_size='22sp',
+        bold=False
+    )
+    table.add_widget(label4)
+    
+    # Переключатель для Logging to File
+    switch_logging = GridLayout(cols=1, size_hint_x=1)
+    logging_switch = CustomSwitch(
+        size_hint=(None, None),
+        size=(dp(100), dp(40))
+    )
+    logging_switch.active = False
+    settings_window.logging_switch = logging_switch
+    switch_logging.add_widget(logging_switch)
+    table.add_widget(switch_logging)
+    
+    # Строка 5: Clear Old Log Files + кнопка Clear
+    label5 = Label(
+        text="Clear Old Log Files",
+        halign='left',
+        valign='middle',
+        font_size='22sp',
+        bold=False
+    )
+    table.add_widget(label5)
+    
+    # Кнопка Clear для Clear Old Log Files
+    button_clear = GridLayout(cols=1, size_hint_x=1)
+    btn_clear = RoundedButton(
+        text="Clear",
+        size_hint=(None, None),
+        size=(dp(100), dp(35)),
+        border_radius=dp(10)
+    )
+    btn_clear.bind(on_press=clear_old_logs)
+    button_clear.add_widget(btn_clear)
+    table.add_widget(button_clear)
+    
+    # Строка 6: Additional Actions + переключатель
+    label6 = Label(
+        text="Additional Actions",
+        halign='left',
+        valign='middle',
+        font_size='22sp',
+        bold=False
+    )
+    table.add_widget(label6)
+    
+    # Переключатель для Additional Actions
+    switch_actions = GridLayout(cols=1, size_hint_x=1)
+    actions_switch = CustomSwitch(
+        size_hint=(None, None),
+        size=(dp(100), dp(40))
+    )
+    actions_switch.active = False
+    settings_window.actions_switch = actions_switch
+    switch_actions.add_widget(actions_switch)
+    table.add_widget(switch_actions)
+    
+    # Строка 7: Additional Actions + кнопка Show Actions
+    label7 = Label(
+        text="Additional Actions",
+        halign='left',
+        valign='middle',
+        font_size='22sp',
+        bold=False
+    )
+    table.add_widget(label7)
+    
+    # Кнопка Show Actions для Additional Actions
+    button_show = GridLayout(cols=1, size_hint_x=1)
+    btn_show = RoundedButton(
+        text="Show Actions",
+        size_hint=(None, None),
+        size=(dp(140), dp(35)),
+        border_radius=dp(10)
+    )
+    btn_show.bind(on_press=show_additional_actions)
+    button_show.add_widget(btn_show)
+    table.add_widget(button_show)
+    
+    # Строка 8: Additional Actions + переключатель
+    label8 = Label(
+        text="Additional Actions",
+        halign='left',
+        valign='middle',
+        font_size='22sp',
+        bold=False
+    )
+    table.add_widget(label8)
+    
+    # Второй переключатель для Additional Actions
+    switch_actions2 = GridLayout(cols=1, size_hint_x=1)
+    actions_switch2 = CustomSwitch(
+        size_hint=(None, None),
+        size=(dp(100), dp(40))
+    )
+    actions_switch2.active = False
+    settings_window.actions_switch2 = actions_switch2
+    switch_actions2.add_widget(actions_switch2)
+    table.add_widget(switch_actions2)
     
     container.add_widget(table)
     settings_window.admin_section = container
