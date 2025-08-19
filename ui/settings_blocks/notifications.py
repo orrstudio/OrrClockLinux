@@ -39,7 +39,7 @@ def create_notifications_section(settings_window):
     container = GridLayout(
         cols=1,
         size_hint=(1, None),
-        height=dp(350),  # Увеличиваем высоту контейнера для отображения всех элементов
+        height=dp(750),  # Увеличиваем высоту контейнера для отображения всех элементов
         padding=(dp(30), dp(5), dp(30), dp(5)),
         spacing=dp(5)
     )
@@ -47,9 +47,9 @@ def create_notifications_section(settings_window):
     # Таблица
     table = BorderedGridLayout(
         cols=2,  # Две колонки: текст и переключатель
-        rows=6,  # 6 строк: заголовок + 5 настроек уведомлений
+        rows=14,  # 14 строк: заголовок + 5 настроек уведомлений + Play Adhan + 7 намазов
         size_hint_y=None,
-        height=dp(300),  # Увеличиваем высоту для отображения всех строк
+        height=dp(700),  # Увеличиваем высоту для отображения всех строк
         spacing=0
     )
 
@@ -64,7 +64,7 @@ def create_notifications_section(settings_window):
     # Привязываем к изменению размеров таблицы
     table.bind(size=lambda *_: update_col_widths())
     update_col_widths()
-
+    
     # Данные для строк
     rows = [
         ("Voice Notification", 'voice_switch', '24sp', True, 0),
@@ -73,6 +73,12 @@ def create_notifications_section(settings_window):
         ("           30 min before", 'switch_30_min', '20sp', False, 1),
         ("           45 min before", 'switch_45_min', '20sp', False, 1),
         ("           60 min before", 'switch_60_min', '20sp', False, 1),
+        ("Play Adhan", 'switch_play_adhan', '24sp', True, 0),
+        ("           Fajr", 'switch_fajr', '20sp', False, 1),
+        ("           Dhuhr", 'switch_dhuhr', '20sp', False, 1),
+        ("           Asr", 'switch_asr', '20sp', False, 1),
+        ("           Maghrib", 'switch_maghrib', '20sp', False, 1),
+        ("           Isha", 'switch_isha', '20sp', False, 1),
     ]
 
     for text, switch_attr, font_size, is_bold, _ in rows:

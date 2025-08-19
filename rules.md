@@ -19,6 +19,14 @@ blue           - (0.0, 0.0, 1.0, 1) - Синий
 yellow         - (1.0, 1.0, 0.0, 1) - Желтый
 magenta        - (1.0, 0.0, 1.0, 1) - Фиолетовый
 
+Midnight - Təhəccüd
+Fajr - İmsak
+Sunrise - Günəş
+Dhuhr - Günorta
+Asr - İkindi
+Maghrib - Axşam
+Isha - Gecə
+
 # MyCommands
 rm data/settings.db
 rm -rf venv
