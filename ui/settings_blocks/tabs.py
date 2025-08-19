@@ -94,7 +94,7 @@ class CustomTabbedPanel(TabbedPanel):
         try:
             # Обновляем ширину вкладок (не более 200dp и не менее 30% ширины окна)
             new_width = min(dp(Window.width * 0.3), dp(200))
-            new_height = max(dp(Window.height * 0.06), dp(40))
+            new_height = max(dp(Window.height * 0.04), dp(30))  # Уменьшили высоту с 0.06 до 0.05 и минимальную высоту с 40 до 35
             
             if self.tab_width != new_width or self.tab_height != new_height:
                 self.tab_width = new_width
