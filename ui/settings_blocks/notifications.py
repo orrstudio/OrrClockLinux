@@ -30,6 +30,7 @@ class BorderedGridLayout(GridLayout):
             # Линия на 100% (конец второй колонки)
             col2 = self.x + self.width
             
+            # Вертикальная линия между колонками
             Line(points=[col1, self.y, col1, self.top], width=1)
             Line(points=[col2, self.y, col2, self.top], width=1)
 
@@ -39,7 +40,7 @@ def create_notifications_section(settings_window):
     container = GridLayout(
         cols=1,
         size_hint=(1, None),
-        height=dp(750),  # Увеличиваем высоту контейнера для отображения всех элементов
+        height=dp(1000),  # Увеличиваем высоту контейнера для отображения всех элементов
         padding=(dp(30), dp(5), dp(30), dp(5)),
         spacing=dp(5)
     )
@@ -82,6 +83,15 @@ def create_notifications_section(settings_window):
         ("           Asr", 'switch_asr', '22sp', False, 1, dp(30)),
         ("           Maghrib", 'switch_maghrib', '22sp', False, 1, dp(30)),
         ("           Isha", 'switch_isha', '22sp', False, 1, dp(30)),
+        ("Choose Muezzin", 'switch_choose_muezzin', '28sp', True, 0, dp(35)),
+        ("           Default Adhan", 'switch_default_adhan', '22sp', False, 1, dp(30)),
+        ("           Ahmed Al Nufais", 'switch_ahmed_al_nufais', '22sp', False, 1, dp(30)),
+        ("           Mansour Al Zahrani", 'switch_mansour_al_zahrani', '22sp', False, 1, dp(30)),
+        ("           Mehdi Yarrahi Fajr", 'switch_mehdi_yarrahi_fajr', '22sp', False, 1, dp(30)),
+        ("           Mihr Com", 'switch_mihr_com', '22sp', False, 1, dp(30)),
+        ("           Mishary Rashid Alafasy", 'switch_mishary_rashid_alafasy', '22sp', False, 1, dp(30)),
+        ("           Mishary Rashid Alafasy Fajr", 'switch_mishary_rashid_alafasy_fajr', '22sp', False, 1, dp(30)),
+        ("           Old Adhan", 'switch_old_adhan', '22sp', False, 1, dp(30)),
     ]
 
     for text, switch_attr, font_size, is_bold, _, switch_height in rows:
