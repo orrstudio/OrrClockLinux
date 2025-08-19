@@ -46,10 +46,22 @@ class BorderedGridLayout(GridLayout):
             Line(points=[col2, self.y, col2, self.top], width=1)
 
 def load_debug_state(settings_window):
-    """Загружает состояние отладочного режима из базы данных."""
+    """
+    Загружает состояние отладочного режима из базы данных.
+    
+    Args:
+        settings_window: Экземпляр SettingsWindow с доступом к базе данных
+        
+    Returns:
+        bool: Текущее состояние отладочного режима
+    """
     try:
-        from utils.logger import _get_debug_state
-        return _get_debug_state()
+        if hasattr(settings_window, 'db'):
+            # Пытаемся получить значение из базы данных
+            debug_mode = settings_window.db.get_setting('debug_mode')
+            # Преобразуем строковое значение в булево
+            return debug_mode == '1' if debug_mode is not None else False
+        return False
     except Exception as e:
         logger.error(f'Ошибка при загрузке состояния отладочного режима: {e}')
         return False
@@ -168,10 +180,17 @@ def open_logs_terminal(button_instance):
     threading.Thread(target=open_terminal, daemon=True).start()
 
 def on_debug_switch(switch_instance, value, settings_window):
-    """Обработчик изменения состояния переключателя отладочного режима."""
-    save_debug_state(settings_window, value)
+    """
+    Обработчик изменения состояния переключателя отладочного режима.
+    
+    Args:
+        switch_instance: Экземпляр переключателя
+        value: Новое значение переключателя (True/False)
+        settings_window: Экземпляр окна настроек
+    """
+    # Только логируем изменение состояния, без сохранения в БД
     status = 'Enabled' if value else 'Disabled'
-    logger.info(f'Debug Mode: {status}')
+    logger.info(f'Debug Mode changed to: {status} (will be saved on accept)')
 
 def create_admin_section(settings_window):
     """
