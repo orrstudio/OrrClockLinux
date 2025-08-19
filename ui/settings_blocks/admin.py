@@ -152,22 +152,25 @@ def clear_old_logs(button_instance):
                 content.add_widget(Label(
                     text=file,
                     size_hint_y=None,
-                    height=50,
-                    font_size='20sp',
+                    height=15,  # Уменьшена высота с 50 до 15 пикселей
+                    font_size='18sp',
                     halign='left',
                     text_size=(400, None),
                     shorten=True,
                     shorten_from='right',
-                    ellipsis_options={'ellipsis': '...'}
+                    ellipsis_options={'ellipsis': '...'},
+                    padding=(0, 2, 0, 2)  # Добавлены отступы сверху и снизу
                 ))
             
             scroll.add_widget(content)
             
             popup = Popup(
                 title='Log cleaning completed',
+                title_size='24sp',
+                title_align='center',
                 content=scroll,
                 size_hint=(None, None),
-                size=(450, 300)
+                size=(500, 400)
             )
             popup.open()
         else:
