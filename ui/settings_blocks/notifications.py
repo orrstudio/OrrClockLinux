@@ -1,4 +1,5 @@
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.graphics import Color, Line
@@ -62,7 +63,7 @@ def create_notifications_section(settings_window):
         ("           Asr", 'switch_asr', '22sp', False, 1, dp(30)),
         ("           Maghrib", 'switch_maghrib', '22sp', False, 1, dp(30)),
         ("           Isha", 'switch_isha', '22sp', False, 1, dp(30)),
-        ("Choose Muezzin", 'switch_choose_muezzin', '28sp', True, 0, dp(35)),
+        ("Choose Muezzin", None, '28sp', True, 0, dp(35)),  # Без переключателя
         ("           Default Adhan", 'switch_default_adhan', '22sp', False, 1, dp(30)),
         ("           Ahmed Al Nufais", 'switch_ahmed_al_nufais', '22sp', False, 1, dp(30)),
         ("           Mansour Al Zahrani", 'switch_mansour_al_zahrani', '22sp', False, 1, dp(30)),
@@ -95,21 +96,26 @@ def create_notifications_section(settings_window):
         table.add_widget(label)
 
         # 2. Kivy переключатель (по центру)
-        switch_layout = AnchorLayout(
-            anchor_x='center',
-            anchor_y='top',
-            size_hint=(0.2, None),
-            height=switch_height
-        )
-        # Увеличиваем размер переключателя для заголовков (с font_size='28sp')
-        switch_size = (dp(90), dp(30)) if font_size == '28sp' else (dp(60), dp(20))
-        switch = CustomSwitch(
-            size_hint=(None, None),
-            size=switch_size
-        )
-        switch_layout.add_widget(switch)
-        setattr(settings_window, switch_attr, switch)  # Сохраняем ссылку на сам переключатель
-        table.add_widget(switch_layout)
+        # Для строк без переключателя (где switch_attr = None) создаем пустой контейнер
+        if switch_attr is not None:
+            switch_layout = AnchorLayout(
+                anchor_x='center',
+                anchor_y='top',
+                size_hint=(0.2, None),
+                height=switch_height
+            )
+            # Увеличиваем размер переключателя для заголовков (с font_size='28sp')
+            switch_size = (dp(90), dp(30)) if font_size == '28sp' else (dp(60), dp(20))
+            switch = CustomSwitch(
+                size_hint=(None, None),
+                size=switch_size
+            )
+            switch_layout.add_widget(switch)
+            setattr(settings_window, switch_attr, switch)  # Сохраняем ссылку на сам переключатель
+            table.add_widget(switch_layout)
+        else:
+            # Для строк без переключателя добавляем пустой виджет, чтобы сохранить выравнивание
+            table.add_widget(BoxLayout(size_hint=(0.2, None), height=switch_height))
 
         # Кнопка удалена
 
