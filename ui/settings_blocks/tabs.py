@@ -7,7 +7,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.metrics import dp, sp
 from kivy.lang import Builder
 from kivy.core.window import Window
-from kivy.graphics import RoundedRectangle
+from kivy.graphics import RoundedRectangle, Color
 from kivy.properties import NumericProperty, ObjectProperty
 
 # Инициализируем Window для использования в kv-разметке
@@ -47,6 +47,13 @@ Builder.load_string('''
     text_size: self.width - dp(20), None  # Автоматический перенос текста
     halign: 'center'
     valign: 'middle'
+    canvas.before:
+        Color:
+            rgba: (0.2, 0.7, 0.2, 1) if self.state == 'down' else (0.15, 0.15, 0.15, 1)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [5, 5, 0, 0]  # Скругляем только верхние углы
     
     # Делаем текст жирным для активной вкладки
     bold: True if self.state == 'down' else False
@@ -59,13 +66,6 @@ Builder.load_string('''
             pos: self.pos
             size: self.size
             radius: [dp(5), dp(5), 0, 0]  # Закругленные углы сверху
-        
-        # Подсветка активной вкладки
-        Color:
-            rgba: (0.8, 0.8, 0.8, 1) if self.state == 'down' else (0, 0, 0, 0)
-        Line:
-            width: dp(2)
-            points: self.x, self.y + self.height, self.x + self.width, self.y + self.height
 ''')
 
 # Создаем кастомные классы для вкладок
@@ -114,14 +114,25 @@ class CustomTabbedPanelHeader(TabbedPanelHeader):
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.bind(size=self._update_text_size)
-        Window.bind(width=self._update_text_size)
-        # Инициализируем размер шрифта при создании
-        self._update_text_size()
+        self.background_normal = ''
+        self.background_down = ''
+        self.background_color = (0.1, 0.1, 0.1, 1)
+        self.color = (0.8, 0.8, 0.8, 1)
+        self.bold = False
+        self.markup = True
+        self.halign = 'center'
+        self.valign = 'middle'
+        self.padding = (dp(10), dp(5))
     
-    def _update_text_size(self, *args):
-        """Обновляет размер текста при изменении размеров."""
-        self.text_size = (self.width - dp(20), None)
+    def on_state(self, instance, value):
+        if value == 'down':
+            self.background_color = (0.2, 0.7, 0.2, 1)
+            self.color = (1, 1, 1, 1)
+            self.bold = True
+        else:
+            self.background_color = (0.15, 0.15, 0.15, 1)
+            self.color = (0.8, 0.8, 0.8, 1)
+            self.bold = False
     
     def update_font_size(self):
         """Обновляет размер шрифта в зависимости от размера окна."""
