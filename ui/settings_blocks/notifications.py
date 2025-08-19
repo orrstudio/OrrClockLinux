@@ -39,17 +39,17 @@ def create_notifications_section(settings_window):
     container = GridLayout(
         cols=1,
         size_hint=(1, None),
-        height=dp(150),  # Уменьшена высота контейнера, так как кнопки удалены
+        height=dp(350),  # Увеличиваем высоту контейнера для отображения всех элементов
         padding=(dp(30), dp(5), dp(30), dp(5)),
         spacing=dp(5)
     )
 
     # Таблица
     table = BorderedGridLayout(
-        cols=2,  # Уменьшено количество колонок с 3 до 2
-        rows=3,
+        cols=2,  # Две колонки: текст и переключатель
+        rows=6,  # 6 строк: заголовок + 5 настроек уведомлений
         size_hint_y=None,
-        height=dp(150),
+        height=dp(300),  # Увеличиваем высоту для отображения всех строк
         spacing=0
     )
 
@@ -67,9 +67,12 @@ def create_notifications_section(settings_window):
 
     # Данные для строк
     rows = [
-        ("Voice Notification", 'voice_switch', '24sp', True, 0),   # Большой и жирный
-        ("        Visual", 'visual_switch', '20sp', False, 1),    # С увеличенным отступом
-        ("        Adhan", 'azan_switch', '20sp', False, 1)        # С увеличенным отступом
+        ("Voice Notification", 'voice_switch', '24sp', True, 0),
+        ("           At Adhan", 'switch_at_adhan', '20sp', False, 1),
+        ("           15 min before", 'switch_15_min', '20sp', False, 1),
+        ("           30 min before", 'switch_30_min', '20sp', False, 1),
+        ("           45 min before", 'switch_45_min', '20sp', False, 1),
+        ("           60 min before", 'switch_60_min', '20sp', False, 1),
     ]
 
     for text, switch_attr, font_size, is_bold, _ in rows:
