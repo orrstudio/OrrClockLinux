@@ -110,9 +110,31 @@ class MainWindowApp(App):
         """
         logger.info(f'New Day: Start processing')
         
-        # Обновляем дату хиджры (пересчёт и кэширование)
-        hijri_date_manager.get_hijri_date()
-        logger.info(f"New Day: Hijri date updated: {hijri_date_manager.get_hijri_date()}")
+        # Обновляем дату хиджры
+        hijri_date = hijri_date_manager.get_hijri_date()
+        logger.info(f"New Day: Hijri date updated: {hijri_date}")
+        
+        # Обновляем метку с датой, если она существует
+        if hasattr(self, 'date_hijri_label') and self.date_hijri_label:
+            from logic.date_formatted import create_hijri_date_label
+            from ui.theme_color_schemes import get_theme_scheme
+            
+            # Получаем текущую тему для цвета
+            theme_colors = get_theme_scheme(self.settings_db.get_setting('color', 'lime'))
+            
+            # Создаем новую метку с обновленной датой
+            new_label = create_hijri_date_label(
+                self.calculate_font_size(scale_factor=0.15),
+                color=theme_colors['date_text']
+            )
+            
+            # Заменяем старую метку на новую
+            layout = self.date_hijri_label.parent
+            if layout:
+                layout.remove_widget(self.date_hijri_label)
+                layout.add_widget(new_label)
+                self.date_hijri_label = new_label
+                logger.info("Date label updated with new date")
 
         # Обновляем времена молитв (запрос к API и обновление базы)
         prayer_times_manager.update_prayer_times()
