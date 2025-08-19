@@ -271,7 +271,7 @@ def create_admin_section(settings_window):
             debug_enabled = load_debug_state(settings_window)
             switch = CustomSwitch(
                 size_hint=(None, None),
-                size=(dp(64), dp(40))  # Размер как в уведомлениях
+                size=(dp(100), dp(40))  # Увеличена ширина переключателя до 100dp
             )
             switch.active = debug_enabled
             switch.bind(active=lambda instance, value: on_debug_switch(instance, value, settings_window))
@@ -279,7 +279,7 @@ def create_admin_section(settings_window):
         else:
             switch = CustomSwitch(
                 size_hint=(None, None),
-                size=(dp(64), dp(40))  # Размер как в уведомлениях
+                size=(dp(100), dp(40))  # Увеличена ширина переключателя до 100dp
             )
             switch.active = False
         
@@ -290,7 +290,7 @@ def create_admin_section(settings_window):
         # 3. Кнопка с закругленными углами (по центру)
         button_layout = AnchorLayout(anchor_x='center', anchor_y='center')
         button = RoundedButton(
-            text="View Logs in Terminal" if switch_attr == 'debug_switch' else "Button",
+            text="Logs in Terminal" if switch_attr == 'debug_switch' else "Button",
             size_hint=(None, None),
             size=(dp(200), dp(35)),
             border_radius=dp(10)  # Радиус скругления

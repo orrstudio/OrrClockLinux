@@ -99,7 +99,7 @@ def create_notifications_section(settings_window):
         switch_layout = AnchorLayout(anchor_x='center', anchor_y='center')
         switch = CustomSwitch(
             size_hint=(None, None),
-            size=(dp(64), dp(40))  # Увеличиваем размер для лучшего отображения
+            size=(dp(100), dp(40))  # Увеличена ширина переключателя до 100dp
         )
         switch_layout.add_widget(switch)
         setattr(settings_window, switch_attr, switch)  # Сохраняем ссылку на сам переключатель
