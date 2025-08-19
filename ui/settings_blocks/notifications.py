@@ -10,29 +10,8 @@ from ui.components.custom_switch import CustomSwitch
 from ui.components.custom_button import RoundedButton
 
 class BorderedGridLayout(GridLayout):
-    """GridLayout с границами и адаптивными линиями."""
-    border_color = ListProperty([0.2, 0.2, 0.2, 1])
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.bind(pos=self._update_border, size=self._update_border)
-
-    def _update_border(self, *args):
-        self.canvas.after.clear()
-        with self.canvas.after:
-            Color(*self.border_color)
-            # Внешняя рамка
-            Line(rectangle=(self.x, self.y, self.width, self.height), width=1)
-
-            # Вертикальные линии для двух колонок
-            # Линия на 80% (конец первой колонки)
-            col1 = self.x + self.width * 0.8
-            # Линия на 100% (конец второй колонки)
-            col2 = self.x + self.width
-            
-            # Вертикальная линия между колонками
-            Line(points=[col1, self.y, col1, self.top], width=1)
-            Line(points=[col2, self.y, col2, self.top], width=1)
+    """Обычный GridLayout без границ."""
+    pass
 
 def create_notifications_section(settings_window):
     """Создаёт секцию уведомлений с таблицей 3x3."""
