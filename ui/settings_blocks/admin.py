@@ -97,6 +97,46 @@ def save_debug_state(settings_window, enabled):
         except Exception as db_error:
             logger.error(f'Критическая ошибка: не удалось сохранить состояние отладки: {db_error}')
 
+def clear_old_logs(button_instance):
+    """Удаляет все логи, кроме активного."""
+    try:
+        # Получаем путь к директории приложения
+        app_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        logs_dir = os.path.join(app_dir, 'logs')
+        
+        # Получаем список всех лог-файлов, отсортированных по дате изменения (новые в начале)
+        log_files = sorted(
+            [f for f in os.listdir(logs_dir) if f.startswith('logs_') and f.endswith('.txt')],
+            key=lambda x: os.path.getmtime(os.path.join(logs_dir, x)),
+            reverse=True
+        )
+        
+        if len(log_files) > 1:
+            # Оставляем только самый новый файл, остальные удаляем
+            for log_file in log_files[1:]:
+                file_path = os.path.join(logs_dir, log_file)
+                os.remove(file_path)
+                logger.info(f"Удалён старый лог-файл: {log_file}")
+            
+            # Показываем уведомление об успешном удалении
+            from kivy.app import App
+            from kivy.uix.popup import Popup
+            from kivy.uix.label import Label
+            
+            popup = Popup(
+                title='Успех',
+                content=Label(text='Старые логи успешно удалены'),
+                size_hint=(None, None),
+                size=(400, 200)
+            )
+            popup.open()
+        else:
+            logger.info("Нет старых логов для удаления")
+            
+    except Exception as e:
+        logger.error(f"Ошибка при удалении старых логов: {e}")
+
+
 def open_logs_in_editor(button_instance):
     """Открывает лог-файл в текстовом редакторе по умолчанию."""
     try:
@@ -331,14 +371,15 @@ def create_admin_section(settings_window):
                 border_radius=dp(10)
             )
             button.bind(on_press=open_logs_in_editor)
-        # Настройка третьей кнопки (без действия)
+        # Настройка третьей кнопки (удаление старых логов)
         else:
             button = RoundedButton(
-                text="Button",
+                text="Clear Old Logs",
                 size_hint=(None, None),
                 size=(dp(200), dp(35)),
                 border_radius=dp(10)
             )
+            button.bind(on_press=clear_old_logs)
         button_layout.add_widget(button)
         setattr(settings_window, button_attr, button)
         table.add_widget(button_layout)
