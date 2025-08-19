@@ -97,6 +97,29 @@ def save_debug_state(settings_window, enabled):
         except Exception as db_error:
             logger.error(f'Критическая ошибка: не удалось сохранить состояние отладки: {db_error}')
 
+def open_logs_in_editor(button_instance):
+    """Открывает лог-файл в текстовом редакторе по умолчанию."""
+    try:
+        # Получаем путь к директории приложения
+        app_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        logs_dir = os.path.join(app_dir, 'logs')
+        
+        # Получаем последний созданный файл лога
+        log_files = sorted(
+            [f for f in os.listdir(logs_dir) if f.startswith('logs_') and f.endswith('.txt')],
+            key=lambda x: os.path.getmtime(os.path.join(logs_dir, x)),
+            reverse=True
+        )
+        
+        if log_files:
+            log_file = os.path.join(logs_dir, log_files[0])
+            # Используем xdg-open для открытия в редакторе по умолчанию
+            subprocess.Popen(['xdg-open', log_file])
+        else:
+            logger.warning("Не найден файл лога для открытия")
+    except Exception as e:
+        logger.error(f"Ошибка при открытии лога в редакторе: {e}")
+
 def open_logs_terminal(button_instance):
     """Открывает терминал с отображением логов приложения."""
     def open_terminal():
@@ -290,13 +313,15 @@ def create_admin_section(settings_window):
         # 3. Кнопка с закругленными углами (по центру)
         button_layout = AnchorLayout(anchor_x='center', anchor_y='center')
         button = RoundedButton(
-            text="Logs in Terminal" if switch_attr == 'debug_switch' else "Button",
+            text="Logs in Terminal" if switch_attr == 'debug_switch' else "Open Logs in Editor",
             size_hint=(None, None),
             size=(dp(200), dp(35)),
             border_radius=dp(10)  # Радиус скругления
         )
         if switch_attr == 'debug_switch':
             button.bind(on_press=open_logs_terminal)
+        else:
+            button.bind(on_press=open_logs_in_editor)
         button_layout.add_widget(button)
         setattr(settings_window, button_attr, button)
         table.add_widget(button_layout)
