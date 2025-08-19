@@ -175,6 +175,27 @@ def clear_old_logs(button_instance):
             popup.open()
         else:
             logger.info("No old logs to delete")
+            from kivy.uix.popup import Popup
+            from kivy.uix.label import Label
+            
+            content = Label(
+                text='No old logs to delete',
+                font_size='20sp',
+                size_hint_y=None,
+                height=50,
+                halign='center',
+                valign='middle'
+            )
+            
+            popup = Popup(
+                title='Log cleaning',
+                title_size='24sp',
+                title_align='center',
+                content=content,
+                size_hint=(None, None),
+                size=(400, 150)
+            )
+            popup.open()
             
     except Exception as e:
         logger.error(f"Error deleting old logs: {e}")
