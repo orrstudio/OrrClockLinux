@@ -67,12 +67,12 @@ def create_notifications_section(settings_window):
 
     # Данные для строк
     rows = [
-        ("Voice Notification", 'voice_switch', '24sp', True),  # Большой и жирный
-        ("Visual", 'visual_switch', '20sp', False),           # Меньше и обычный
-        ("Adhan", 'azan_switch', '20sp', False)               # Меньше и обычный
+        ("Voice Notification", 'voice_switch', '24sp', True, 0),   # Большой и жирный
+        ("        Visual", 'visual_switch', '20sp', False, 1),    # С увеличенным отступом
+        ("        Adhan", 'azan_switch', '20sp', False, 1)        # С увеличенным отступом
     ]
 
-    for text, switch_attr, font_size, is_bold in rows:
+    for text, switch_attr, font_size, is_bold, _ in rows:
         # 1. Текст (слева по центру вертикально)
         label = Label(
             text=text,
