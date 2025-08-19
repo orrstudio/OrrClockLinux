@@ -145,7 +145,9 @@ def clear_old_logs(button_instance):
                 size_hint_y=None,
                 height=50,
                 font_size='22sp',
-                bold=True
+                bold=True,
+                halign='left',
+                text_size=(400, None)
             ))
             
             for file in deleted_files:
