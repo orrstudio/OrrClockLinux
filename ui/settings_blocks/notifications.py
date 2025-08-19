@@ -20,7 +20,7 @@ def create_notifications_section(settings_window):
     container = GridLayout(
         cols=1,
         size_hint=(1, None),
-        height=dp(1000),  # Увеличиваем высоту контейнера для отображения всех элементов
+        height=dp(1500),  # Увеличиваем высоту контейнера для отображения всех элементов с отступами
         padding=(dp(30), dp(5), dp(30), dp(5)),
         spacing=dp(5)
     )
@@ -51,18 +51,27 @@ def create_notifications_section(settings_window):
     
     # Данные для строк
     rows = [
+        ("Visual Notification", 'visual_switch', '28sp', True, 0, dp(35)),
+        ("           At Adhan", 'visual_switch_at_adhan', '22sp', False, 1, dp(30)),
+        ("           15 min before", 'visual_switch_15_min', '22sp', False, 1, dp(30)),
+        ("           30 min before", 'visual_switch_30_min', '22sp', False, 1, dp(30)),
+        ("           45 min before", 'visual_switch_45_min', '22sp', False, 1, dp(30)),
+        ("           60 min before", 'visual_switch_60_min', '22sp', False, 1, dp(30)),
+        ("           ", None, '12sp', False, 1, dp(10)),
         ("Voice Notification", 'voice_switch', '28sp', True, 0, dp(35)),
-        ("           At Adhan", 'switch_at_adhan', '22sp', False, 1, dp(30)),
-        ("           15 min before", 'switch_15_min', '22sp', False, 1, dp(30)),
-        ("           30 min before", 'switch_30_min', '22sp', False, 1, dp(30)),
-        ("           45 min before", 'switch_45_min', '22sp', False, 1, dp(30)),
-        ("           60 min before", 'switch_60_min', '22sp', False, 1, dp(30)),
+        ("           At Adhan", 'voice_switch_at_adhan', '22sp', False, 1, dp(30)),
+        ("           15 min before", 'voice_switch_15_min', '22sp', False, 1, dp(30)),
+        ("           30 min before", 'voice_switch_30_min', '22sp', False, 1, dp(30)),
+        ("           45 min before", 'voice_switch_45_min', '22sp', False, 1, dp(30)),
+        ("           60 min before", 'voice_switch_60_min', '22sp', False, 1, dp(30)),
+        ("           ", None, '12sp', False, 1, dp(10)),
         ("Play Adhan", 'switch_play_adhan', '28sp', True, 0, dp(35)),
         ("           Fajr", 'switch_fajr', '22sp', False, 1, dp(30)),
         ("           Dhuhr", 'switch_dhuhr', '22sp', False, 1, dp(30)),
         ("           Asr", 'switch_asr', '22sp', False, 1, dp(30)),
         ("           Maghrib", 'switch_maghrib', '22sp', False, 1, dp(30)),
         ("           Isha", 'switch_isha', '22sp', False, 1, dp(30)),
+        ("           ", None, '12sp', False, 1, dp(10)),
         ("Choose Muezzin", None, '28sp', True, 0, dp(35)),  # Без переключателя
         ("           Default Adhan", 'switch_default_adhan', '22sp', False, 1, dp(30)),
         ("           Ahmed Al Nufais", 'switch_ahmed_al_nufais', '22sp', False, 1, dp(30)),
