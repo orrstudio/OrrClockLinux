@@ -98,43 +98,76 @@ def save_debug_state(settings_window, enabled):
             logger.error(f'Критическая ошибка: не удалось сохранить состояние отладки: {db_error}')
 
 def clear_old_logs(button_instance):
-    """Удаляет все логи, кроме активного."""
+    """Удаляет все логи, кроме активного, включая логи Kivy."""
     try:
         # Получаем путь к директории приложения
         app_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         logs_dir = os.path.join(app_dir, 'logs')
         
-        # Получаем список всех лог-файлов, отсортированных по дате изменения (новые в начале)
-        log_files = sorted(
+        deleted_files = []
+        
+        # Удаляем старые логи приложения (начинающиеся с 'logs_')
+        app_logs = sorted(
             [f for f in os.listdir(logs_dir) if f.startswith('logs_') and f.endswith('.txt')],
             key=lambda x: os.path.getmtime(os.path.join(logs_dir, x)),
             reverse=True
         )
         
-        if len(log_files) > 1:
-            # Оставляем только самый новый файл, остальные удаляем
-            for log_file in log_files[1:]:
-                file_path = os.path.join(logs_dir, log_file)
-                os.remove(file_path)
-                logger.info(f"Удалён старый лог-файл: {log_file}")
-            
-            # Показываем уведомление об успешном удалении
-            from kivy.app import App
+        # Удаляем все логи приложения, кроме самого нового
+        for log_file in app_logs[1:]:
+            file_path = os.path.join(logs_dir, log_file)
+            os.remove(file_path)
+            deleted_files.append(f"logs: {log_file}")
+        
+        # Удаляем все логи Kivy (начинающиеся с 'kivy_')
+        kivy_logs = [f for f in os.listdir(logs_dir) if f.startswith('kivy_')]
+        for kivy_log in kivy_logs:
+            file_path = os.path.join(logs_dir, kivy_log)
+            os.remove(file_path)
+            deleted_files.append(f"kivy: {kivy_log}")
+        
+        # Показываем уведомление об успешном удалении
+        if deleted_files:
+            message = "Deleted files:\n" + "\n".join(deleted_files)
             from kivy.uix.popup import Popup
             from kivy.uix.label import Label
+            from kivy.uix.scrollview import ScrollView
+            from kivy.uix.boxlayout import BoxLayout
+            
+            # Создаем прокручиваемое содержимое
+            scroll = ScrollView()
+            content = BoxLayout(orientation='vertical', size_hint_y=None, spacing=10, padding=10)
+            content.bind(minimum_height=content.setter('height'))
+            
+            # Добавляем заголовок и список файлов
+            content.add_widget(Label(text='Deleted files:', size_hint_y=None, height=40))
+            
+            for file in deleted_files:
+                content.add_widget(Label(
+                    text=file,
+                    size_hint_y=None,
+                    height=30,
+                    halign='left',
+                    text_size=(350, None),
+                    shorten=True,
+                    shorten_from='right',
+                    ellipsis_options={'ellipsis': '...'}
+                ))
+            
+            scroll.add_widget(content)
             
             popup = Popup(
-                title='Успех',
-                content=Label(text='Старые логи успешно удалены'),
+                title='Log cleaning completed',
+                content=scroll,
                 size_hint=(None, None),
-                size=(400, 200)
+                size=(450, 300)
             )
             popup.open()
         else:
-            logger.info("Нет старых логов для удаления")
+            logger.info("No old logs to delete")
             
     except Exception as e:
-        logger.error(f"Ошибка при удалении старых логов: {e}")
+        logger.error(f"Error deleting old logs: {e}")
 
 
 def open_logs_in_editor(button_instance):
