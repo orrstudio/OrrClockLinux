@@ -314,6 +314,68 @@ def open_logs_terminal(button_instance):
     # Запускаем в отдельном потоке, чтобы не блокировать интерфейс
     threading.Thread(target=open_terminal, daemon=True).start()
 
+def show_additional_actions(instance):
+    """
+    Показывает всплывающее окно с дополнительными действиями.
+    
+    Args:
+        instance: Экземпляр кнопки, вызвавшей это окно
+    """
+    from kivy.uix.popup import Popup
+    from kivy.uix.boxlayout import BoxLayout
+    from kivy.metrics import dp
+    from kivy.uix.button import Button
+    
+    # Создаем контейнер для кнопок
+    content = BoxLayout(
+        orientation='vertical',
+        spacing=dp(10),
+        padding=dp(20),
+        size_hint=(1, None),
+        height=dp(150)
+    )
+    
+    # Первая кнопка
+    btn1 = Button(
+        text='Действие 1',
+        size_hint_y=None,
+        height=dp(50),
+        font_size='18sp',
+        background_normal='',
+        background_color=(0.2, 0.6, 0.8, 1)
+    )
+    
+    # Вторая кнопка
+    btn2 = Button(
+        text='Действие 2',
+        size_hint_y=None,
+        height=dp(50),
+        font_size='18sp',
+        background_normal='',
+        background_color=(0.8, 0.3, 0.3, 1)
+    )
+    
+    # Добавляем кнопки в контейнер
+    content.add_widget(btn1)
+    content.add_widget(btn2)
+    
+    # Создаем всплывающее окно
+    popup = Popup(
+        title='Дополнительные действия',
+        title_size='24sp',
+        title_align='center',
+        content=content,
+        size_hint=(None, None),
+        size=(dp(400), dp(250))
+    )
+    
+    # Привязываем действия к кнопкам
+    btn1.bind(on_press=lambda x: logger.info("Выбрано действие 1") or popup.dismiss())
+    btn2.bind(on_press=lambda x: logger.info("Выбрано действие 2") or popup.dismiss())
+    
+    # Показываем окно
+    popup.open()
+
 def on_debug_switch(switch_instance, value, settings_window):
     """
     Обработчик изменения состояния переключателя отладочного режима.
@@ -439,7 +501,7 @@ def create_admin_section(settings_window):
             )
             button.bind(on_press=open_logs_in_editor)
         # Настройка третьей кнопки (удаление старых логов)
-        else:
+        elif switch_attr == 'feature3_switch':
             button = RoundedButton(
                 text="Clear Old Logs",
                 size_hint=(None, None),
@@ -447,6 +509,15 @@ def create_admin_section(settings_window):
                 border_radius=dp(10)
             )
             button.bind(on_press=clear_old_logs)
+        # Настройка четвертой кнопки (меню дополнительных действий)
+        else:
+            button = RoundedButton(
+                text="Additional Actions",
+                size_hint=(None, None),
+                size=(dp(200), dp(35)),
+                border_radius=dp(10)
+            )
+            button.bind(on_press=show_additional_actions)
         button_layout.add_widget(button)
         setattr(settings_window, button_attr, button)
         table.add_widget(button_layout)
