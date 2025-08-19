@@ -349,9 +349,9 @@ def create_admin_section(settings_window):
     # Таблица настроек
     table = BorderedGridLayout(
         cols=3,
-        rows=3,
+        rows=4,  # Увеличиваем количество строк до 4
         size_hint_y=None,
-        height=dp(150),  # Такая же высота, как у уведомлений
+        height=dp(200),  # Увеличиваем высоту для четвертой строки
         spacing=0
     )
     
@@ -371,7 +371,8 @@ def create_admin_section(settings_window):
     rows = [
         ("Debug Mode", 'debug_switch', 'debug_button'),
         ("Feature 2", 'feature2_switch', 'feature2_button'),
-        ("Feature 3", 'feature3_switch', 'feature3_button')
+        ("Feature 3", 'feature3_switch', 'feature3_button'),
+        ("Feature 4", 'feature4_switch', 'feature4_button')
     ]
 
     for text, switch_attr, button_attr in rows:
