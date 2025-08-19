@@ -24,17 +24,14 @@ class BorderedGridLayout(GridLayout):
             # Внешняя рамка
             Line(rectangle=(self.x, self.y, self.width, self.height), width=1)
 
-            # Вертикальные линии для трёх колонок
-            # Первая линия на 40% (конец первой колонки)
-            col1 = self.x + self.width * 0.4
-            # Вторая линия на 60% (конец второй колонки, 40% + 20%)
-            col2 = self.x + self.width * 0.6
-            # Третья линия на 100% (конец третьей колонки, 60% + 40%)
-            col3 = self.x + self.width
+            # Вертикальные линии для двух колонок
+            # Линия на 80% (конец первой колонки)
+            col1 = self.x + self.width * 0.8
+            # Линия на 100% (конец второй колонки)
+            col2 = self.x + self.width
             
             Line(points=[col1, self.y, col1, self.top], width=1)
             Line(points=[col2, self.y, col2, self.top], width=1)
-            Line(points=[col3, self.y, col3, self.top], width=1)
 
 def create_notifications_section(settings_window):
     """Создаёт секцию уведомлений с таблицей 3x3."""
@@ -42,14 +39,14 @@ def create_notifications_section(settings_window):
     container = GridLayout(
         cols=1,
         size_hint=(1, None),
-        height=dp(210),
+        height=dp(150),  # Уменьшена высота контейнера, так как кнопки удалены
         padding=(dp(30), dp(5), dp(30), dp(5)),
         spacing=dp(5)
     )
 
     # Таблица
     table = BorderedGridLayout(
-        cols=3,
+        cols=2,  # Уменьшено количество колонок с 3 до 2
         rows=3,
         size_hint_y=None,
         height=dp(150),
@@ -60,9 +57,8 @@ def create_notifications_section(settings_window):
     def update_col_widths(*args):
         available_width = table.width  # ширина именно таблицы
         table.cols_minimum = {
-            0: available_width * 0.4,  # 40% для первой колонки (текст)
-            1: available_width * 0.2,  # 20% для второй колонки (переключатель)
-            2: available_width * 0.4   # 40% для третьей колонки (кнопка)
+            0: available_width * 0.8,  # 80% для первой колонки (текст)
+            1: available_width * 0.2   # 20% для второй колонки (переключатель)
         }
 
     # Привязываем к изменению размеров таблицы
@@ -71,12 +67,12 @@ def create_notifications_section(settings_window):
 
     # Данные для строк
     rows = [
-        ("Voice", 'voice_switch', 'voice_button'),
-        ("Visual", 'visual_switch', 'visual_button'),
-        ("Adhan", 'azan_switch', 'azan_button')
+        ("Voice", 'voice_switch'),
+        ("Visual", 'visual_switch'),
+        ("Adhan", 'azan_switch')
     ]
 
-    for text, switch_attr, button_attr in rows:
+    for text, switch_attr in rows:
         # 1. Текст (слева по центру вертикально)
         label = Label(
             text=text,
@@ -105,17 +101,7 @@ def create_notifications_section(settings_window):
         setattr(settings_window, switch_attr, switch)  # Сохраняем ссылку на сам переключатель
         table.add_widget(switch_layout)
 
-        # 3. Кнопка с закругленными углами (по центру)
-        button_layout = AnchorLayout(anchor_x='center', anchor_y='center')
-        button = RoundedButton(
-            text="Settings",
-            size_hint=(None, None),
-            size=(dp(200), dp(35)),  # Увеличена ширина кнопки до 200dp
-            border_radius=dp(10)  # Радиус скругления
-        )
-        button_layout.add_widget(button)
-        setattr(settings_window, button_attr, button)
-        table.add_widget(button_layout)
+        # Кнопка удалена
 
     container.add_widget(table)
     settings_window.notifications_section = container
