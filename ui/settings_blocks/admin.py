@@ -400,6 +400,12 @@ def create_admin_section(settings_window):
         spacing=dp(5)
     )
     
+    # Функция для обновления размера текста с отступом
+    def update_text_size(inst, val):
+        padding = dp(15)  # Отступ слева 15dp
+        inst.text_size = (val[0] - padding, None)
+        inst.canvas.ask_update()
+
     # Таблица настроек
     table = BorderedGridLayout(
         cols=2,  # 2 колонки (текст и элемент управления)
@@ -427,8 +433,9 @@ def create_admin_section(settings_window):
         valign='middle',
         font_size='22sp',
         bold=False,
-        padding_x=dp(10)  # Отступ слева для текста
+        size_hint_x=0.9
     )
+    label1.bind(size=update_text_size)
     table.add_widget(label1)
     
     # Контейнер с центрированием для переключателя Debug Mode
@@ -449,8 +456,10 @@ def create_admin_section(settings_window):
         halign='left',
         valign='middle',
         font_size='22sp',
-        bold=False
+        bold=False,
+        size_hint_x=0.9
     )
+    label2.bind(size=update_text_size)
     table.add_widget(label2)
     
     # Контейнер с центрированием для кнопки Open Terminal
@@ -471,8 +480,10 @@ def create_admin_section(settings_window):
         halign='left',
         valign='middle',
         font_size='22sp',
-        bold=False
+        bold=False,
+        size_hint_x=0.9
     )
+    label3.bind(size=update_text_size)
     table.add_widget(label3)
     
     # Контейнер с центрированием для кнопки Open Editor
@@ -493,8 +504,10 @@ def create_admin_section(settings_window):
         halign='left',
         valign='middle',
         font_size='22sp',
-        bold=False
+        bold=False,
+        size_hint_x=0.9
     )
+    label4.bind(size=update_text_size)
     table.add_widget(label4)
     
     # Контейнер с центрированием для переключателя Logging to File
@@ -514,8 +527,10 @@ def create_admin_section(settings_window):
         halign='left',
         valign='middle',
         font_size='22sp',
-        bold=False
+        bold=False,
+        size_hint_x=0.9
     )
+    label5.bind(size=update_text_size)
     table.add_widget(label5)
     
     # Контейнер с центрированием для кнопки Clear
@@ -536,8 +551,10 @@ def create_admin_section(settings_window):
         halign='left',
         valign='middle',
         font_size='22sp',
-        bold=False
+        bold=False,
+        size_hint_x=0.9
     )
+    label6.bind(size=update_text_size)
     table.add_widget(label6)
     
     # Контейнер с центрированием для переключателя Additional Actions
@@ -557,14 +574,16 @@ def create_admin_section(settings_window):
         halign='left',
         valign='middle',
         font_size='22sp',
-        bold=False
+        bold=False,
+        size_hint_x=0.9
     )
+    label7.bind(size=update_text_size)
     table.add_widget(label7)
     
     # Контейнер с центрированием для кнопки Show Actions
     anchor = AnchorLayout(anchor_x='center', size_hint_x=1)
     btn_show = RoundedButton(
-        text="Show Actions",
+        text="Show",
         size_hint=(None, None),
         size=(dp(90), dp(35)),
         border_radius=dp(10)
@@ -579,8 +598,10 @@ def create_admin_section(settings_window):
         halign='left',
         valign='middle',
         font_size='22sp',
-        bold=False
+        bold=False,
+        size_hint_x=0.9
     )
+    label8.bind(size=update_text_size)
     table.add_widget(label8)
     
     # Контейнер с центрированием для второго переключателя Additional Actions
