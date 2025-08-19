@@ -28,8 +28,18 @@ logs_dir = os.path.join(app_dir, 'logs')
 # Создаем директорию для логов, если она не существует
 os.makedirs(logs_dir, exist_ok=True)
 
+# Инициализируем базу данных для получения настроек логирования
+try:
+    from data.database import SettingsDatabase
+    db = SettingsDatabase()
+    logging_enabled = db.get_setting('logging_to_file', '0') == '1'
+except Exception as e:
+    logging.warning(f'Failed to load logging settings: {e}')
+    logging_enabled = False  # По умолчанию выключаем логирование в файл
+
+# Настраиваем логирование Kivy
 Config.set('kivy', 'log_level', 'debug')
-Config.set('kivy', 'log_enable', 1)
+Config.set('kivy', 'log_enable', 1 if logging_enabled else 0)  # Включаем/выключаем логирование в файл
 Config.set('kivy', 'log_dir', logs_dir)  # Указываем полный путь к папке logs
 Config.set('kivy', 'log_name', 'logs_%__%y-%m-%d_%H:%M:%S.txt')
 Config.set('kivy', 'log_maxfiles', 10)
@@ -38,6 +48,7 @@ Config.set('kivy', 'log_maxsize', 1024 * 1024 * 5)
 # Стартовое сообщение
 logging.info("=== START " + "=" * 24)
 logging.info(f'Started: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
+logging.info(f'File logging is {"ENABLED" if logging_enabled else "DISABLED"}')
 
 # Set Kivy logger level to debug
 Logger.setLevel(logging.DEBUG)

@@ -238,6 +238,16 @@ class SettingsWindow(ModalView):
                     except Exception as db_error:
                         logging.error(f'Critical error: failed to save debug state: {db_error}')
                 
+            # Сохраняем настройку логирования в файл
+            if hasattr(self, 'logging_to_file_pending'):
+                try:
+                    from data.database import SettingsDatabase
+                    db = SettingsDatabase()
+                    db.save_setting('logging_to_file', '1' if self.logging_to_file_pending else '0')
+                    Logger.info(f'Logger: Logging to file set to {self.logging_to_file_pending}')
+                except Exception as e:
+                    Logger.error(f'Logger: Failed to save logging to file setting: {e}')
+            
             # Выводим обновленные настройки после сохранения
             self.print_sizes(show_before_save=False)
             

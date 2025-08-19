@@ -48,21 +48,51 @@ def load_debug_state(settings_window):
     Загружает состояние отладочного режима из базы данных.
     
     Args:
-        settings_window: Экземпляр SettingsWindow с доступом к базе данных
+        settings_window: Экземпляр SettingsWindow
         
     Returns:
-        bool: Текущее состояние отладочного режима
+        bool: True если отладочный режим включен, иначе False
     """
     try:
-        if hasattr(settings_window, 'db'):
-            # Пытаемся получить значение из базы данных
-            debug_mode = settings_window.db.get_setting('debug_mode')
-            # Преобразуем строковое значение в булево
-            return debug_mode == '1' if debug_mode is not None else False
-        return False
+        db = settings_window.db
+        debug_mode = db.get_setting('debug_mode', '0')
+        return debug_mode == '1'
     except Exception as e:
-        logger.error(f'Ошибка при загрузке состояния отладочного режима: {e}')
+        logger.error(f'Error loading debug state: {e}')
         return False
+
+def load_logging_state(settings_window):
+    """
+    Загружает состояние логирования в файл из базы данных.
+    
+    Args:
+        settings_window: Экземпляр SettingsWindow
+        
+    Returns:
+        bool: True если логирование в файл включено, иначе False
+    """
+    try:
+        db = settings_window.db
+        logging_enabled = db.get_setting('logging_to_file', '0')
+        return logging_enabled == '1'
+    except Exception as e:
+        logger.error(f'Error loading logging state: {e}')
+        return False
+
+def save_logging_state(settings_window, enabled):
+    """
+    Сохраняет состояние логирования в файл в базу данных.
+    
+    Args:
+        settings_window: Экземпляр SettingsWindow
+        enabled (bool): Включено ли логирование в файл
+    """
+    try:
+        db = settings_window.db
+        db.save_setting('logging_to_file', '1' if enabled else '0')
+        logger.info(f'Logging to file set to: {enabled}')
+    except Exception as e:
+        logger.error(f'Error saving logging state: {e}')
 
 def save_debug_state(settings_window, enabled):
     """Сохраняет состояние отладочного режима в базу данных."""
@@ -329,7 +359,7 @@ def show_additional_actions(instance):
     
     # Первая кнопка
     btn1 = Button(
-        text='Действие 1',
+        text='Action 1',
         size_hint_y=None,
         height=dp(50),
         font_size='18sp',
@@ -339,7 +369,7 @@ def show_additional_actions(instance):
     
     # Вторая кнопка
     btn2 = Button(
-        text='Действие 2',
+        text='Action 2',
         size_hint_y=None,
         height=dp(50),
         font_size='18sp',
@@ -353,7 +383,7 @@ def show_additional_actions(instance):
     
     # Создаем всплывающее окно
     popup = Popup(
-        title='Дополнительные действия',
+        title='Additional actions',
         title_size='24sp',
         title_align='center',
         content=content,
@@ -362,8 +392,8 @@ def show_additional_actions(instance):
     )
     
     # Привязываем действия к кнопкам
-    btn1.bind(on_press=lambda x: logger.info("Выбрано действие 1") or popup.dismiss())
-    btn2.bind(on_press=lambda x: logger.info("Выбрано действие 2") or popup.dismiss())
+    btn1.bind(on_press=lambda x: logger.info("Action 1 selected") or popup.dismiss())
+    btn2.bind(on_press=lambda x: logger.info("Action 2 selected") or popup.dismiss())
     
     # Показываем окно
     popup.open()
@@ -375,11 +405,24 @@ def on_debug_switch(switch_instance, value, settings_window):
     Args:
         switch_instance: Экземпляр переключателя
         value: Новое значение переключателя (True/False)
-        settings_window: Экземпляр окна настроек
+        settings_window: Экземпляр SettingsWindow
     """
-    # Только логируем изменение состояния, без сохранения в БД
-    status = 'Enabled' if value else 'Disabled'
-    logger.info(f'Debug Mode changed to: {status} (will be saved on accept)')
+    # Сохраняем состояние в атрибут, чтобы применить его при нажатии "Сохранить"
+    settings_window.debug_mode_pending = value
+    logger.info(f'Debug Mode changed to: {value} (will be saved on accept)')
+
+def on_logging_switch(switch_instance, value, settings_window):
+    """
+    Обработчик изменения состояния переключателя логирования в файл.
+    
+    Args:
+        switch_instance: Экземпляр переключателя
+        value: Новое значение переключателя (True/False)
+        settings_window: Экземпляр SettingsWindow
+    """
+    # Сохраняем состояние в атрибут, чтобы применить его при нажатии "Сохранить"
+    settings_window.logging_to_file_pending = value
+    logger.info(f'Logging to file changed to: {value} (will be saved on accept)')
 
 def create_admin_section(settings_window):
     """
@@ -516,7 +559,12 @@ def create_admin_section(settings_window):
         size_hint=(None, None),
         size=(dp(90), dp(40))
     )
-    logging_switch.active = False
+    # Загружаем сохраненное состояние логирования
+    logging_switch.active = load_logging_state(settings_window)
+    # Сохраняем текущее состояние как ожидающее применения
+    settings_window.logging_to_file_pending = logging_switch.active
+    # Привязываем обработчик
+    logging_switch.bind(active=lambda instance, value: on_logging_switch(instance, value, settings_window))
     settings_window.logging_switch = logging_switch
     anchor.add_widget(logging_switch)
     table.add_widget(anchor)
