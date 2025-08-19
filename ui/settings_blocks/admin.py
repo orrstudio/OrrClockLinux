@@ -312,16 +312,33 @@ def create_admin_section(settings_window):
 
         # 3. Кнопка с закругленными углами (по центру)
         button_layout = AnchorLayout(anchor_x='center', anchor_y='center')
-        button = RoundedButton(
-            text="Logs in Terminal" if switch_attr == 'debug_switch' else "Open Logs in Editor",
-            size_hint=(None, None),
-            size=(dp(200), dp(35)),
-            border_radius=dp(10)  # Радиус скругления
-        )
+        
+        # Настройка первой кнопки (рядом с Debug Mode)
         if switch_attr == 'debug_switch':
+            button = RoundedButton(
+                text="Logs in Terminal",
+                size_hint=(None, None),
+                size=(dp(200), dp(35)),
+                border_radius=dp(10)
+            )
             button.bind(on_press=open_logs_terminal)
-        else:
+        # Настройка второй кнопки
+        elif switch_attr == 'feature2_switch':
+            button = RoundedButton(
+                text="Open Logs in Editor",
+                size_hint=(None, None),
+                size=(dp(200), dp(35)),
+                border_radius=dp(10)
+            )
             button.bind(on_press=open_logs_in_editor)
+        # Настройка третьей кнопки (без действия)
+        else:
+            button = RoundedButton(
+                text="Button",
+                size_hint=(None, None),
+                size=(dp(200), dp(35)),
+                border_radius=dp(10)
+            )
         button_layout.add_widget(button)
         setattr(settings_window, button_attr, button)
         table.add_widget(button_layout)
