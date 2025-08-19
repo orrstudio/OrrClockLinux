@@ -140,15 +140,22 @@ def clear_old_logs(button_instance):
             content.bind(minimum_height=content.setter('height'))
             
             # Добавляем заголовок и список файлов
-            content.add_widget(Label(text='Deleted files:', size_hint_y=None, height=40))
+            content.add_widget(Label(
+                text='Deleted files:',
+                size_hint_y=None,
+                height=50,
+                font_size='22sp',
+                bold=True
+            ))
             
             for file in deleted_files:
                 content.add_widget(Label(
                     text=file,
                     size_hint_y=None,
-                    height=30,
+                    height=50,
+                    font_size='20sp',
                     halign='left',
-                    text_size=(350, None),
+                    text_size=(400, None),
                     shorten=True,
                     shorten_from='right',
                     ellipsis_options={'ellipsis': '...'}
