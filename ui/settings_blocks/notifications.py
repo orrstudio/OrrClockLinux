@@ -430,7 +430,6 @@ def create_notifications_section(settings_window):
     settings_window.visual_notifications_pending = db.get_setting('visual_notifications', '1') == '1'
     settings_window.voice_notifications_pending = db.get_setting('voice_notifications', '1') == '1'
     settings_window.play_adhan_pending = db.get_setting('play_adhan', '1') == '1'
-    settings_window.test_checkbox_pending = db.get_setting('test_checkbox', '1') == '1'  # Новый переключатель
     
     # Визуальные уведомления
     settings_window.visual_at_adhan_pending = db.get_setting('visual_at_adhan', '1') == '1'
@@ -497,7 +496,6 @@ def create_notifications_section(settings_window):
         ("           Asr", 'switch_asr', '22sp', False, 1, dp(30)),
         ("           Maghrib", 'switch_maghrib', '22sp', False, 1, dp(30)),
         ("           Isha", 'switch_isha', '22sp', False, 1, dp(30)),
-        ("Test Custom Checkbox", 'test_checkbox', '28sp', True, 0, dp(60)),
         ("Current Muezzin", None, '28sp', True, 0, dp(60)),  # Без переключателя
         ("Muezzin", 'custom_button', '22sp', False, 1, dp(30)),
     ]
@@ -677,21 +675,6 @@ def create_notifications_section(settings_window):
             elif switch_attr == 'switch_isha':
                 switch.active = settings_window.isha_adhan_pending
                 switch.bind(active=lambda i, v, sw=settings_window: on_isha_switch(i, v, sw))
-            # Обработка кастомного чекбокса
-            elif switch_attr == 'test_checkbox':
-                # Создаем кастомный чекбокс вместо стандартного переключателя
-                switch_layout.remove_widget(switch)  # Удаляем стандартный переключатель
-                custom_checkbox = CustomCheckBox(
-                    size_hint=(None, None),
-                    size=(dp(60), dp(30)),
-                    active=settings_window.test_checkbox_pending
-                )
-                # Сохраняем состояние при изменении
-                def on_test_checkbox(instance, value):
-                    settings_window.test_checkbox_pending = value
-                    settings_window.db.save_setting('test_checkbox', '1' if value else '0')
-                custom_checkbox.bind(active=on_test_checkbox)
-                switch = custom_checkbox
             
             switch_layout.add_widget(switch)
             setattr(settings_window, switch_attr, switch)  # Сохраняем ссылку на сам переключатель
