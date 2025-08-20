@@ -18,7 +18,7 @@ from kivy.core.window import Window
 from kivy.graphics import Color, Line
 from kivy.properties import ListProperty, BooleanProperty, StringProperty
 
-from ui.components.custom_switch import CustomSwitch
+from ui.components.custom_switch_checkbox import CustomCheckBox
 from ui.components.custom_button import RoundedButton
 
 # Настройка логирования
@@ -483,9 +483,9 @@ def create_admin_section(settings_window):
     
     # Контейнер с центрированием для переключателя Debug Mode
     anchor = AnchorLayout(anchor_x='center', size_hint_x=1)
-    debug_switch = CustomSwitch(
+    debug_switch = CustomCheckBox(
         size_hint=(None, None),
-        size=(dp(90), dp(40))
+        height=dp(40)  # Ширина будет рассчитана автоматически
     )
     debug_switch.active = load_debug_state(settings_window)
     debug_switch.bind(active=lambda instance, value: on_debug_switch(instance, value, settings_window))
@@ -555,9 +555,9 @@ def create_admin_section(settings_window):
     
     # Контейнер с центрированием для переключателя Logging to File
     anchor = AnchorLayout(anchor_x='center', size_hint_x=1)
-    logging_switch = CustomSwitch(
+    logging_switch = CustomCheckBox(
         size_hint=(None, None),
-        size=(dp(90), dp(40))
+        height=dp(40)  # Ширина будет рассчитана автоматически
     )
     # Загружаем сохраненное состояние логирования
     logging_switch.active = load_logging_state(settings_window)
@@ -607,9 +607,9 @@ def create_admin_section(settings_window):
     
     # Контейнер с центрированием для переключателя Additional Actions
     anchor = AnchorLayout(anchor_x='center', size_hint_x=1)
-    actions_switch = CustomSwitch(
+    actions_switch = CustomCheckBox(
         size_hint=(None, None),
-        size=(dp(90), dp(40))
+        height=dp(40)  # Ширина будет рассчитана автоматически
     )
     actions_switch.active = False
     settings_window.actions_switch = actions_switch
@@ -654,9 +654,9 @@ def create_admin_section(settings_window):
     
     # Контейнер с центрированием для второго переключателя Additional Actions
     anchor = AnchorLayout(anchor_x='center', size_hint_x=1)
-    actions_switch2 = CustomSwitch(
+    actions_switch2 = CustomCheckBox(
         size_hint=(None, None),
-        size=(dp(90), dp(40))
+        height=dp(40)  # Ширина будет рассчитана автоматически
     )
     actions_switch2.active = False
     settings_window.actions_switch2 = actions_switch2

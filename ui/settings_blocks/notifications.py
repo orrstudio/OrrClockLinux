@@ -14,7 +14,6 @@ from kivy.clock import Clock
 from kivy.properties import StringProperty, ObjectProperty, ListProperty
 
 from ui.settings_blocks.base import CustomButton
-from ui.components.custom_switch import CustomSwitch
 from ui.components.custom_switch_checkbox import CustomCheckBox
 from ui.components.custom_button import RoundedButton
 
@@ -613,9 +612,9 @@ def create_notifications_section(settings_window):
             )
             # Увеличиваем размер переключателя для заголовков (с font_size='28sp')
             switch_size = (dp(90), dp(30)) if font_size == '28sp' else (dp(60), dp(20))
-            switch = CustomSwitch(
+            switch = CustomCheckBox(
                 size_hint=(None, None),
-                size=switch_size
+                height=switch_size[1]  # Используем высоту из switch_size, ширина будет рассчитана автоматически
             )
             
             # Устанавливаем начальное состояние переключателя и привязываем обработчики
