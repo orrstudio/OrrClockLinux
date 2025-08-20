@@ -248,6 +248,26 @@ class SettingsWindow(ModalView):
                 except Exception as e:
                     Logger.error(f'Logger: Failed to save logging to file setting: {e}')
             
+            # Сохраняем настройки уведомлений
+            try:
+                # Визуальные уведомления
+                if hasattr(self, 'visual_notifications_pending'):
+                    self.db.save_setting('visual_notifications', '1' if self.visual_notifications_pending else '0')
+                    Logger.info(f'Notifications: Visual notifications set to {self.visual_notifications_pending}')
+                
+                # Голосовые уведомления
+                if hasattr(self, 'voice_notifications_pending'):
+                    self.db.save_setting('voice_notifications', '1' if self.voice_notifications_pending else '0')
+                    Logger.info(f'Notifications: Voice notifications set to {self.voice_notifications_pending}')
+                
+                # Воспроизведение азана
+                if hasattr(self, 'play_adhan_pending'):
+                    self.db.save_setting('play_adhan', '1' if self.play_adhan_pending else '0')
+                    Logger.info(f'Notifications: Play adhan set to {self.play_adhan_pending}')
+                    
+            except Exception as e:
+                Logger.error(f'Notifications: Failed to save notification settings: {e}')
+            
             # Выводим обновленные настройки после сохранения
             self.print_sizes(show_before_save=False)
             

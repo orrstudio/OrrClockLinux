@@ -293,8 +293,52 @@ class BorderedGridLayout(GridLayout):
     """Обычный GridLayout без границ."""
     pass
 
+def on_visual_switch(switch_instance, value, settings_window):
+    """
+    Обработчик изменения состояния переключателя визуальных уведомлений.
+    
+    Args:
+        switch_instance: Экземпляр переключателя
+        value: Новое значение переключателя (True/False)
+        settings_window: Экземпляр SettingsWindow
+    """
+    settings_window.visual_notifications_pending = value
+
+
+def on_voice_switch(switch_instance, value, settings_window):
+    """
+    Обработчик изменения состояния переключателя голосовых уведомлений.
+    
+    Args:
+        switch_instance: Экземпляр переключателя
+        value: Новое значение переключателя (True/False)
+        settings_window: Экземпляр SettingsWindow
+    """
+    settings_window.voice_notifications_pending = value
+
+
+def on_adhan_switch(switch_instance, value, settings_window):
+    """
+    Обработчик изменения состояния переключателя воспроизведения азана.
+    
+    Args:
+        switch_instance: Экземпляр переключателя
+        value: Новое значение переключателя (True/False)
+        settings_window: Экземпляр SettingsWindow
+    """
+    settings_window.play_adhan_pending = value
+
+
 def create_notifications_section(settings_window):
-    """Создаёт секцию уведомлений с таблицей 3x3."""
+    """
+    Создаёт секцию уведомлений с таблицей настроек.
+    
+    Args:
+        settings_window: Экземпляр SettingsWindow, содержащий ссылку на базу данных
+        
+    Returns:
+        GridLayout: Созданная секция с настройками уведомлений
+    """
 
     container = GridLayout(
         cols=1,
@@ -304,6 +348,14 @@ def create_notifications_section(settings_window):
         spacing=dp(5)
     )
 
+    # Инициализируем атрибуты для хранения состояний переключателей
+    db = settings_window.db
+    
+    # Загружаем значения из базы данных или используем значения по умолчанию
+    settings_window.visual_notifications_pending = db.get_setting('visual_notifications', '1') == '1'
+    settings_window.voice_notifications_pending = db.get_setting('voice_notifications', '1') == '1'
+    settings_window.play_adhan_pending = db.get_setting('play_adhan', '1') == '1'
+    
     # Таблица
     table = BorderedGridLayout(
         cols=2,  # Две колонки: текст и переключатель
@@ -465,6 +517,18 @@ def create_notifications_section(settings_window):
                 size_hint=(None, None),
                 size=switch_size
             )
+            
+            # Устанавливаем начальное состояние переключателя
+            if switch_attr == 'visual_switch':
+                switch.active = settings_window.visual_notifications_pending
+                switch.bind(active=lambda instance, value, sw=settings_window: on_visual_switch(instance, value, sw))
+            elif switch_attr == 'voice_switch':
+                switch.active = settings_window.voice_notifications_pending
+                switch.bind(active=lambda instance, value, sw=settings_window: on_voice_switch(instance, value, sw))
+            elif switch_attr == 'switch_play_adhan':
+                switch.active = settings_window.play_adhan_pending
+                switch.bind(active=lambda instance, value, sw=settings_window: on_adhan_switch(instance, value, sw))
+            
             switch_layout.add_widget(switch)
             setattr(settings_window, switch_attr, switch)  # Сохраняем ссылку на сам переключатель
             table.add_widget(switch_layout)
