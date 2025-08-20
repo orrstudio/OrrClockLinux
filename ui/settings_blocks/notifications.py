@@ -70,7 +70,7 @@ def create_notifications_section(settings_window):
         ("           Maghrib", 'switch_maghrib', '22sp', False, 1, dp(30)),
         ("           Isha", 'switch_isha', '22sp', False, 1, dp(30)),
         ("Choose Muezzin", None, '28sp', True, 0, dp(60)),  # Без переключателя
-        ("           Default Adhan", 'switch_default_adhan', '22sp', False, 1, dp(30)),
+        ("           Default Adhan", 'custom_button', '22sp', False, 1, dp(30)),
     ]
 
     for text, switch_attr, font_size, is_bold, _, switch_height in rows:
@@ -94,9 +94,24 @@ def create_notifications_section(settings_window):
         label.bind(size=update_text_size)
         table.add_widget(label)
 
-        # 2. Kivy переключатель (по центру)
-        # Для строк без переключателя (где switch_attr = None) создаем пустой контейнер
-        if switch_attr is not None:
+        # 2. Kivy переключатель (по центру) или кнопка
+        if switch_attr == 'custom_button':
+            # Создаем кастомную кнопку для выбора муэдзина
+            button_layout = AnchorLayout(
+                anchor_x='center',
+                anchor_y='center',
+                size_hint=(0.2, None),
+                height=dp(40)  # Фиксированная высота для кнопки
+            )
+            button = RoundedButton(
+                text='Choose',
+                size_hint=(None, None),
+                size=(dp(100), dp(40)),
+                font_size='16sp'
+            )
+            button_layout.add_widget(button)
+            table.add_widget(button_layout)
+        elif switch_attr is not None:
             switch_layout = AnchorLayout(
                 anchor_x='center',
                 anchor_y='center',
