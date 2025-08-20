@@ -250,20 +250,81 @@ class SettingsWindow(ModalView):
             
             # Сохраняем настройки уведомлений
             try:
-                # Визуальные уведомления
+                # Основные переключатели
                 if hasattr(self, 'visual_notifications_pending'):
                     self.db.save_setting('visual_notifications', '1' if self.visual_notifications_pending else '0')
                     Logger.info(f'Notifications: Visual notifications set to {self.visual_notifications_pending}')
                 
-                # Голосовые уведомления
                 if hasattr(self, 'voice_notifications_pending'):
                     self.db.save_setting('voice_notifications', '1' if self.voice_notifications_pending else '0')
                     Logger.info(f'Notifications: Voice notifications set to {self.voice_notifications_pending}')
                 
-                # Воспроизведение азана
                 if hasattr(self, 'play_adhan_pending'):
                     self.db.save_setting('play_adhan', '1' if self.play_adhan_pending else '0')
                     Logger.info(f'Notifications: Play adhan set to {self.play_adhan_pending}')
+                
+                # Визуальные уведомления
+                if hasattr(self, 'visual_at_adhan_pending'):
+                    self.db.save_setting('visual_at_adhan', '1' if self.visual_at_adhan_pending else '0')
+                    Logger.info(f'Notifications: Visual at adhan set to {self.visual_at_adhan_pending}')
+                
+                if hasattr(self, 'visual_15_min_pending'):
+                    self.db.save_setting('visual_15_min', '1' if self.visual_15_min_pending else '0')
+                    Logger.info(f'Notifications: Visual 15 min before set to {self.visual_15_min_pending}')
+                
+                if hasattr(self, 'visual_30_min_pending'):
+                    self.db.save_setting('visual_30_min', '1' if self.visual_30_min_pending else '0')
+                    Logger.info(f'Notifications: Visual 30 min before set to {self.visual_30_min_pending}')
+                
+                if hasattr(self, 'visual_45_min_pending'):
+                    self.db.save_setting('visual_45_min', '1' if self.visual_45_min_pending else '0')
+                    Logger.info(f'Notifications: Visual 45 min before set to {self.visual_45_min_pending}')
+                
+                if hasattr(self, 'visual_60_min_pending'):
+                    self.db.save_setting('visual_60_min', '1' if self.visual_60_min_pending else '0')
+                    Logger.info(f'Notifications: Visual 60 min before set to {self.visual_60_min_pending}')
+                
+                # Голосовые уведомления
+                if hasattr(self, 'voice_at_adhan_pending'):
+                    self.db.save_setting('voice_at_adhan', '1' if self.voice_at_adhan_pending else '0')
+                    Logger.info(f'Notifications: Voice at adhan set to {self.voice_at_adhan_pending}')
+                
+                if hasattr(self, 'voice_15_min_pending'):
+                    self.db.save_setting('voice_15_min', '1' if self.voice_15_min_pending else '0')
+                    Logger.info(f'Notifications: Voice 15 min before set to {self.voice_15_min_pending}')
+                
+                if hasattr(self, 'voice_30_min_pending'):
+                    self.db.save_setting('voice_30_min', '1' if self.voice_30_min_pending else '0')
+                    Logger.info(f'Notifications: Voice 30 min before set to {self.voice_30_min_pending}')
+                
+                if hasattr(self, 'voice_45_min_pending'):
+                    self.db.save_setting('voice_45_min', '1' if self.voice_45_min_pending else '0')
+                    Logger.info(f'Notifications: Voice 45 min before set to {self.voice_45_min_pending}')
+                
+                if hasattr(self, 'voice_60_min_pending'):
+                    self.db.save_setting('voice_60_min', '1' if self.voice_60_min_pending else '0')
+                    Logger.info(f'Notifications: Voice 60 min before set to {self.voice_60_min_pending}')
+                
+                # Настройки азана
+                if hasattr(self, 'fajr_adhan_pending'):
+                    self.db.save_setting('fajr_adhan', '1' if self.fajr_adhan_pending else '0')
+                    Logger.info(f'Notifications: Fajr adhan set to {self.fajr_adhan_pending}')
+                
+                if hasattr(self, 'dhuhr_adhan_pending'):
+                    self.db.save_setting('dhuhr_adhan', '1' if self.dhuhr_adhan_pending else '0')
+                    Logger.info(f'Notifications: Dhuhr adhan set to {self.dhuhr_adhan_pending}')
+                
+                if hasattr(self, 'asr_adhan_pending'):
+                    self.db.save_setting('asr_adhan', '1' if self.asr_adhan_pending else '0')
+                    Logger.info(f'Notifications: Asr adhan set to {self.asr_adhan_pending}')
+                
+                if hasattr(self, 'maghrib_adhan_pending'):
+                    self.db.save_setting('maghrib_adhan', '1' if self.maghrib_adhan_pending else '0')
+                    Logger.info(f'Notifications: Maghrib adhan set to {self.maghrib_adhan_pending}')
+                
+                if hasattr(self, 'isha_adhan_pending'):
+                    self.db.save_setting('isha_adhan', '1' if self.isha_adhan_pending else '0')
+                    Logger.info(f'Notifications: Isha adhan set to {self.isha_adhan_pending}')
                     
             except Exception as e:
                 Logger.error(f'Notifications: Failed to save notification settings: {e}')

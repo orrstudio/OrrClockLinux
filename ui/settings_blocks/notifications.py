@@ -329,6 +329,81 @@ def on_adhan_switch(switch_instance, value, settings_window):
     settings_window.play_adhan_pending = value
 
 
+def on_visual_at_adhan_switch(switch_instance, value, settings_window):
+    """Обработчик изменения состояния переключателя визуальных уведомлений при азане."""
+    settings_window.visual_at_adhan_pending = value
+
+
+def on_visual_15_min_switch(switch_instance, value, settings_window):
+    """Обработчик изменения состояния переключателя визуальных уведомлений за 15 минут."""
+    settings_window.visual_15_min_pending = value
+
+
+def on_visual_30_min_switch(switch_instance, value, settings_window):
+    """Обработчик изменения состояния переключателя визуальных уведомлений за 30 минут."""
+    settings_window.visual_30_min_pending = value
+
+
+def on_visual_45_min_switch(switch_instance, value, settings_window):
+    """Обработчик изменения состояния переключателя визуальных уведомлений за 45 минут."""
+    settings_window.visual_45_min_pending = value
+
+
+def on_visual_60_min_switch(switch_instance, value, settings_window):
+    """Обработчик изменения состояния переключателя визуальных уведомлений за 60 минут."""
+    settings_window.visual_60_min_pending = value
+
+
+def on_voice_at_adhan_switch(switch_instance, value, settings_window):
+    """Обработчик изменения состояния переключателя голосовых уведомлений при азане."""
+    settings_window.voice_at_adhan_pending = value
+
+
+def on_voice_15_min_switch(switch_instance, value, settings_window):
+    """Обработчик изменения состояния переключателя голосовых уведомлений за 15 минут."""
+    settings_window.voice_15_min_pending = value
+
+
+def on_voice_30_min_switch(switch_instance, value, settings_window):
+    """Обработчик изменения состояния переключателя голосовых уведомлений за 30 минут."""
+    settings_window.voice_30_min_pending = value
+
+
+def on_voice_45_min_switch(switch_instance, value, settings_window):
+    """Обработчик изменения состояния переключателя голосовых уведомлений за 45 минут."""
+    settings_window.voice_45_min_pending = value
+
+
+def on_voice_60_min_switch(switch_instance, value, settings_window):
+    """Обработчик изменения состояния переключателя голосовых уведомлений за 60 минут."""
+    settings_window.voice_60_min_pending = value
+
+
+def on_fajr_switch(switch_instance, value, settings_window):
+    """Обработчик изменения состояния переключателя азана для Фаджра."""
+    settings_window.fajr_adhan_pending = value
+
+
+def on_dhuhr_switch(switch_instance, value, settings_window):
+    """Обработчик изменения состояния переключателя азана для Зухра."""
+    settings_window.dhuhr_adhan_pending = value
+
+
+def on_asr_switch(switch_instance, value, settings_window):
+    """Обработчик изменения состояния переключателя азана для Асра."""
+    settings_window.asr_adhan_pending = value
+
+
+def on_maghrib_switch(switch_instance, value, settings_window):
+    """Обработчик изменения состояния переключателя азана для Магриба."""
+    settings_window.maghrib_adhan_pending = value
+
+
+def on_isha_switch(switch_instance, value, settings_window):
+    """Обработчик изменения состояния переключателя азана для Иши."""
+    settings_window.isha_adhan_pending = value
+
+
 def create_notifications_section(settings_window):
     """
     Создаёт секцию уведомлений с таблицей настроек.
@@ -351,10 +426,32 @@ def create_notifications_section(settings_window):
     # Инициализируем атрибуты для хранения состояний переключателей
     db = settings_window.db
     
-    # Загружаем значения из базы данных или используем значения по умолчанию
+    # Загружаем значения из базы данных или используем значения по умолчанию (все включено)
+    # Основные переключатели
     settings_window.visual_notifications_pending = db.get_setting('visual_notifications', '1') == '1'
     settings_window.voice_notifications_pending = db.get_setting('voice_notifications', '1') == '1'
     settings_window.play_adhan_pending = db.get_setting('play_adhan', '1') == '1'
+    
+    # Визуальные уведомления
+    settings_window.visual_at_adhan_pending = db.get_setting('visual_at_adhan', '1') == '1'
+    settings_window.visual_15_min_pending = db.get_setting('visual_15_min', '1') == '1'
+    settings_window.visual_30_min_pending = db.get_setting('visual_30_min', '1') == '1'
+    settings_window.visual_45_min_pending = db.get_setting('visual_45_min', '1') == '1'
+    settings_window.visual_60_min_pending = db.get_setting('visual_60_min', '1') == '1'
+    
+    # Голосовые уведомления
+    settings_window.voice_at_adhan_pending = db.get_setting('voice_at_adhan', '1') == '1'
+    settings_window.voice_15_min_pending = db.get_setting('voice_15_min', '1') == '1'
+    settings_window.voice_30_min_pending = db.get_setting('voice_30_min', '1') == '1'
+    settings_window.voice_45_min_pending = db.get_setting('voice_45_min', '1') == '1'
+    settings_window.voice_60_min_pending = db.get_setting('voice_60_min', '1') == '1'
+    
+    # Настройки азана
+    settings_window.fajr_adhan_pending = db.get_setting('fajr_adhan', '1') == '1'
+    settings_window.dhuhr_adhan_pending = db.get_setting('dhuhr_adhan', '1') == '1'
+    settings_window.asr_adhan_pending = db.get_setting('asr_adhan', '1') == '1'
+    settings_window.maghrib_adhan_pending = db.get_setting('maghrib_adhan', '1') == '1'
+    settings_window.isha_adhan_pending = db.get_setting('isha_adhan', '1') == '1'
     
     # Таблица
     table = BorderedGridLayout(
@@ -518,16 +615,67 @@ def create_notifications_section(settings_window):
                 size=switch_size
             )
             
-            # Устанавливаем начальное состояние переключателя
+            # Устанавливаем начальное состояние переключателя и привязываем обработчики
             if switch_attr == 'visual_switch':
                 switch.active = settings_window.visual_notifications_pending
-                switch.bind(active=lambda instance, value, sw=settings_window: on_visual_switch(instance, value, sw))
+                switch.bind(active=lambda i, v, sw=settings_window: on_visual_switch(i, v, sw))
             elif switch_attr == 'voice_switch':
                 switch.active = settings_window.voice_notifications_pending
-                switch.bind(active=lambda instance, value, sw=settings_window: on_voice_switch(instance, value, sw))
+                switch.bind(active=lambda i, v, sw=settings_window: on_voice_switch(i, v, sw))
             elif switch_attr == 'switch_play_adhan':
                 switch.active = settings_window.play_adhan_pending
-                switch.bind(active=lambda instance, value, sw=settings_window: on_adhan_switch(instance, value, sw))
+                switch.bind(active=lambda i, v, sw=settings_window: on_adhan_switch(i, v, sw))
+                
+            # Привязки для визуальных уведомлений
+            elif switch_attr == 'visual_switch_at_adhan':
+                switch.active = settings_window.visual_at_adhan_pending
+                switch.bind(active=lambda i, v, sw=settings_window: on_visual_at_adhan_switch(i, v, sw))
+            elif switch_attr == 'visual_switch_15_min':
+                switch.active = settings_window.visual_15_min_pending
+                switch.bind(active=lambda i, v, sw=settings_window: on_visual_15_min_switch(i, v, sw))
+            elif switch_attr == 'visual_switch_30_min':
+                switch.active = settings_window.visual_30_min_pending
+                switch.bind(active=lambda i, v, sw=settings_window: on_visual_30_min_switch(i, v, sw))
+            elif switch_attr == 'visual_switch_45_min':
+                switch.active = settings_window.visual_45_min_pending
+                switch.bind(active=lambda i, v, sw=settings_window: on_visual_45_min_switch(i, v, sw))
+            elif switch_attr == 'visual_switch_60_min':
+                switch.active = settings_window.visual_60_min_pending
+                switch.bind(active=lambda i, v, sw=settings_window: on_visual_60_min_switch(i, v, sw))
+                
+            # Привязки для голосовых уведомлений
+            elif switch_attr == 'voice_switch_at_adhan':
+                switch.active = settings_window.voice_at_adhan_pending
+                switch.bind(active=lambda i, v, sw=settings_window: on_voice_at_adhan_switch(i, v, sw))
+            elif switch_attr == 'voice_switch_15_min':
+                switch.active = settings_window.voice_15_min_pending
+                switch.bind(active=lambda i, v, sw=settings_window: on_voice_15_min_switch(i, v, sw))
+            elif switch_attr == 'voice_switch_30_min':
+                switch.active = settings_window.voice_30_min_pending
+                switch.bind(active=lambda i, v, sw=settings_window: on_voice_30_min_switch(i, v, sw))
+            elif switch_attr == 'voice_switch_45_min':
+                switch.active = settings_window.voice_45_min_pending
+                switch.bind(active=lambda i, v, sw=settings_window: on_voice_45_min_switch(i, v, sw))
+            elif switch_attr == 'voice_switch_60_min':
+                switch.active = settings_window.voice_60_min_pending
+                switch.bind(active=lambda i, v, sw=settings_window: on_voice_60_min_switch(i, v, sw))
+                
+            # Привязки для намазов
+            elif switch_attr == 'fajr_switch':
+                switch.active = settings_window.fajr_adhan_pending
+                switch.bind(active=lambda i, v, sw=settings_window: on_fajr_switch(i, v, sw))
+            elif switch_attr == 'dhuhr_switch':
+                switch.active = settings_window.dhuhr_adhan_pending
+                switch.bind(active=lambda i, v, sw=settings_window: on_dhuhr_switch(i, v, sw))
+            elif switch_attr == 'asr_switch':
+                switch.active = settings_window.asr_adhan_pending
+                switch.bind(active=lambda i, v, sw=settings_window: on_asr_switch(i, v, sw))
+            elif switch_attr == 'maghrib_switch':
+                switch.active = settings_window.maghrib_adhan_pending
+                switch.bind(active=lambda i, v, sw=settings_window: on_maghrib_switch(i, v, sw))
+            elif switch_attr == 'isha_switch':
+                switch.active = settings_window.isha_adhan_pending
+                switch.bind(active=lambda i, v, sw=settings_window: on_isha_switch(i, v, sw))
             
             switch_layout.add_widget(switch)
             setattr(settings_window, switch_attr, switch)  # Сохраняем ссылку на сам переключатель
