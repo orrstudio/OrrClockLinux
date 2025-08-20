@@ -23,7 +23,8 @@ class SettingsDatabase:
         # Вставляем значения по умолчанию, если их нет
         default_settings = [
             ('color', 'lime'),
-            ('debug_mode', '0')  # По умолчанию отладочный режим выключен
+            ('debug_mode', '0'),  # По умолчанию отладочный режим выключен
+            ('selected_muezzin', 'Default Adhan')  # Значение по умолчанию для выбранного муэдзина
         ]
         
         for key, value in default_settings:

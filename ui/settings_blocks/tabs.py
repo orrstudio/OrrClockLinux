@@ -189,7 +189,7 @@ def create_tabbed_interface():
     # Создаем вкладки
     theme_tab, theme_content = create_tab('Theme')
     notification_tab, notification_content = create_tab('Notification')
-    admin_tab, admin_content = create_tab('Admin Panel')
+    admin_tab, admin_content = create_tab('Admin')
     
     # Добавляем вкладки на панель
     tab_panel.add_widget(theme_tab)
