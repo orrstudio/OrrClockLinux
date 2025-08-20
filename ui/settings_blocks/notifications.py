@@ -123,7 +123,7 @@ class MuezzinDialog(ModalView):
             size_hint_y=None,
             height=dp(50),
             spacing=dp(10),
-            padding=[dp(20), dp(5), dp(20), 0]
+            padding=[dp(140), dp(5), dp(140), 0]
         )
         
         # Кнопка Play
@@ -131,7 +131,7 @@ class MuezzinDialog(ModalView):
             icon_path='fonts/Awesome/use/play.png',
             text="",
             background_color=(0.05, 0.25, 0.4, 1),  # Синий цвет
-            size_hint_x=0.5,
+            size_hint_x=0.3,
             height=dp(45)
         )
         self.play_btn.bind(on_press=self._on_play_click)
@@ -141,7 +141,7 @@ class MuezzinDialog(ModalView):
             icon_path='fonts/Awesome/use/stop.png',
             text="",
             background_color=(0.2, 0.1, 0.1, 1),  # Красный цвет
-            size_hint_x=0.5,
+            size_hint_x=0.3,
             height=dp(45)
         )
         self.stop_btn.bind(on_press=self._on_stop_click)
