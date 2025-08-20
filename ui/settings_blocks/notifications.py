@@ -63,7 +63,7 @@ class MuezzinDialog(ModalView):
         self.background = ''
         self.background_color = (0.1, 0.1, 0.1, 1)  # Темный цвет фона
         # Проверяем валидность текущего муэдзина
-        self.selected_muezzin = current_muezzin if is_valid_muezzin(current_muezzin) else 'Default Adhan'
+        self.selected_muezzin = current_muezzin if is_valid_muezzin(current_muezzin) else 'Noname Muezzin (Adhan from Mihr.Com)'
         # Инициализируем атрибут для хранения текущего плеера
         self.current_player = None
         # Привязываем обработчик закрытия окна
@@ -517,9 +517,9 @@ def create_notifications_section(settings_window):
         # Если это строка с выбором муэдзина, добавляем отображение текущего выбора
         if text == "Muezzin":
             # Получаем текущий выбранный муэдзин из базы данных с проверкой валидности
-            current_muezzin = settings_window.db.get_setting('selected_muezzin', 'Default Adhan')
+            current_muezzin = settings_window.db.get_setting('selected_muezzin', 'Noname Muezzin (Adhan from Mihr.Com)')
             if not is_valid_muezzin(current_muezzin):
-                current_muezzin = 'Default Adhan'
+                current_muezzin = 'Noname Muezzin (Adhan from Mihr.Com)'
                 settings_window.db.save_setting('selected_muezzin', current_muezzin)
             
             # Обновляем текст и настройки лейбла с выбранным муэдзином
@@ -564,7 +564,7 @@ def create_notifications_section(settings_window):
             
             # Обработчик нажатия на кнопку выбора
             def show_muezzin_dialog(instance):
-                current = settings_window.db.get_setting('selected_muezzin', 'Default Adhan')
+                current = settings_window.db.get_setting('selected_muezzin', 'Noname Muezzin (Adhan from Mihr.Com)')
                 dialog = MuezzinDialog(current_muezzin=current)
                 
                 def on_muezzin_selected(muezzin_name):
@@ -661,19 +661,19 @@ def create_notifications_section(settings_window):
                 switch.bind(active=lambda i, v, sw=settings_window: on_voice_60_min_switch(i, v, sw))
                 
             # Привязки для намазов
-            elif switch_attr == 'fajr_switch':
+            elif switch_attr == 'switch_fajr':
                 switch.active = settings_window.fajr_adhan_pending
                 switch.bind(active=lambda i, v, sw=settings_window: on_fajr_switch(i, v, sw))
-            elif switch_attr == 'dhuhr_switch':
+            elif switch_attr == 'switch_dhuhr':
                 switch.active = settings_window.dhuhr_adhan_pending
                 switch.bind(active=lambda i, v, sw=settings_window: on_dhuhr_switch(i, v, sw))
-            elif switch_attr == 'asr_switch':
+            elif switch_attr == 'switch_asr':
                 switch.active = settings_window.asr_adhan_pending
                 switch.bind(active=lambda i, v, sw=settings_window: on_asr_switch(i, v, sw))
-            elif switch_attr == 'maghrib_switch':
+            elif switch_attr == 'switch_maghrib':
                 switch.active = settings_window.maghrib_adhan_pending
                 switch.bind(active=lambda i, v, sw=settings_window: on_maghrib_switch(i, v, sw))
-            elif switch_attr == 'isha_switch':
+            elif switch_attr == 'switch_isha':
                 switch.active = settings_window.isha_adhan_pending
                 switch.bind(active=lambda i, v, sw=settings_window: on_isha_switch(i, v, sw))
             
