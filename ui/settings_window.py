@@ -7,7 +7,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
 
 # Импортируем базовые компоненты
-from .settings_blocks.base import CustomButton
+from ui.components.custom_button import CustomButton
 
 # Импортируем компоненты настроек
 from .settings_blocks.colors import create_color_section, get_color_tuple, ColorSettings

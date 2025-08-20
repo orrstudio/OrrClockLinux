@@ -13,9 +13,8 @@ from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.properties import StringProperty, ObjectProperty, ListProperty
 
-from ui.settings_blocks.base import CustomButton
+from ui.components.custom_button import CustomButton, RoundedButton
 from ui.components.custom_switch_checkbox import CustomCheckBox
-from ui.components.custom_button import RoundedButton
 
 
 # Словарь соответствия имен муэдзинов и имен файлов

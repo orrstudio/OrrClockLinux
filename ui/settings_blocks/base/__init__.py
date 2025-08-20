@@ -7,7 +7,7 @@
 from .responsive_label import ResponsiveLabel
 from .settings_card import SettingsCard
 from .settings_section import SettingsSection
-from .custom_button import CustomButton
+from ui.components.custom_button import CustomButton
 
 __all__ = [
     'ResponsiveLabel',

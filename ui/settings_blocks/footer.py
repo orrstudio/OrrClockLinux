@@ -7,7 +7,7 @@ from kivy.graphics import Color, Rectangle
 from kivy.metrics import dp, sp
 
 # Импортируем пользовательские компоненты
-from ui.settings_blocks.base import CustomButton
+from ui.components.custom_button import CustomButton
 
 
 def _update_bottom_rect(instance, value, bottom_rect):
