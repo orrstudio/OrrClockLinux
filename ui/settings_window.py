@@ -103,6 +103,9 @@ class SettingsWindow(ModalView):
         # Создаем панель с вкладками
         tab_panel, tab_contents = create_tabbed_interface()
         
+        # Сохраняем ссылку на панель вкладок
+        self.tab_panel = tab_panel
+        
         # Получаем контейнеры вкладок
         theme_content = tab_contents['theme']
         notification_content = tab_contents['notification']
@@ -158,8 +161,7 @@ class SettingsWindow(ModalView):
         # Добавляем панель вкладок в основной контейнер
         content_container.add_widget(tab_panel)
         
-        # Сохраняем ссылку на панель вкладок для последующего использования
-        self.tab_panel = tab_panel
+        # Ссылка на панель вкладок уже сохранена ранее
         
         # Привязываемся к событию открытия окна для переключения вкладки
         self.bind(on_open=self._on_settings_window_open)
@@ -189,36 +191,115 @@ class SettingsWindow(ModalView):
 
     def _on_settings_window_open(self, *args):
         """Вызывается при открытии окна настроек."""
+        Logger.debug('Метод _on_settings_window_open вызван')
+        
+        # Выводим информацию о вкладках до привязки обработчика
+        if hasattr(self, 'tab_panel') and hasattr(self.tab_panel, 'tab_list'):
+            Logger.debug('До привязки обработчика вкладок:')
+            for i, tab in enumerate(self.tab_panel.tab_list):
+                tab_text = getattr(tab, 'text', 'без названия')
+                logger.debug(f'  Вкладка {i}: "{tab_text}" (id={id(tab)})')
+        
+        # Привязываем обработчик изменения вкладки
+        self.tab_panel.bind(current_tab=self._on_tab_changed)
+        
         def switch_to_notification_tab(dt):
+            logger.debug('switch_to_notification_tab: начало выполнения')
             try:
-                # Проверяем, что панель вкладок инициализирована
-                if not hasattr(self, 'tab_panel') or not self.tab_panel:
-                    Logger.warning('Tab panel is not initialized')
-                    return
+                if len(self.tab_panel.tab_list) > 1:  # Проверяем, что вкладки загружены
+                    logger.debug(f'switch_to_notification_tab: переключение на вкладку с индексом 1')
+                    logger.debug(f'switch_to_notification_tab: список вкладок: {[getattr(tab, "text", "?") for tab in self.tab_panel.tab_list]}')
                     
-                # Проверяем наличие вкладок
-                if not hasattr(self.tab_panel, 'tab_list') or not self.tab_panel.tab_list:
-                    Logger.warning('No tabs available in tab_list')
-                    return
+                    self.tab_panel.switch_to(self.tab_panel.tab_list[1])  # Переключаемся на вкладку уведомлений
+                    logger.debug('switch_to_notification_tab: переключение выполнено успешно')
                     
-                # Проверяем, что есть хотя бы 2 вкладки (индексация с 0)
-                if len(self.tab_panel.tab_list) > 1:
-                    # Переключаемся на вкладку Notification
-                    self.tab_panel.switch_to(self.tab_panel.tab_list[1])
-                    Logger.info('Successfully switched to Notification tab')
-                    
-                    # Обновляем стиль вкладок
+                    # Обновляем визуальное состояние вкладок
                     for i, tab in enumerate(self.tab_panel.tab_list):
                         tab.state = 'down' if i == 1 else 'normal'
                         tab.canvas.ask_update()
+                    
+                    # Сохраняем активную вкладку
+                    logger.debug('switch_to_notification_tab: вызов _save_active_tab(1)')
+                    self._save_active_tab(1)  # 1 - индекс вкладки Notification
+                    logger.debug('switch_to_notification_tab: _save_active_tab выполнен')
                 else:
-                    Logger.warning(f'Not enough tabs to switch. Total tabs: {len(self.tab_panel.tab_list)}')
+                    logger.warning(f'switch_to_notification_tab: недостаточно вкладок для переключения. Всего вкладок: {len(self.tab_panel.tab_list)}')
                     
             except Exception as e:
-                Logger.error(f'Error in switch_to_notification_tab: {e}')
+                logger.error(f'switch_to_notification_tab: ошибка при переключении вкладки: {e}')
                 
         # Запускаем с небольшой задержкой для надежности
         Clock.schedule_once(switch_to_notification_tab, 0)
+        
+    def _on_tab_changed(self, instance, value):
+        """Обработчик изменения активной вкладки."""
+        try:
+            if not hasattr(self, 'tab_panel') or not hasattr(self.tab_panel, 'tab_list'):
+                return
+                
+            # Получаем индекс активной вкладки
+            tab_index = self.tab_panel.tab_list.index(value) if value in self.tab_panel.tab_list else -1
+            if tab_index >= 0:
+                self._save_active_tab(tab_index)
+        except Exception as e:
+            Logger.error(f'Error in _on_tab_changed: {e}')
+    
+    def _save_active_tab(self, tab_index):
+        """
+        Сохраняет индекс активной вкладки в базу данных и логирует событие.
+        
+        Args:
+            tab_index: Индекс вкладки в tab_list
+        """
+        try:
+            if not hasattr(self, 'db') or not hasattr(self.tab_panel, 'tab_list'):
+                Logger.debug('_save_active_tab: Нет доступа к db или tab_list')
+                return
+            
+            # Получаем текущую активную вкладку
+            current_tab = self.tab_panel.current_tab
+            if not current_tab:
+                Logger.debug('_save_active_tab: Не удалось определить текущую вкладку')
+                return
+                
+            # Получаем имя вкладки
+            tab_name = getattr(current_tab, 'text', f'Вкладка {tab_index}')
+            Logger.debug(f'_save_active_tab: Текущая вкладка: {tab_name} (переданный индекс: {tab_index})')
+            
+            # Выводим полный список вкладок с их атрибутами
+            Logger.debug('--- Полный список вкладок ---')
+            for i, tab in enumerate(self.tab_panel.tab_list):
+                tab_text = getattr(tab, 'text', 'без названия')
+                tab_id = id(tab)
+                is_active = 'АКТИВНА' if tab == current_tab else ''
+                Logger.debug(f'Вкладка {i}: id={tab_id}, text="{tab_text}" {is_active}')
+            
+            # Определяем правильный индекс на основе имени вкладки
+            tab_name_to_index = {
+                'theme': 0,
+                'notification': 1,
+                'admin': 2
+            }
+            
+            # Получаем нормализованное имя вкладки (в нижнем регистре)
+            normalized_name = tab_name.lower()
+            correct_index = tab_name_to_index.get(normalized_name, tab_index)
+            
+            # Проверяем, совпадает ли индекс в tab_list с ожидаемым
+            actual_index = next((i for i, tab in enumerate(self.tab_panel.tab_list) 
+                              if getattr(tab, 'text', '').lower() == normalized_name), None)
+            
+            if actual_index is not None and actual_index != correct_index:
+                Logger.warning(f'Несоответствие индексов: вкладка "{tab_name}" имеет индекс {actual_index}, но ожидается {correct_index}')
+            
+            # Сохраняем в базу данных
+            self.db.save_setting('active_settings_tab', str(correct_index))
+            
+            # Логируем событие
+            Logger.info(f'[Переключение вкладки] {tab_name} (индекс: {correct_index})')
+            
+        except Exception as e:
+            Logger.error(f'Ошибка при сохранении активной вкладки: {e}')
 
     def _add_initial_border(self, dt):
         """Добавляет рамку к изначально активной кнопке."""

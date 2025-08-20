@@ -86,6 +86,16 @@ class CustomTabbedPanel(TabbedPanel):
         # Инициализируем размеры
         self._update_tab_sizes()
     
+    def add_widget(self, widget, *args, **kwargs):
+        """Переопределенный метод добавления виджета с логированием."""
+        from kivy.logger import Logger
+        tab_name = getattr(widget, 'text', 'unknown')
+        Logger.debug(f'Добавление вкладки: {tab_name}')
+        super().add_widget(widget, *args, **kwargs)
+        # Выводим текущий список вкладок после добавления
+        tab_list = [getattr(tab, 'text', 'unknown') for tab in self.tab_list]
+        Logger.debug(f'Текущий список вкладок: {tab_list}')
+    
     def _update_tab_sizes(self, *args):
         """Обновляет размеры вкладок при изменении размеров окна."""
         if not self.get_root_window():
@@ -94,7 +104,7 @@ class CustomTabbedPanel(TabbedPanel):
         try:
             # Обновляем ширину вкладок (не более 200dp и не менее 30% ширины окна)
             new_width = min(dp(Window.width * 0.3), dp(200))
-            new_height = max(dp(Window.height * 0.04), dp(30))  # Уменьшили высоту с 0.06 до 0.05 и минимальную высоту с 40 до 35
+            new_height = max(dp(Window.height * 0.04), dp(30))
             
             if self.tab_width != new_width or self.tab_height != new_height:
                 self.tab_width = new_width
@@ -106,8 +116,8 @@ class CustomTabbedPanel(TabbedPanel):
                         tab.update_font_size()
         except Exception as e:
             import traceback
-            print(f"Ошибка при обновлении размеров вкладок: {e}")
-            print(traceback.format_exc())
+            Logger.error(f"Ошибка при обновлении размеров вкладок: {e}")
+            Logger.error(traceback.format_exc())
 
 class CustomTabbedPanelHeader(TabbedPanelHeader):
     """Кастомный заголовок вкладки с адаптивными размерами."""
