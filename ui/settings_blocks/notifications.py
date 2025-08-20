@@ -1,3 +1,5 @@
+import os
+import mpv
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.anchorlayout import AnchorLayout
@@ -14,6 +16,18 @@ from kivy.properties import StringProperty, ObjectProperty, ListProperty
 from ui.components.custom_switch import CustomSwitch
 from ui.components.custom_button import RoundedButton
 
+
+# Словарь соответствия имен муэдзинов и имен файлов
+MUEZZIN_FILES = {
+    'Default Adhan': 'Adhan01.mp3',
+    'Ahmed Al Nufais': 'AdhanAhmedAlNufais.mp3',
+    'Mansour Al Zahrani': 'AdhanMansourAlZahrani.mp3',
+    'Mehdi Yarrahi Fajr': 'AdhanMehdiYarrahiFajr.mp3',
+    'Mihr Com': 'AdhanMihrCom.mp3',
+    'Mishary Rashid Alafasy': 'AdhanMisharyRashidAlafasy.mp3',
+    'Mishary Rashid Alafasy Fajr': 'AdhanMisharyRashidAlafasyFajr.mp3',
+    'Old Adhan': 'AdhanOld.mp3'
+}
 
 # Список доступных муэдзинов (название, ключ)
 MUEZZINS = [
@@ -121,9 +135,55 @@ class MuezzinDialog(ModalView):
             self.rect.size = self.layout.size
             self.rect.pos = self.layout.pos
     
+    def _play_adhan(self, muezzin_name):
+        """Воспроизводит азан для выбранного муэдзина"""
+        if muezzin_name not in MUEZZIN_FILES:
+            return
+            
+        audio_file = os.path.join('audio', 'adhan', MUEZZIN_FILES[muezzin_name])
+        if not os.path.exists(audio_file):
+            return
+            
+        try:
+            # Создаем экземпляр MPV-плеера с минимальными настройками
+            player = mpv.MPV(
+                vo='null',      # Без видеовыхода
+                quiet=True,     # Тихий режим
+                loglevel='fatal', # Только критические ошибки
+                input_default_bindings=True,
+                input_vo_keyboard=True,
+                input_cursor=False,
+                cursor_autohide='no',
+                msg_level='all=error'
+            )
+            
+            # Воспроизводим звук
+            player.play(audio_file)
+            
+            # Запускаем ожидание в отдельном потоке, чтобы не блокировать интерфейс
+            import threading
+            def wait_for_playback():
+                try:
+                    player.wait_for_playback(timeout=30)  # Таймаут 30 секунд
+                except:
+                    pass
+                finally:
+                    player.terminate()
+            
+            threading.Thread(target=wait_for_playback, daemon=True).start()
+            
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+    
     def on_muezzin_selected(self, muezzin_name):
         """Обработчик выбора муэдзина"""
         self.selected_muezzin = muezzin_name
+        
+        # Воспроизводим азан
+        self._play_adhan(muezzin_name)
+        
+        # Вызываем колбэк и закрываем диалог
         if self.callback:
             self.callback(muezzin_name)
         self.dismiss()
