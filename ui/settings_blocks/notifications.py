@@ -348,7 +348,7 @@ def create_notifications_section(settings_window):
         ("           Asr", 'switch_asr', '22sp', False, 1, dp(30)),
         ("           Maghrib", 'switch_maghrib', '22sp', False, 1, dp(30)),
         ("           Isha", 'switch_isha', '22sp', False, 1, dp(30)),
-        ("Select Muezzin", None, '28sp', True, 0, dp(60)),  # Без переключателя
+        ("Current Muezzin", None, '28sp', True, 0, dp(60)),  # Без переключателя
         ("Muezzin", 'custom_button', '22sp', False, 1, dp(30)),
     ]
 
