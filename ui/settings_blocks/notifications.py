@@ -130,7 +130,7 @@ class MuezzinDialog(ModalView):
         self.play_btn = CustomButton(
             icon_path='fonts/Awesome/use/play.png',
             text="",
-            background_color=(0.2, 0.8, 0.2, 1),  # Зеленый цвет
+            background_color=(0.05, 0.25, 0.4, 1),  # Синий цвет
             size_hint_x=0.5,
             height=dp(45)
         )
@@ -140,7 +140,7 @@ class MuezzinDialog(ModalView):
         self.stop_btn = CustomButton(
             icon_path='fonts/Awesome/use/stop.png',
             text="",
-            background_color=(0.8, 0.2, 0.2, 1),  # Красный цвет
+            background_color=(0.2, 0.1, 0.1, 1),  # Красный цвет
             size_hint_x=0.5,
             height=dp(45)
         )
