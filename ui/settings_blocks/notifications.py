@@ -205,7 +205,8 @@ class MuezzinDialog(ModalView):
             import threading
             def wait_for_playback():
                 try:
-                    self.current_player.wait_for_playback(timeout=30)  # Таймаут 30 секунд
+                    # Воспроизводим до конца без таймаута
+                    self.current_player.wait_for_playback()
                 except:
                     pass
                 finally:
