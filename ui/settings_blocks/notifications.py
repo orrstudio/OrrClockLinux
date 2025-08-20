@@ -70,7 +70,7 @@ class MuezzinDialog(ModalView):
             text='Select Muezzin',
             size_hint_y=None,
             height=50,
-            font_size='20sp',
+            font_size='24sp',
             bold=True
         )
         layout.add_widget(title)
@@ -86,7 +86,8 @@ class MuezzinDialog(ModalView):
                 text=name,
                 group='muezzins',
                 size_hint_y=None,
-                height=50,
+                height=40,
+                font_size='22sp',
                 background_normal='',
                 background_color=(0.2, 0.2, 0.2, 1) if name != self.selected_muezzin else (0.3, 0.5, 0.7, 1)
             )
@@ -101,7 +102,8 @@ class MuezzinDialog(ModalView):
         btn_cancel = Button(
             text='Cancel',
             size_hint_y=None,
-            height=50,
+            height=60,
+            font_size='28sp',
             background_normal='',
             background_color=(0.8, 0.2, 0.2, 1)
         )
