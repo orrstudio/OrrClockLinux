@@ -8,6 +8,7 @@ from kivy.uix.scrollview import ScrollView
 from kivy.graphics import Color, Line, Rectangle
 from kivy.metrics import dp
 from kivy.core.window import Window
+from kivy.clock import Clock
 from kivy.properties import StringProperty, ObjectProperty, ListProperty
 
 from ui.components.custom_switch import CustomSwitch
@@ -43,11 +44,26 @@ class MuezzinDialog(ModalView):
         super().__init__(**kwargs)
         self.size_hint = (0.8, 0.8)
         self.auto_dismiss = False
+        # Устанавливаем темный полупрозрачный фон
+        self.background = ''
+        self.background_color = (0.1, 0.1, 0.1, 1)  #
         # Проверяем валидность текущего муэдзина
         self.selected_muezzin = current_muezzin if is_valid_muezzin(current_muezzin) else 'Default Adhan'
         
-        # Основной контейнер
-        layout = GridLayout(cols=1, spacing=10, padding=10)
+        # Основной контейнер с темным фоном
+        self.layout = GridLayout(cols=1, spacing=10, padding=10)
+        layout = self.layout  # Сохраняем ссылку для обратной совместимости
+        
+        # Создаем прямоугольник для фона
+        with self.layout.canvas.before:
+            self.bg_color = Color(0.1, 0.1, 0.1, 1)  # Темный цвет фона
+            self.rect = Rectangle(size=self.layout.size, pos=self.layout.pos)
+        
+        def update_rect(instance, value):
+            self.rect.pos = instance.pos
+            self.rect.size = instance.size
+            
+        self.layout.bind(pos=update_rect, size=update_rect)
         
         # Заголовок
         title = Label(
@@ -92,7 +108,16 @@ class MuezzinDialog(ModalView):
         btn_cancel.bind(on_press=self.dismiss)
         layout.add_widget(btn_cancel)
         
-        self.add_widget(layout)
+        self.add_widget(self.layout)
+        
+        # Принудительно обновляем размеры после отображения
+        Clock.schedule_once(self._update_bg)
+    
+    def _update_bg(self, dt):
+        # Обновляем размеры фона после отображения
+        if hasattr(self, 'rect') and self.layout:
+            self.rect.size = self.layout.size
+            self.rect.pos = self.layout.pos
     
     def on_muezzin_selected(self, muezzin_name):
         """Обработчик выбора муэдзина"""
