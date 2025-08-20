@@ -45,10 +45,10 @@ class CustomSwitch(AnchorLayout):
         self.size = kwargs.pop('size', (64, 36))
         
         # Устанавливаем цвета из kwargs или значения по умолчанию
-        self.thumb_color_active = kwargs.pop('thumb_color_active', [0, 1, 0, 1])
-        self.thumb_color_inactive = kwargs.pop('thumb_color_inactive', [1, 0, 0, 1])
-        self.track_color_active = kwargs.pop('track_color_active', [0.15, 0.3, 0.15, 1])
-        self.track_color_inactive = kwargs.pop('track_color_inactive', [0.2, 0.1, 0.1, 1])
+        self.thumb_color_active = kwargs.pop('thumb_color_active', [0.1, 0.5, 0.8, 1]) # цвет ползунка в включенном состоянии
+        self.track_color_active = kwargs.pop('track_color_active', [0.05, 0.25, 0.4, 1]) # цвет фона в включенном состоянии
+        self.thumb_color_inactive = kwargs.pop('thumb_color_inactive', [0.8, 0.2, 0.2, 1]) # цвет ползунка в выключенном состоянии
+        self.track_color_inactive = kwargs.pop('track_color_inactive', [0.2, 0.1, 0.1, 1]) # цвет фона в выключенном состоянии
         
         # Устанавливаем начальный цвет ползунка в зависимости от состояния active
         if 'active' in kwargs and kwargs['active']:

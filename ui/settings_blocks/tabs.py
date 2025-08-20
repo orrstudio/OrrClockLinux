@@ -116,8 +116,8 @@ class CustomTabbedPanelHeader(TabbedPanelHeader):
         super().__init__(**kwargs)
         self.background_normal = ''
         self.background_down = ''
-        self.background_color = (0.1, 0.1, 0.1, 1)
-        self.color = (0.8, 0.8, 0.8, 1)
+        self.background_color = (0.1, 0.1, 0.1, 1) # Серый цвет
+        self.color = (0.8, 0.8, 0.8, 1) # Серый цвет
         self.bold = False
         self.markup = True
         self.halign = 'center'
@@ -126,11 +126,11 @@ class CustomTabbedPanelHeader(TabbedPanelHeader):
     
     def on_state(self, instance, value):
         if value == 'down':
-            self.background_color = (0.2, 0.7, 0.2, 1)
+            self.background_color = (0.1, 0.5, 0.8, 1) # Синий цвет
             self.color = (1, 1, 1, 1)
             self.bold = True
         else:
-            self.background_color = (0.15, 0.15, 0.15, 1)
+            self.background_color = (0.15, 0.15, 0.15, 1) # Серый цвет
             self.color = (0.8, 0.8, 0.8, 1)
             self.bold = False
     

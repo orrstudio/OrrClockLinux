@@ -8,9 +8,9 @@ class RoundedButton(Button):
     """Кнопка с закругленными углами и анимацией нажатия."""
     
     # Свойства для настройки внешнего вида
-    bg_color = ColorProperty([0.1, 0.4, 0.7, 1])
-    bg_color_press = ColorProperty([0.2, 0.6, 0.9, 1])
-    border_radius = NumericProperty(dp(10))
+    bg_color = ColorProperty([0.1, 0.4, 0.7, 1]) # цвет кнопки
+    bg_color_press = ColorProperty([0.2, 0.6, 0.9, 1]) # цвет кнопки при нажатии
+    border_radius = NumericProperty(dp(10)) # радиус закругления углов
     
     def __init__(self, **kwargs):
         # Настройки по умолчанию

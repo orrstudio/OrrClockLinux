@@ -24,7 +24,7 @@ class CustomButton(Button):
             
         # Иконка кнопки
         with self.canvas.after:
-            self.icon_color = Color(1, 1, 1, 1)
+            self.icon_color = Color(1, 1, 1, 1) # Белый цвет иконки
             self.icon = Rectangle(source=self.icon_path, size=(self.icon_size, self.icon_size))
         
         self.bind(pos=self._update_icon, size=self._update_icon)

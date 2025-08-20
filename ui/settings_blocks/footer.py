@@ -54,7 +54,7 @@ def create_footer(dismiss_callback, accept_callback):
     # Создаем фон для нижней панели
     bottom_rect = None
     with bottom_panel.canvas.before:
-        Color(0.2, 0.2, 0.2, 1)
+        Color(0.2, 0.2, 0.2, 1) # Цвет фона
         bottom_rect = Rectangle(pos=bottom_panel.pos, size=bottom_panel.size)
     
     # Привязываем обновление фона при изменении размера/позиции
@@ -62,29 +62,31 @@ def create_footer(dismiss_callback, accept_callback):
         pos=lambda instance, value: _update_bottom_rect(instance, value, bottom_rect),
         size=lambda instance, value: _update_bottom_rect(instance, value, bottom_rect)
     )
-    
-    # Создаем кнопку отмены
-    cancel_button = CustomButton(
-        icon_path='fonts/Awesome/use/x.png',
-        text="",  # Убираем текст, используем только иконку
-        background_color=(3, 0, 0, 1),  # Красный цвет
-        **button_style
-    )
-    
+
     # Создаем кнопку принятия
     accept_button = CustomButton(
         icon_path='fonts/Awesome/use/ok.png',
         text="",  # Убираем текст, используем только иконку
-        background_color=(0, 0.7, 0, 1),  # Зеленый цвет
+        background_color=(0.1, 0.5, 0.8, 1),  # Синий цвет
+        **button_style
+    )
+
+    # Создаем кнопку отмены
+    cancel_button = CustomButton(
+        icon_path='fonts/Awesome/use/x.png',
+        text="",  # Убираем текст, используем только иконку
+        background_color=(0.8, 0.2, 0.2, 1),  # Красный цвет
         **button_style
     )
     
     # Привязываем обработчики событий
-    cancel_button.bind(on_release=dismiss_callback)
     accept_button.bind(on_release=accept_callback)
+    cancel_button.bind(on_release=dismiss_callback)
+
     
     # Добавляем кнопки на панель
-    bottom_panel.add_widget(cancel_button)
     bottom_panel.add_widget(accept_button)
+    bottom_panel.add_widget(cancel_button)
+
     
     return bottom_panel, bottom_rect

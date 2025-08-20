@@ -3,8 +3,8 @@ import mpv
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.anchorlayout import AnchorLayout
+from kivy.metrics import dp, sp
 from kivy.uix.modalview import ModalView
-from kivy.uix.button import Button
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.scrollview import ScrollView
 from kivy.graphics import Color, Line, Rectangle
@@ -13,6 +13,7 @@ from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.properties import StringProperty, ObjectProperty, ListProperty
 
+from ui.settings_blocks.base import CustomButton
 from ui.components.custom_switch import CustomSwitch
 from ui.components.custom_button import RoundedButton
 
@@ -60,7 +61,7 @@ class MuezzinDialog(ModalView):
         self.size_hint = (0.8, 0.55)  # Уменьшаем высоту окна
         self.auto_dismiss = False
         self.background = ''
-        self.background_color = (0.1, 0.1, 0.1, 1)  #
+        self.background_color = (0.1, 0.1, 0.1, 1)  # Темный цвет фона
         # Проверяем валидность текущего муэдзина
         self.selected_muezzin = current_muezzin if is_valid_muezzin(current_muezzin) else 'Default Adhan'
         
@@ -103,7 +104,7 @@ class MuezzinDialog(ModalView):
                 height=40,
                 font_size='22sp',
                 background_normal='',
-                background_color=(0.2, 0.2, 0.2, 1) if name != self.selected_muezzin else (0.3, 0.5, 0.7, 1)
+                background_color=(0.2, 0.2, 0.2, 1) if name != self.selected_muezzin else (0.3, 0.5, 0.7, 1) # Зеленый цвет при нажатии
             )
             btn.state = 'down' if name == self.selected_muezzin else 'normal'
             btn.bind(on_press=lambda x, n=name: self.on_muezzin_selected(n))
@@ -112,29 +113,29 @@ class MuezzinDialog(ModalView):
         scroll.add_widget(list_layout)
         layout.add_widget(scroll)
         
-        # Контейнер для кнопок внизу
-        from kivy.uix.boxlayout import BoxLayout
-        
-        button_box = BoxLayout(
-            orientation='horizontal',
+        # Создаем контейнер для кнопок (как в основном окне настроек)
+        button_box = GridLayout(
+            cols=2,
             size_hint_y=None,
-            height=60,
-            spacing=10,
-            padding=(0, 5, 0, 5)
+            height=dp(60),
+            spacing=dp(10),
+            padding=[dp(20), dp(5)]
         )
         
-        # Получаем путь к шрифту Material Icons (находится в корневой папке fonts)
-        material_font = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'fonts', 'MaterialSymbolsOutlined[FILL,GRAD,opsz,wght].ttf')
+        # Стили для кнопок (как в основном окне настроек)
+        button_style = {
+            'size_hint_x': 0.5,
+            'size_hint_y': None,
+            'height': dp(50),
+            'font_size': sp(22)
+        }
         
         # Кнопка Save с иконкой check_circle из Material Icons
-        btn_save = Button(
-            text='\ue86c',  # Код иконки check_circle из Material Icons
-            font_name=material_font,
-            font_size='28sp',
-            size_hint=(0.5, 1),
-            background_normal='',
-            background_color=(0.1, 0.5, 0.8, 1),  # Синий цвет как в настройках
-            color=(1, 1, 1, 1)  # Белый цвет иконки
+        btn_save = CustomButton(
+            icon_path='fonts/Awesome/use/ok.png',
+            text="",  # Убираем текст, используем только иконку
+            background_color=(0.1, 0.5, 0.8, 1),  # Синий цвет
+            **button_style
         )
         
         def on_save(instance):
@@ -146,15 +147,12 @@ class MuezzinDialog(ModalView):
         btn_save.bind(on_press=on_save)
         
         # Кнопка Cancel с иконкой cancel из Material Icons
-        btn_cancel = Button(
-            text='\ue5c9',  # Код иконки close из Material Icons
-            font_name=material_font,
-            font_size='28sp',
-            size_hint=(0.5, 1),
-            background_normal='',
-            background_color=(0.8, 0.2, 0.2, 1),  # Красный цвет
-            color=(1, 1, 1, 1)  # Белый цвет иконки
-        )
+        btn_cancel = CustomButton(
+        icon_path='fonts/Awesome/use/x.png',
+        text="",  # Убираем текст, используем только иконку
+        background_color=(0.8, 0.2, 0.2, 1),  # Красный цвет
+        **button_style
+    )
         btn_cancel.bind(on_press=lambda x: self.dismiss())
         
         button_box.add_widget(btn_save)
@@ -226,10 +224,10 @@ class MuezzinDialog(ModalView):
                 for widget in child.children[0].children:
                     if hasattr(widget, 'text') and widget.text == muezzin_name:
                         widget.state = 'down'
-                        widget.background_color = (0.3, 0.5, 0.7, 1)
+                        widget.background_color = (0.3, 0.5, 0.7, 1) # Зеленый цвет при нажатии
                     elif hasattr(widget, 'text'):
                         widget.state = 'normal'
-                        widget.background_color = (0.2, 0.2, 0.2, 1)
+                        widget.background_color = (0.2, 0.2, 0.2, 1) # Серый цвет при отсутствии нажатия
 
 
 class BorderedGridLayout(GridLayout):
