@@ -108,6 +108,9 @@ class SettingsWindow(ModalView):
         notification_content = tab_contents['notification']
         admin_content = tab_contents['admin']
         
+        # Получаем ссылки на вкладки
+        notification_tab = tab_panel.tab_list[1]  # Индекс 1 - вторая вкладка (Notification)
+        
         # Создаем контейнер для содержимого вкладок
         content_container = GridLayout(
             cols=1,
@@ -155,6 +158,12 @@ class SettingsWindow(ModalView):
         # Добавляем панель вкладок в основной контейнер
         content_container.add_widget(tab_panel)
         
+        # Сохраняем ссылку на панель вкладок для последующего использования
+        self.tab_panel = tab_panel
+        
+        # Привязываемся к событию открытия окна для переключения вкладки
+        self.bind(on_open=self._on_settings_window_open)
+        
         # Обновляем размеры после добавления всех виджетов
         Clock.schedule_once(self.print_sizes, 0.5)
         
@@ -177,6 +186,39 @@ class SettingsWindow(ModalView):
         
         # Добавляем рамку к активной кнопке после отрисовки
         Clock.schedule_once(self._add_initial_border, 0)
+
+    def _on_settings_window_open(self, *args):
+        """Вызывается при открытии окна настроек."""
+        def switch_to_notification_tab(dt):
+            try:
+                # Проверяем, что панель вкладок инициализирована
+                if not hasattr(self, 'tab_panel') or not self.tab_panel:
+                    Logger.warning('Tab panel is not initialized')
+                    return
+                    
+                # Проверяем наличие вкладок
+                if not hasattr(self.tab_panel, 'tab_list') or not self.tab_panel.tab_list:
+                    Logger.warning('No tabs available in tab_list')
+                    return
+                    
+                # Проверяем, что есть хотя бы 2 вкладки (индексация с 0)
+                if len(self.tab_panel.tab_list) > 1:
+                    # Переключаемся на вкладку Notification
+                    self.tab_panel.switch_to(self.tab_panel.tab_list[1])
+                    Logger.info('Successfully switched to Notification tab')
+                    
+                    # Обновляем стиль вкладок
+                    for i, tab in enumerate(self.tab_panel.tab_list):
+                        tab.state = 'down' if i == 1 else 'normal'
+                        tab.canvas.ask_update()
+                else:
+                    Logger.warning(f'Not enough tabs to switch. Total tabs: {len(self.tab_panel.tab_list)}')
+                    
+            except Exception as e:
+                Logger.error(f'Error in switch_to_notification_tab: {e}')
+                
+        # Запускаем с небольшой задержкой для надежности
+        Clock.schedule_once(switch_to_notification_tab, 0.2)
 
     def _add_initial_border(self, dt):
         """Добавляет рамку к изначально активной кнопке."""
