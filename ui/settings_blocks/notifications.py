@@ -289,7 +289,7 @@ def create_notifications_section(settings_window):
         ("           Asr", 'switch_asr', '22sp', False, 1, dp(30)),
         ("           Maghrib", 'switch_maghrib', '22sp', False, 1, dp(30)),
         ("           Isha", 'switch_isha', '22sp', False, 1, dp(30)),
-        ("Choose Muezzin", None, '28sp', True, 0, dp(60)),  # Без переключателя
+        ("Select Muezzin", None, '28sp', True, 0, dp(60)),  # Без переключателя
         ("Muezzin", 'custom_button', '22sp', False, 1, dp(30)),
     ]
 
@@ -348,7 +348,7 @@ def create_notifications_section(settings_window):
                 size_hint_y=1
             )
             button = RoundedButton(
-                text='Choose',
+                text='Change',
                 size_hint=(None, None),
                 size=(dp(100), dp(40)),
                 font_size='16sp'
@@ -392,7 +392,7 @@ def create_notifications_section(settings_window):
         table.add_widget(label)
 
         # 2. Kivy переключатель (по центру)
-        # Обработка кнопки Choose перенесена в начало функции
+        # Обработка кнопки Change перенесена в начало функции
         if switch_attr is not None and switch_attr != 'custom_button':
             switch_layout = AnchorLayout(
                 anchor_x='center',
