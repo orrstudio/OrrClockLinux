@@ -64,6 +64,10 @@ class MuezzinDialog(ModalView):
         self.background_color = (0.1, 0.1, 0.1, 1)  # Темный цвет фона
         # Проверяем валидность текущего муэдзина
         self.selected_muezzin = current_muezzin if is_valid_muezzin(current_muezzin) else 'Default Adhan'
+        # Инициализируем атрибут для хранения текущего плеера
+        self.current_player = None
+        # Привязываем обработчик закрытия окна
+        self.bind(on_dismiss=self._on_dismiss)
         
         # Основной контейнер с темным фоном
         self.layout = GridLayout(cols=1, spacing=10, padding=10)
@@ -172,6 +176,9 @@ class MuezzinDialog(ModalView):
     
     def _play_adhan(self, muezzin_name):
         """Воспроизводит азан для выбранного муэдзина"""
+        # Останавливаем текущее воспроизведение, если оно есть
+        self._stop_playback()
+        
         if muezzin_name not in MUEZZIN_FILES:
             return
             
@@ -181,35 +188,48 @@ class MuezzinDialog(ModalView):
             
         try:
             # Создаем экземпляр MPV-плеера с минимальными настройками
-            player = mpv.MPV(
+            self.current_player = mpv.MPV(
                 vo='null',      # Без видеовыхода
                 quiet=True,     # Тихий режим
-                loglevel='fatal', # Только критические ошибки
-                input_default_bindings=True,
-                input_vo_keyboard=True,
-                input_cursor=False,
-                cursor_autohide='no',
-                msg_level='all=error'
+                audio_device='pulse',  # Используем PulseAudio
+                input_default_bindings=False,  # Отключаем стандартные привязки клавиш
+                input_vo_keyboard=False,       # Отключаем ввод с клавиатуры
+                input_cursor=False,            # Отключаем управление курсором
+                osc=False                     # Отключаем OSD
             )
             
-            # Воспроизводим звук
-            player.play(audio_file)
+            # Воспроизводим аудио
+            self.current_player.play(audio_file)
             
             # Запускаем ожидание в отдельном потоке, чтобы не блокировать интерфейс
             import threading
             def wait_for_playback():
                 try:
-                    player.wait_for_playback(timeout=30)  # Таймаут 30 секунд
+                    self.current_player.wait_for_playback(timeout=30)  # Таймаут 30 секунд
                 except:
                     pass
                 finally:
-                    player.terminate()
+                    self._stop_playback()
             
             threading.Thread(target=wait_for_playback, daemon=True).start()
             
         except Exception as e:
             import traceback
             traceback.print_exc()
+            self.current_player = None
+            
+    def _stop_playback(self):
+        """Останавливает текущее воспроизведение"""
+        if self.current_player is not None:
+            try:
+                self.current_player.terminate()
+            except:
+                pass
+            self.current_player = None
+            
+    def _on_dismiss(self, *args):
+        """Очистка ресурсов при закрытии диалога"""
+        self._stop_playback()
     
     def on_muezzin_selected(self, muezzin_name):
         """Обработчик выбора муэдзина"""
