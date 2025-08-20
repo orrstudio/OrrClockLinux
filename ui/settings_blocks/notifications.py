@@ -117,7 +117,40 @@ class MuezzinDialog(ModalView):
         scroll.add_widget(list_layout)
         layout.add_widget(scroll)
         
-        # Создаем контейнер для кнопок (как в основном окне настроек)
+        # Контейнер для кнопок управления воспроизведением
+        playback_box = GridLayout(
+            cols=2,
+            size_hint_y=None,
+            height=dp(50),
+            spacing=dp(10),
+            padding=[dp(20), dp(5), dp(20), 0]
+        )
+        
+        # Кнопка Play
+        self.play_btn = CustomButton(
+            icon_path='fonts/Awesome/use/play.png',
+            text="",
+            background_color=(0.2, 0.8, 0.2, 1),  # Зеленый цвет
+            size_hint_x=0.5,
+            height=dp(45)
+        )
+        self.play_btn.bind(on_press=self._on_play_click)
+        
+        # Кнопка Stop
+        self.stop_btn = CustomButton(
+            icon_path='fonts/Awesome/use/stop.png',
+            text="",
+            background_color=(0.8, 0.2, 0.2, 1),  # Красный цвет
+            size_hint_x=0.5,
+            height=dp(45)
+        )
+        self.stop_btn.bind(on_press=self._on_stop_click)
+        
+        playback_box.add_widget(self.play_btn)
+        playback_box.add_widget(self.stop_btn)
+        layout.add_widget(playback_box)
+        
+        # Контейнер для кнопок Save/Cancel
         button_box = GridLayout(
             cols=2,
             size_hint_y=None,
@@ -218,6 +251,15 @@ class MuezzinDialog(ModalView):
             traceback.print_exc()
             self.current_player = None
             
+    def _on_play_click(self, instance):
+        """Обработчик нажатия на кнопку Play"""
+        if hasattr(self, 'selected_muezzin') and self.selected_muezzin:
+            self._play_adhan(self.selected_muezzin)
+    
+    def _on_stop_click(self, instance):
+        """Обработчик нажатия на кнопку Stop"""
+        self._stop_playback()
+            
     def _stop_playback(self):
         """Останавливает текущее воспроизведение"""
         if self.current_player is not None:
@@ -234,9 +276,6 @@ class MuezzinDialog(ModalView):
     def on_muezzin_selected(self, muezzin_name):
         """Обработчик выбора муэдзина"""
         self.selected_muezzin = muezzin_name
-        
-        # Воспроизводим азан
-        self._play_adhan(muezzin_name)
         
         # Обновляем выделение выбранного муэдзина
         for child in self.layout.children:
