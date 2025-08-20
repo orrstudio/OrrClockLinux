@@ -42,9 +42,8 @@ class MuezzinDialog(ModalView):
     
     def __init__(self, current_muezzin, **kwargs):
         super().__init__(**kwargs)
-        self.size_hint = (0.8, 0.8)
+        self.size_hint = (0.8, 0.5)  # Уменьшаем высоту окна
         self.auto_dismiss = False
-        # Устанавливаем темный полупрозрачный фон
         self.background = ''
         self.background_color = (0.1, 0.1, 0.1, 1)  #
         # Проверяем валидность текущего муэдзина
