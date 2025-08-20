@@ -20,26 +20,26 @@ from ui.components.custom_button import RoundedButton
 
 # Словарь соответствия имен муэдзинов и имен файлов
 MUEZZIN_FILES = {
-    'Default Adhan': 'Adhan01.mp3',
+    'Noname Muezzin (Adhan from Mihr.Com)': 'AdhanMihrCom.mp3',
+    'Noname Muezzin (Slow Adhan)': 'Adhan01.mp3',
+    'Noname Muezzin (Old Adhan)': 'AdhanOld.mp3',
     'Ahmed Al Nufais': 'AdhanAhmedAlNufais.mp3',
     'Mansour Al Zahrani': 'AdhanMansourAlZahrani.mp3',
     'Mehdi Yarrahi Fajr': 'AdhanMehdiYarrahiFajr.mp3',
-    'Mihr Com': 'AdhanMihrCom.mp3',
     'Mishary Rashid Alafasy': 'AdhanMisharyRashidAlafasy.mp3',
-    'Mishary Rashid Alafasy Fajr': 'AdhanMisharyRashidAlafasyFajr.mp3',
-    'Old Adhan': 'AdhanOld.mp3'
+    'Mishary Rashid Alafasy (Fajr Adhan)': 'AdhanMisharyRashidAlafasyFajr.mp3',
 }
 
 # Список доступных муэдзинов (название, ключ)
 MUEZZINS = [
-    ('Default Adhan', 'switch_default_adhan'),
+    ('Noname Muezzin (Adhan from Mihr.Com)', 'switch_default_adhan'),
+    ('Noname Muezzin (Slow Adhan)', 'switch_slow_adhan'),
+    ('Noname Muezzin (Old Adhan)', 'switch_old_adhan'),
     ('Ahmed Al Nufais', 'switch_ahmed_al_nufais'),
     ('Mansour Al Zahrani', 'switch_mansour_al_zahrani'),
     ('Mehdi Yarrahi Fajr', 'switch_mehdi_yarrahi_fajr'),
-    ('Mihr Com', 'switch_mihr_com'),
     ('Mishary Rashid Alafasy', 'switch_mishary_rashid_alafasy'),
-    ('Mishary Rashid Alafasy Fajr', 'switch_mishary_rashid_alafasy_fajr'),
-    ('Old Adhan', 'switch_old_adhan')
+    ('Mishary Rashid Alafasy (Fajr Adhan)', 'switch_mishary_rashid_alafasy_fajr'),
 ]
 
 # Получаем только имена муэдзинов для проверки
