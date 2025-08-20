@@ -218,7 +218,7 @@ class SettingsWindow(ModalView):
                 Logger.error(f'Error in switch_to_notification_tab: {e}')
                 
         # Запускаем с небольшой задержкой для надежности
-        Clock.schedule_once(switch_to_notification_tab, 0.2)
+        Clock.schedule_once(switch_to_notification_tab, 0)
 
     def _add_initial_border(self, dt):
         """Добавляет рамку к изначально активной кнопке."""
