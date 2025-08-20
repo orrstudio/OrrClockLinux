@@ -221,8 +221,8 @@ class SettingsWindow(ModalView):
                     logger.warning('switch_to_saved_tab: список вкладок пуст')
                     return
                 
-                # Получаем сохраненный ID вкладки из базы данных
-                saved_tab_id = int(self.db.get_setting('active_settings_tab', '1'))
+                # Получаем сохраненный ID вкладки из базы данных, по умолчанию '0' (Theme)
+                saved_tab_id = int(self.db.get_setting('active_settings_tab', '0'))
                 logger.debug(f'switch_to_saved_tab: сохраненный ID вкладки: {saved_tab_id}')
                 
                 # Находим вкладку с соответствующим ID
