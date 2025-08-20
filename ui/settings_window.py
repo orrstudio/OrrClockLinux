@@ -264,7 +264,7 @@ class SettingsWindow(ModalView):
                 
             # Получаем имя вкладки
             tab_name = getattr(current_tab, 'text', f'Вкладка {tab_index}')
-            Logger.debug(f'_save_active_tab: Текущая вкладка: {tab_name} (переданный индекс: {tab_index})')
+            Logger.debug(f'_save_active_tab: Текущая вкладка: {tab_name} (индекс: {tab_index})')
             
             # Выводим полный список вкладок с их атрибутами
             Logger.debug('--- Полный список вкладок ---')
@@ -274,29 +274,22 @@ class SettingsWindow(ModalView):
                 is_active = 'АКТИВНА' if tab == current_tab else ''
                 Logger.debug(f'Вкладка {i}: id={tab_id}, text="{tab_text}" {is_active}')
             
-            # Определяем правильный индекс на основе имени вкладки
-            tab_name_to_index = {
-                'theme': 0,
-                'notification': 1,
-                'admin': 2
-            }
-            
             # Получаем нормализованное имя вкладки (в нижнем регистре)
             normalized_name = tab_name.lower()
-            correct_index = tab_name_to_index.get(normalized_name, tab_index)
             
-            # Проверяем, совпадает ли индекс в tab_list с ожидаемым
+            # Находим актуальный индекс вкладки в tab_list
             actual_index = next((i for i, tab in enumerate(self.tab_panel.tab_list) 
                               if getattr(tab, 'text', '').lower() == normalized_name), None)
             
-            if actual_index is not None and actual_index != correct_index:
-                Logger.warning(f'Несоответствие индексов: вкладка "{tab_name}" имеет индекс {actual_index}, но ожидается {correct_index}')
+            if actual_index is None:
+                Logger.warning(f'Не удалось найти вкладку "{tab_name}" в списке вкладок')
+                actual_index = tab_index
             
-            # Сохраняем в базу данных
-            self.db.save_setting('active_settings_tab', str(correct_index))
+            # Сохраняем в базу данных актуальный индекс
+            self.db.save_setting('active_settings_tab', str(actual_index))
             
             # Логируем событие
-            Logger.info(f'[Переключение вкладки] {tab_name} (индекс: {correct_index})')
+            Logger.info(f'[Переключение вкладки] {tab_name} (индекс: {actual_index})')
             
         except Exception as e:
             Logger.error(f'Ошибка при сохранении активной вкладки: {e}')
