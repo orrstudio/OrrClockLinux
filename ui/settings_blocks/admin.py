@@ -447,16 +447,21 @@ def create_admin_section(settings_window):
     def update_text_size(inst, val):
         padding = dp(15)  # Отступ слева 15dp
         inst.text_size = (val[0] - padding, None)
+        inst.halign = 'left'
+        inst.valign = 'middle'
         inst.canvas.ask_update()
 
     # Таблица настроек
     table = GridLayout(
         cols=2,  # 2 колонки (текст и элемент управления)
-        rows=8,  # 8 строк
         size_hint_y=None,
-        height=dp(400),  # Уменьшенная высота для 8 строк
-        spacing=dp(5)  # Уменьшенное расстояние между строками
+        spacing=0  # Убираем отступы между строками
     )
+    
+    # Вычисляем высоту таблицы на основе количества строк
+    row_height = dp(50)  # Высота одной строки
+    num_rows = 8  # Количество строк в таблице
+    table.height = row_height * num_rows
     
     # Настройка ширины колонок
     def update_col_widths(*args):
@@ -469,201 +474,151 @@ def create_admin_section(settings_window):
     table.bind(size=update_col_widths)
     update_col_widths()
     
-    # Строка 1: Debug Mode + переключатель
-    label1 = Label(
-        text="Debug Mode",
-        halign='left',
-        valign='middle',
-        font_size='28sp',
-        bold=False,
-        size_hint_x=0.9
-    )
-    label1.bind(size=update_text_size)
-    table.add_widget(label1)
+    # Данные для строк таблицы
+    rows = [
+        ("Debug Mode", 'debug_switch', '28sp', True, 0, dp(50)),
+        ("Logs in Terminal", 'terminal_button', '28sp', True, 0, dp(50)),
+        ("Logs in Editor", 'editor_button', '28sp', True, 0, dp(50)),
+        ("Clear Old Log Files", 'clear_button', '28sp', True, 0, dp(50)),
+        ("Logging to File (Not work)", 'logging_switch', '28sp', True, 0, dp(50)),
+        ("Any New Action 1", 'new_action_1_button', '22sp', False, 1, dp(30)),
+        ("Any New Action 2", 'new_action_2_switch', '22sp', False, 1, dp(30)),
+        ("Any New Action 3", 'new_action_3_switch', '22sp', False, 1, dp(30))
+    ]
     
-    # Контейнер с центрированием для переключателя Debug Mode
-    anchor = AnchorLayout(anchor_x='center', size_hint_x=1)
-    debug_switch = CustomCheckBox(
-        size_hint=(None, None),
-        height=dp(40)  # Ширина будет рассчитана автоматически
-    )
-    debug_switch.active = load_debug_state(settings_window)
-    debug_switch.bind(active=lambda instance, value: on_debug_switch(instance, value, settings_window))
-    settings_window.debug_switch = debug_switch
-    anchor.add_widget(debug_switch)
-    table.add_widget(anchor)
+    # Создаем строки таблицы
+    for text, switch_attr, font_size, is_bold, _, switch_height in rows:
+        # Создаем лейбл
+        label = Label(
+            text=text,
+            font_size=font_size,
+            bold=is_bold,
+            halign='left',
+            valign='middle',
+            size_hint_x=0.8,
+            text_size=(None, None),
+            padding=(dp(15), 0, 0, 0)  # Отступ слева
+        )
+        
+        # Функция для обновления размера текста
+        def update_text_size(inst, val):
+            padding = dp(15)  # Отступ слева
+            inst.text_size = (val[0] - padding, None)
+            inst.halign = 'left'
+            inst.valign = 'middle'
+            inst.canvas.ask_update()
+        
+        label.bind(size=update_text_size)
+        table.add_widget(label)
+        
+        # Создаем контейнер для переключателя/кнопки
+        if 'switch' in switch_attr:
+            switch_layout = AnchorLayout(
+                anchor_x='center',
+                anchor_y='center',
+                size_hint=(0.2, None),
+                height=switch_height
+            )
+            
+            # Создаем переключатель
+            switch = CustomCheckBox(
+                size_hint=(None, None),
+                height=dp(30)  # Высота переключателя
+            )
+            
+            # Настраиваем переключатель в зависимости от типа
+            if switch_attr == 'debug_switch':
+                switch.active = load_debug_state(settings_window)
+                switch.bind(active=lambda i, v, sw=settings_window: on_debug_switch(i, v, sw))
+                settings_window.debug_switch = switch
+            elif switch_attr == 'logging_switch':
+                switch.active = load_logging_state(settings_window)
+                switch.bind(active=lambda i, v, sw=settings_window: on_logging_switch(i, v, sw))
+                settings_window.logging_to_file_pending = switch.active
+                settings_window.logging_switch = switch
+            elif switch_attr in ['new_action_switch', 'another_action_switch']:
+                switch.active = False
+                setattr(settings_window, switch_attr, switch)
+            
+            switch_layout.add_widget(switch)
+            table.add_widget(switch_layout)
+            
+        # Создаем кнопки
+        elif 'button' in switch_attr:
+            button_layout = AnchorLayout(
+                anchor_x='center',
+                anchor_y='center',
+                size_hint=(0.2, None),
+                height=switch_height
+            )
+            
+            # Создаем кнопку с адаптивным размером под текст
+            button = None
+            if switch_attr == 'terminal_button':
+                button = RoundedButton(
+                    text="Open",
+                    size_hint=(None, None),
+                    size=(dp(100), dp(40)),
+                    font_size='16sp',
+                    bg_color=(0.1, 0.5, 0.8, 1),
+                    bg_color_press=(0.2, 0.6, 0.9, 1),
+                    border_radius=dp(10)
+                )
+                button.bind(on_press=open_logs_terminal)
+            elif switch_attr == 'editor_button':
+                button = RoundedButton(
+                    text="Open",
+                    size_hint=(None, None),
+                    size=(dp(100), dp(40)),
+                    font_size='16sp',
+                    bg_color=(0.1, 0.5, 0.8, 1),
+                    bg_color_press=(0.2, 0.6, 0.9, 1),
+                    border_radius=dp(10)
+                )
+                button.bind(on_press=open_logs_in_editor)
+            elif switch_attr == 'clear_button':
+                button = RoundedButton(
+                    text="Clear",
+                    size_hint=(None, None),
+                    size=(dp(100), dp(40)),
+                    font_size='16sp',
+                    bg_color=(0.1, 0.5, 0.8, 1),
+                    bg_color_press=(0.2, 0.6, 0.9, 1),
+                    border_radius=dp(10)
+                )
+                button.bind(on_press=clear_old_logs)
+            elif switch_attr == 'new_action_1_button':
+                button = RoundedButton(
+                    text="Show",
+                    size_hint=(None, None),
+                    size=(dp(100), dp(40)),
+                    font_size='16sp',
+                    bg_color=(0.1, 0.5, 0.8, 1),
+                    bg_color_press=(0.2, 0.6, 0.9, 1),
+                    border_radius=dp(10)
+                )
+                button.bind(on_press=show_additional_actions)
+            
+            # Если кнопка была создана, добавляем её в макет
+            if button is not None:
+                # Создаем контейнер для кнопки с фиксированным размером
+                button_container = GridLayout(
+                    cols=1,
+                    size_hint=(None, None),
+                    width=dp(120),
+                    height=dp(50),
+                    padding=(dp(10), dp(5), dp(10), dp(5))
+                )
+                button_container.add_widget(button)
+                button_layout.add_widget(button_container)
+            
+            # Добавляем строку с кнопкой в таблицу
+            table.add_widget(button_layout)
     
-    # Строка 2: Logs in Terminal + кнопка Open
-    label2 = Label(
-        text="Logs in Terminal",
-        halign='left',
-        valign='middle',
-        font_size='28sp',
-        bold=False,
-        size_hint_x=0.9
-    )
-    label2.bind(size=update_text_size)
-    table.add_widget(label2)
-    
-    # Контейнер с центрированием для кнопки Open Terminal
-    anchor = AnchorLayout(anchor_x='center', size_hint_x=1)
-    btn_terminal = RoundedButton(
-        text="Open",
-        size_hint=(None, None),
-        size=(dp(90), dp(35)),
-        border_radius=dp(10)
-    )
-    btn_terminal.bind(on_press=open_logs_terminal)
-    anchor.add_widget(btn_terminal)
-    table.add_widget(anchor)
-    
-    # Строка 3: Logs in Editor + кнопка Open
-    label3 = Label(
-        text="Logs in Editor",
-        halign='left',
-        valign='middle',
-        font_size='28sp',
-        bold=False,
-        size_hint_x=0.9
-    )
-    label3.bind(size=update_text_size)
-    table.add_widget(label3)
-    
-    # Контейнер с центрированием для кнопки Open Editor
-    anchor = AnchorLayout(anchor_x='center', size_hint_x=1)
-    btn_editor = RoundedButton(
-        text="Open",
-        size_hint=(None, None),
-        size=(dp(90), dp(35)),
-        border_radius=dp(10)
-    )
-    btn_editor.bind(on_press=open_logs_in_editor)
-    anchor.add_widget(btn_editor)
-    table.add_widget(anchor)
-
-    # Строка 4: Clear Old Log Files + кнопка Clear
-    label4 = Label(
-        text="Clear Old Log Files",
-        halign='left',
-        valign='middle',
-        font_size='28sp',
-        bold=False,
-        size_hint_x=0.9
-    )
-    label4.bind(size=update_text_size)
-    table.add_widget(label4)
-    
-    # Контейнер с центрированием для кнопки Clear
-    anchor = AnchorLayout(anchor_x='center', size_hint_x=1)
-    btn_clear = RoundedButton(
-        text="Clear",
-        size_hint=(None, None),
-        size=(dp(90), dp(35)),
-        border_radius=dp(10)
-    )
-    btn_clear.bind(on_press=clear_old_logs)
-    anchor.add_widget(btn_clear)
-    table.add_widget(anchor)
-    
-
-    # Строка 5: Logging to File + переключатель
-    label5 = Label(
-        text="Logging to File (Not work)",
-        halign='left',
-        valign='middle',
-        font_size='28sp',
-        bold=False,
-        size_hint_x=0.9
-    )
-    label5.bind(size=update_text_size)
-    table.add_widget(label5)
-    
-    # Контейнер с центрированием для переключателя Logging to File
-    anchor = AnchorLayout(anchor_x='center', size_hint_x=1)
-    logging_switch = CustomCheckBox(
-        size_hint=(None, None),
-        height=dp(40)  # Ширина будет рассчитана автоматически
-    )
-    # Загружаем сохраненное состояние логирования
-    logging_switch.active = load_logging_state(settings_window)
-    # Сохраняем текущее состояние как ожидающее применения
-    settings_window.logging_to_file_pending = logging_switch.active
-    # Привязываем обработчик
-    logging_switch.bind(active=lambda instance, value: on_logging_switch(instance, value, settings_window))
-    settings_window.logging_switch = logging_switch
-    anchor.add_widget(logging_switch)
-    table.add_widget(anchor)
-    
-    # Строка 6: Additional Actions + переключатель
-    label6 = Label(
-        text="Any New Action",
-        halign='left',
-        valign='middle',
-        font_size='22sp',
-        bold=False,
-        size_hint_x=0.9
-    )
-    label6.bind(size=update_text_size)
-    table.add_widget(label6)
-    
-    # Контейнер с центрированием для переключателя Additional Actions
-    anchor = AnchorLayout(anchor_x='center', size_hint_x=1)
-    actions_switch = CustomCheckBox(
-        size_hint=(None, None),
-        height=dp(40)  # Ширина будет рассчитана автоматически
-    )
-    actions_switch.active = False
-    settings_window.actions_switch = actions_switch
-    anchor.add_widget(actions_switch)
-    table.add_widget(anchor)
-    
-    # Строка 7: Additional Actions + кнопка Show Actions
-    label7 = Label(
-        text="Any New Action",
-        halign='left',
-        valign='middle',
-        font_size='22sp',
-        bold=False,
-        size_hint_x=0.9
-    )
-    label7.bind(size=update_text_size)
-    table.add_widget(label7)
-    
-    # Контейнер с центрированием для кнопки Show Actions
-    anchor = AnchorLayout(anchor_x='center', size_hint_x=1)
-    btn_show = RoundedButton(
-        text="Show",
-        size_hint=(None, None),
-        size=(dp(90), dp(35)),
-        border_radius=dp(10)
-    )
-    btn_show.bind(on_press=show_additional_actions)
-    anchor.add_widget(btn_show)
-    table.add_widget(anchor)
-    
-    # Строка 8: Additional Actions + переключатель
-    label8 = Label(
-        text="Any New Action",
-        halign='left',
-        valign='middle',
-        font_size='22sp',
-        bold=False,
-        size_hint_x=0.9
-    )
-    label8.bind(size=update_text_size)
-    table.add_widget(label8)
-    
-    # Контейнер с центрированием для второго переключателя Additional Actions
-    anchor = AnchorLayout(anchor_x='center', size_hint_x=1)
-    actions_switch2 = CustomCheckBox(
-        size_hint=(None, None),
-        height=dp(40)  # Ширина будет рассчитана автоматически
-    )
-    actions_switch2.active = False
-    settings_window.actions_switch2 = actions_switch2
-    anchor.add_widget(actions_switch2)
-    table.add_widget(anchor)
-    
+    # Добавляем таблицу в контейнер
     container.add_widget(table)
+    
+    # Сохраняем ссылку на секцию настроек
     settings_window.admin_section = container
+    
     return container
