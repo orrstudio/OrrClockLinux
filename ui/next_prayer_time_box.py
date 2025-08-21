@@ -350,6 +350,10 @@ class NextPrayerTimeBox(GridLayout):
         Logger.debug(f'Starting playback of file: {sound_file}')
         player = None
         
+        # Сбрасываем громкость и включаем звук
+        os.system('pactl set-sink-mute @DEFAULT_SINK@ 0')
+        os.system('pactl set-sink-volume @DEFAULT_SINK@ 100%')
+        
         try:
             # Создаем экземпляр MPV-плеера с минимальными настройками
             with NextPrayerTimeBox._sound_lock:
@@ -367,7 +371,8 @@ class NextPrayerTimeBox(GridLayout):
                         input_vo_keyboard=True,
                         input_cursor=False,
                         cursor_autohide='no',
-                        msg_level='all=error'
+                        msg_level='all=error',
+                        volume=100
                     )
                     
                     # Устанавливаем обработчики событий
