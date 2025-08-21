@@ -156,9 +156,9 @@ def clear_old_logs(button_instance):
             from kivy.uix.scrollview import ScrollView
             from kivy.uix.boxlayout import BoxLayout
             
-            # Создаем прокручиваемое содержимое
-            scroll = ScrollView()
-            content = BoxLayout(orientation='vertical', size_hint_y=None, spacing=10, padding=10)
+            # Создаем прокручиваемое содержимое с фиксированной высотой
+            scroll = ScrollView(size_hint_y=None, height=350)  # Уменьшаем высоту ScrollView
+            content = BoxLayout(orientation='vertical', size_hint_y=None, spacing=8, padding=[10, 5, 10, 10])
             content.bind(minimum_height=content.setter('height'))
             
             # Добавляем заголовок и список файлов
@@ -188,14 +188,38 @@ def clear_old_logs(button_instance):
             
             scroll.add_widget(content)
             
+            # Создаем контейнер для основного содержимого и кнопки закрытия
+            main_layout = BoxLayout(orientation='vertical', spacing=10, size_hint_y=None, padding=[0, 0, 0, 10])
+            main_layout.add_widget(scroll)
+            
+            # Создаем кнопку закрытия с иконкой, как у кнопки сохранения
+            from ui.components.custom_button import CustomButton
+            close_button = CustomButton(
+                icon_path='fonts/Awesome/use/ok.png',
+                text='',  # Без текста, только иконка
+                size_hint_y=None,
+                height=dp(50),
+                background_color=(0.1, 0.5, 0.8, 1),  # Синий цвет, как у кнопки сохранения
+                font_size='20sp'
+            )
+            
+            # Добавляем кнопку в контейнер
+            main_layout.add_widget(close_button)
+            
+            # Создаем попап с новым макетом
             popup = Popup(
                 title='Log cleaning completed',
                 title_size='24sp',
                 title_align='center',
-                content=scroll,
+                content=main_layout,
                 size_hint=(None, None),
-                size=(500, 400)
+                size=(500, 500)  # Общая высота окна с учетом отступов
             )
+            
+            # Привязываем действие закрытия к кнопке
+            close_button.bind(on_release=popup.dismiss)
+            
+            # Открываем попап
             popup.open()
         else:
             logger.info("No old logs to delete")
