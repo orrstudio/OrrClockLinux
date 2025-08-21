@@ -119,8 +119,8 @@ def save_debug_state(settings_window, enabled):
         except Exception as db_error:
             logger.error(f'Критическая ошибка: не удалось сохранить состояние отладки: {db_error}')
 
-def clear_old_logs(button_instance):
-    """Удаляет все логи, кроме активного, включая логи Kivy."""
+def _delete_logs():
+    """Внутренняя функция для удаления логов."""
     try:
         # Получаем путь к директории приложения
         app_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -148,105 +148,192 @@ def clear_old_logs(button_instance):
             os.remove(file_path)
             deleted_files.append(f"kivy: {kivy_log}")
         
-        # Показываем уведомление об успешном удалении
-        if deleted_files:
-            message = "Deleted files:\n" + "\n".join(deleted_files)
-            from kivy.uix.popup import Popup
-            from kivy.uix.label import Label
-            from kivy.uix.scrollview import ScrollView
-            from kivy.uix.boxlayout import BoxLayout
-            
-            # Создаем прокручиваемое содержимое с фиксированной высотой
-            scroll = ScrollView(size_hint_y=None, height=350)  # Уменьшаем высоту ScrollView
-            content = BoxLayout(orientation='vertical', size_hint_y=None, spacing=8, padding=[10, 5, 10, 10])
-            content.bind(minimum_height=content.setter('height'))
-            
-            # Добавляем заголовок и список файлов
-            content.add_widget(Label(
-                text='Deleted files:',
-                size_hint_y=None,
-                height=50,
-                font_size='22sp',
-                bold=True,
-                halign='left',
-                text_size=(400, None)
-            ))
-            
-            for file in deleted_files:
-                content.add_widget(Label(
-                    text=file,
-                    size_hint_y=None,
-                    height=15,  # Уменьшена высота с 50 до 15 пикселей
-                    font_size='18sp',
-                    halign='left',
-                    text_size=(400, None),
-                    shorten=True,
-                    shorten_from='right',
-                    ellipsis_options={'ellipsis': '...'},
-                    padding=(0, 2, 0, 2)  # Добавлены отступы сверху и снизу
-                ))
-            
-            scroll.add_widget(content)
-            
-            # Создаем контейнер для основного содержимого и кнопки закрытия
-            main_layout = BoxLayout(orientation='vertical', spacing=10, size_hint_y=None, padding=[0, 0, 0, 10])
-            main_layout.add_widget(scroll)
-            
-            # Создаем кнопку закрытия с иконкой, как у кнопки сохранения
-            from ui.components.custom_button import CustomButton
-            close_button = CustomButton(
-                icon_path='fonts/Awesome/use/ok.png',
-                text='',  # Без текста, только иконка
-                size_hint_y=None,
-                height=dp(50),
-                background_color=(0.1, 0.5, 0.8, 1),  # Синий цвет, как у кнопки сохранения
-                font_size='20sp'
-            )
-            
-            # Добавляем кнопку в контейнер
-            main_layout.add_widget(close_button)
-            
-            # Создаем попап с новым макетом
-            popup = Popup(
-                title='Log cleaning completed',
-                title_size='24sp',
-                title_align='center',
-                content=main_layout,
-                size_hint=(None, None),
-                size=(500, 500)  # Общая высота окна с учетом отступов
-            )
-            
-            # Привязываем действие закрытия к кнопке
-            close_button.bind(on_release=popup.dismiss)
-            
-            # Открываем попап
-            popup.open()
-        else:
-            logger.info("No old logs to delete")
-            from kivy.uix.popup import Popup
-            from kivy.uix.label import Label
-            
-            content = Label(
-                text='No old logs to delete',
-                font_size='20sp',
-                size_hint_y=None,
-                height=50,
-                halign='center',
-                valign='middle'
-            )
-            
-            popup = Popup(
-                title='Log cleaning',
-                title_size='24sp',
-                title_align='center',
-                content=content,
-                size_hint=(None, None),
-                size=(400, 150)
-            )
-            popup.open()
-            
+        return deleted_files
     except Exception as e:
-        logger.error(f"Error deleting old logs: {e}")
+        logger.error(f"Error deleting logs: {e}")
+        return None
+
+def _show_confirmation_dialog(button_instance):
+    """Показывает диалог подтверждения удаления логов."""
+    from kivy.uix.popup import Popup
+    from kivy.uix.boxlayout import BoxLayout
+    from kivy.uix.label import Label
+    from ui.components.custom_button import CustomButton
+    
+    # Создаем контент диалога
+    content = BoxLayout(orientation='vertical', spacing=15, padding=20)
+    
+    # Добавляем текст предупреждения
+    warning_text = (
+        "Are you sure you want to clear all log files?\n\n"
+        "This will delete:\n"
+        "• All old application logs (except the most recent)\n"
+        "• All Kivy framework logs\n\n"
+        "This action cannot be undone."
+    )
+    
+    content.add_widget(Label(
+        text=warning_text,
+        size_hint_y=None,
+        height=200,
+        halign='left',
+        valign='top',
+        text_size=(450, None),
+        font_size='18sp'
+    ))
+    
+    # Создаем кнопки
+    button_box = BoxLayout(spacing=10, size_hint_y=None, height=50)
+    
+    # Кнопка подтверждения (слева) - только иконка, как в настройках
+    confirm_btn = CustomButton(
+        icon_path='fonts/Awesome/use/ok.png',
+        text='',  # Без текста, только иконка
+        background_color=(0.1, 0.5, 0.8, 1),  # Синий цвет
+        size_hint=(0.5, 1),  # Занимает половину ширины
+        font_size='20sp'
+    )
+    
+    # Кнопка отмены (справа) - только иконка, как в настройках
+    cancel_btn = CustomButton(
+        icon_path='fonts/Awesome/use/x.png',
+        text='',  # Без текста, только иконка
+        background_color=(0.8, 0.2, 0.2, 1),  # Красный цвет
+        size_hint=(0.5, 1),  # Занимает половину ширины
+        font_size='20sp'
+    )
+    
+    # Добавляем кнопки в контейнер в нужном порядке
+    button_box.add_widget(confirm_btn)  # Сначала кнопка подтверждения
+    button_box.add_widget(cancel_btn)   # Затем кнопка отмены
+    content.add_widget(button_box)
+    
+    # Создаем попап
+    popup = Popup(
+        title='Confirm Log Deletion',
+        title_size='22sp',
+        title_align='center',
+        content=content,
+        size_hint=(None, None),
+        size=(500, 400)
+    )
+    
+    # Привязываем действия к кнопкам
+    cancel_btn.bind(on_release=popup.dismiss)
+    
+    def on_confirm(instance):
+        popup.dismiss()
+        deleted_files = _delete_logs()
+        if deleted_files is not None:
+            _show_deletion_result(deleted_files)
+    
+    confirm_btn.bind(on_release=on_confirm)
+    
+    # Открываем попап
+    popup.open()
+
+def _show_deletion_result(deleted_files):
+    """Показывает результат удаления логов."""
+    if not deleted_files:
+        # Показываем сообщение, если нечего удалять
+        from kivy.uix.popup import Popup
+        from kivy.uix.label import Label
+        
+        content = Label(
+            text='No old logs to delete',
+            font_size='20sp',
+            size_hint_y=None,
+            height=50,
+            halign='center',
+            valign='middle'
+        )
+        
+        popup = Popup(
+            title='Log cleaning',
+            title_size='24sp',
+            title_align='center',
+            content=content,
+            size_hint=(None, None),
+            size=(400, 150)
+        )
+        popup.open()
+        return
+    
+    # Показываем список удаленных файлов
+    from kivy.uix.popup import Popup
+    from kivy.uix.scrollview import ScrollView
+    from kivy.uix.boxlayout import BoxLayout
+    from kivy.uix.label import Label
+    
+    # Создаем прокручиваемое содержимое с фиксированной высотой
+    scroll = ScrollView(size_hint_y=None, height=350)
+    content = BoxLayout(orientation='vertical', size_hint_y=None, spacing=8, padding=[10, 5, 10, 10])
+    content.bind(minimum_height=content.setter('height'))
+    
+    # Добавляем заголовок и список файлов
+    content.add_widget(Label(
+        text='Successfully deleted:',
+        size_hint_y=None,
+        height=50,
+        font_size='22sp',
+        bold=True,
+        halign='left',
+        text_size=(400, None)
+    ))
+    
+    for file in deleted_files:
+        content.add_widget(Label(
+            text=file,
+            size_hint_y=None,
+            height=25,
+            font_size='16sp',
+            halign='left',
+            text_size=(400, None),
+            shorten=True,
+            shorten_from='right',
+            ellipsis_options={'ellipsis': '...'},
+            padding=(0, 2, 0, 2)
+        ))
+    
+    scroll.add_widget(content)
+    
+    # Создаем контейнер для основного содержимого и кнопки закрытия
+    main_layout = BoxLayout(orientation='vertical', spacing=10, size_hint_y=None, padding=[0, 0, 0, 10])
+    main_layout.add_widget(scroll)
+    
+    # Создаем кнопку закрытия с иконкой, как у кнопки сохранения
+    from ui.components.custom_button import CustomButton
+    close_button = CustomButton(
+        icon_path='fonts/Awesome/use/ok.png',
+        text='',  # Без текста, только иконка
+        size_hint_y=None,
+        height=dp(50),
+        background_color=(0.1, 0.5, 0.8, 1),  # Синий цвет, как у кнопки сохранения
+        font_size='20sp'
+    )
+    
+    # Добавляем кнопку в контейнер
+    main_layout.add_widget(close_button)
+    
+    # Создаем попап с новым макетом
+    popup = Popup(
+        title='Log Cleaning Completed',
+        title_size='24sp',
+        title_align='center',
+        content=main_layout,
+        size_hint=(None, None),
+        size=(500, 500)  # Общая высота окна с учетом отступов
+    )
+    
+    # Привязываем действие закрытия к кнопке
+    close_button.bind(on_release=popup.dismiss)
+    
+    # Открываем попап
+    popup.open()
+
+def clear_old_logs(button_instance):
+    """Показывает диалог подтверждения перед удалением логов."""
+    _show_confirmation_dialog(button_instance)
 
 
 def open_logs_in_editor(button_instance):
