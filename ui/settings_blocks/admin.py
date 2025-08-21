@@ -438,9 +438,9 @@ def create_admin_section(settings_window):
     container = GridLayout(
         cols=1,
         size_hint=(1, None),
-        height=dp(210),  # Такая же высота, как у уведомлений
-        padding=(dp(30), dp(5), dp(30), dp(5)),
-        spacing=dp(5)
+        height=dp(180),  # Уменьшенная высота контейнера
+        padding=(dp(20), dp(5), dp(20), dp(5)),  # Уменьшенные отступы по бокам
+        spacing=dp(3)  # Уменьшенное расстояние между элементами
     )
     
     # Функция для обновления размера текста с отступом
@@ -450,20 +450,20 @@ def create_admin_section(settings_window):
         inst.canvas.ask_update()
 
     # Таблица настроек
-    table = BorderedGridLayout(
+    table = GridLayout(
         cols=2,  # 2 колонки (текст и элемент управления)
         rows=8,  # 8 строк
         size_hint_y=None,
-        height=dp(600),  # Высота для 8 строк
-        spacing=0
+        height=dp(400),  # Уменьшенная высота для 8 строк
+        spacing=dp(5)  # Уменьшенное расстояние между строками
     )
     
-    # Настройка ширины столбцов
+    # Настройка ширины колонок
     def update_col_widths(*args):
         available_width = table.width  # ширина таблицы
         table.cols_minimum = {
-            0: available_width * 0.7,  # 70% для текста
-            1: available_width * 0.3   # 30% для элементов управления
+            0: available_width * 0.8,  # 80% для текста
+            1: available_width * 0.2   # 20% для элементов управления
         }
     
     table.bind(size=update_col_widths)
@@ -474,7 +474,7 @@ def create_admin_section(settings_window):
         text="Debug Mode",
         halign='left',
         valign='middle',
-        font_size='22sp',
+        font_size='28sp',
         bold=False,
         size_hint_x=0.9
     )
@@ -498,7 +498,7 @@ def create_admin_section(settings_window):
         text="Logs in Terminal",
         halign='left',
         valign='middle',
-        font_size='22sp',
+        font_size='28sp',
         bold=False,
         size_hint_x=0.9
     )
@@ -522,7 +522,7 @@ def create_admin_section(settings_window):
         text="Logs in Editor",
         halign='left',
         valign='middle',
-        font_size='22sp',
+        font_size='28sp',
         bold=False,
         size_hint_x=0.9
     )
@@ -540,18 +540,43 @@ def create_admin_section(settings_window):
     btn_editor.bind(on_press=open_logs_in_editor)
     anchor.add_widget(btn_editor)
     table.add_widget(anchor)
-    
-    # Строка 4: Logging to File + переключатель
+
+    # Строка 4: Clear Old Log Files + кнопка Clear
     label4 = Label(
-        text="Logging to File (Not work)",
+        text="Clear Old Log Files",
         halign='left',
         valign='middle',
-        font_size='22sp',
+        font_size='28sp',
         bold=False,
         size_hint_x=0.9
     )
     label4.bind(size=update_text_size)
     table.add_widget(label4)
+    
+    # Контейнер с центрированием для кнопки Clear
+    anchor = AnchorLayout(anchor_x='center', size_hint_x=1)
+    btn_clear = RoundedButton(
+        text="Clear",
+        size_hint=(None, None),
+        size=(dp(90), dp(35)),
+        border_radius=dp(10)
+    )
+    btn_clear.bind(on_press=clear_old_logs)
+    anchor.add_widget(btn_clear)
+    table.add_widget(anchor)
+    
+
+    # Строка 5: Logging to File + переключатель
+    label5 = Label(
+        text="Logging to File (Not work)",
+        halign='left',
+        valign='middle',
+        font_size='28sp',
+        bold=False,
+        size_hint_x=0.9
+    )
+    label5.bind(size=update_text_size)
+    table.add_widget(label5)
     
     # Контейнер с центрированием для переключателя Logging to File
     anchor = AnchorLayout(anchor_x='center', size_hint_x=1)
@@ -567,30 +592,6 @@ def create_admin_section(settings_window):
     logging_switch.bind(active=lambda instance, value: on_logging_switch(instance, value, settings_window))
     settings_window.logging_switch = logging_switch
     anchor.add_widget(logging_switch)
-    table.add_widget(anchor)
-    
-    # Строка 5: Clear Old Log Files + кнопка Clear
-    label5 = Label(
-        text="Clear Old Log Files",
-        halign='left',
-        valign='middle',
-        font_size='22sp',
-        bold=False,
-        size_hint_x=0.9
-    )
-    label5.bind(size=update_text_size)
-    table.add_widget(label5)
-    
-    # Контейнер с центрированием для кнопки Clear
-    anchor = AnchorLayout(anchor_x='center', size_hint_x=1)
-    btn_clear = RoundedButton(
-        text="Clear",
-        size_hint=(None, None),
-        size=(dp(90), dp(35)),
-        border_radius=dp(10)
-    )
-    btn_clear.bind(on_press=clear_old_logs)
-    anchor.add_widget(btn_clear)
     table.add_widget(anchor)
     
     # Строка 6: Additional Actions + переключатель
