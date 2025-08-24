@@ -42,6 +42,15 @@ Mehdi Yarrahi Fajr - AdhanMehdiYarrahiFajr.mp3
 Mishary Rashid Alafasy - AdhanMisharyRashidAlafasy.mp3
 Mishary Rashid Alafasy (Fajr Adhan) - AdhanMisharyRashidAlafasyFajr.mp3
 
+# My Notifications
+Каждый тип уведомления имеет свой обработчик
+Уведомления запускаются по таймеру
+
+Включение/отключение визуальных уведомлений
+Включение/отключение звуковых уведомлений
+Выбор муэдзина для азана
+Включение/отключение уведомлений для каждой молитвы отдельно
+
 # MyCommands
 rm data/settings.db
 rm -rf venv
