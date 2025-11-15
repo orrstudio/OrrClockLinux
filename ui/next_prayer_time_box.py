@@ -479,8 +479,8 @@ class NextPrayerTimeBox(GridLayout):
                 
                 # Выбираем файл в зависимости от типа уведомления
                 if notification_type == 'prayer_change':
-                    sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-VaxtGirdi.mp3')
-                    adhan_file = os.path.join(project_dir, 'audio', 'adhan', 'Adhan01.mp3')
+                    sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Tishina.mp3')
+                    adhan_file = os.path.join(project_dir, 'audio', 'adhan', 'Tishina.mp3')
                     
                     # Воспроизводим первый звук
                     if os.path.exists(sound_file):
@@ -497,13 +497,13 @@ class NextPrayerTimeBox(GridLayout):
                     
                 else:  # Для других типов уведомлений
                     if notification_type == '30min':
-                        sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-30dakikakaldi.mp3')
+                        sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Tishina.mp3')
                     elif notification_type == '45min':
-                        sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-45dakikakaldi.mp3')
+                        sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Tishina.mp3')
                     elif notification_type == '60min':
-                        sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-60dakikakaldi.mp3')
+                        sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Tishina.mp3')
                     else:  # По умолчанию 15-минутное уведомление
-                        sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Ahmet-15dakikakaldi.mp3')
+                        sound_file = os.path.join(project_dir, 'audio', 'notice', 'Ahmet', 'Tishina.mp3')
                     
                     Logger.debug(f'Checking file: {sound_file}')
                     

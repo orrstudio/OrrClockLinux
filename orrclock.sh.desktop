@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Exec=/home/orr/GitHub/OrrClockLinux/orrclock.sh
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name[en_US]=Namaz Vaxtları (Azan)
+Name=Namaz Vaxtları (Azan)
+Comment[en_US]=Namaz Vaxtları (Azan)
+Comment=Namaz Vaxtları (Azan)
